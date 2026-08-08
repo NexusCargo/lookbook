@@ -1,0 +1,10 @@
+{
+  "name": "ghana-lookbook",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "cloudinary": "^2.2.0",
+    "resend": "^3.4.0"
+  }
+}

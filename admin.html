@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghana Lookbook — Admin Dashboard</title>
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  header { background: #0A3626; color: #fff; padding: 30px 20px; margin: -20px -20px 30px; text-align: center; }
+  header h1 { margin: 0; font-size: 28px; }
+  header .subtitle { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+  .auth-section, .edit-section { background: #fff; padding: 30px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .hidden { display: none !important; }
+  .input-group { margin-bottom: 15px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #555; }
+  input[type="email"], input[type="password"], input[type="text"], input[type="number"], select, textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid #ddd; border-radius: 4px; font-size: 13.5px; font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 56px; }
+  button { background: #0A3626; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  button:hover { background: #082a1f; }
+  button.secondary { background: #666; }
+  button.secondary:hover { background: #555; }
+  button.danger { background: #b71c1c; }
+  button.danger:hover { background: #8f1414; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .message { padding: 12px 16px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
+  .message.success { background: #c8e6c9; color: #1b5e20; border: 1px solid #81c784; }
+  .message.error { background: #ffcdd2; color: #b71c1c; border: 1px solid #ef5350; }
+  .message.info { background: #bbdefb; color: #0d47a1; border: 1px solid #64b5f6; }
+  .edit-section h2 { margin: 0 0 20px; font-size: 20px; color: #0A3626; border-bottom: 2px solid #F2B705; padding-bottom: 12px; }
+  .edit-section h3 { margin: 24px 0 12px; font-size: 15px; color: #0A3626; }
+  .section-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .stop-card { background: #f9f9f9; padding: 20px; border-radius: 4px; border: 1px solid #e0e0e0; }
+  .stop-card > label { display: flex; justify-content: space-between; align-items: center; }
+  .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .thumbs img { width: 70px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+  .thumbs .empty { font-size: 12px; color: #999; }
+  .stop-card .row { display: flex; gap: 8px; margin-top: 10px; }
+  .stop-card .row button { flex: 1; font-size: 13px; }
+  .stop-status { font-size: 11px; color: #888; margin-top: 8px; min-height: 14px; }
+  .timestamp { font-size: 12px; color: #999; margin-top: 15px; text-align: right; }
+  .section-info { background: #fff3e0; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #ff9800; font-size: 13px; line-height: 1.6; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab-btn {
+    background: #fff; color: #0A3626; border: 1px solid #ddd; padding: 10px 18px;
+    border-radius: 6px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .tab-btn.active { background: #0A3626; color: #fff; border-color: #0A3626; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Generic list editor */
+  .list-editor-row {
+    display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+    background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .field-mini { flex: 1 1 140px; min-width: 120px; }
+  .field-mini label { font-size: 11px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; }
+  .list-remove-btn {
+    background: #fff; color: #b71c1c; border: 1px solid #f0b8b8;
+    padding: 8px 12px; font-size: 12px; height: 38px;
+  }
+  .list-remove-btn:hover { background: #ffecec; }
+  .list-add-btn { font-size: 12px; padding: 8px 14px; margin-top: 4px; }
+
+  .stop-copy-card {
+    border: 1px solid #e0e0e0; border-radius: 6px; padding: 18px; margin-bottom: 18px; background: #fafafa;
+  }
+  .stop-copy-card h4 { margin: 0 0 12px; font-size: 15px; color: #0A3626; }
+  .region-copy-card {
+    border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 22px; background: #fafafa;
+  }
+  .region-copy-card h4 { margin: 0 0 14px; font-size: 16px; color: #0A3626; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ghana Lookbook Admin</h1>
+  <div class="subtitle">Manage images, page copy, and regional tourist sites & food</div>
+</header>
+
+<div class="container">
+
+  <div class="auth-section" id="authSection">
+    <div id="authStatus" style="font-size: 14px; margin-bottom: 15px; color: #d32f2f;">🔒 Not signed in</div>
+    <div id="loginForm">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="username" placeholder="your@email.com">
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button id="loginBtn">Sign In</button>
+    </div>
+    <div id="logoutForm" class="hidden">
+      <p id="userEmail" style="margin: 0 0 15px;"></p>
+      <button class="secondary" id="logoutBtn">Sign Out</button>
+    </div>
+  </div>
+
+  <div id="message" class="message hidden"></div>
+
+  <div id="editSection" class="hidden">
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="images">🖼️ Images & Animations</button>
+      <button class="tab-btn" data-tab="copy">📝 Site Copy</button>
+      <button class="tab-btn" data-tab="regions">📍 Regions & Sites</button>
+    </div>
+
+    <!-- ================= TAB: IMAGES ================= -->
+    <div class="tab-panel active" id="tab-images">
+      <div class="edit-section">
+        <h2>Stop images</h2>
+        <div class="section-info">
+          Each stop can hold multiple images (used for Carousel/Social/Transitions) or none (Hero Stripe needs no images). Upload, pick an animation type, then Save. "Generate GIF" turns multiple uploaded images into one animated image — it needs at least 2.
+        </div>
+        <div class="section-row" id="stopCards"></div>
+      </div>
+
+      <div class="edit-section">
+        <h2>Hero kente stripe</h2>
+        <div id="kenteThumbs" class="thumbs"></div>
+        <button id="kenteUploadBtn">Upload stripe image</button>
+      </div>
+    </div>
+
+    <!-- ================= TAB: SITE COPY ================= -->
+    <div class="tab-panel" id="tab-copy">
+      <div class="edit-section">
+        <h2>Hero</h2>
+        <div class="two-col">
+          <div class="input-group"><label>Eyebrow</label><input type="text" id="cp-hero-eyebrow"></div>
+          <div class="input-group"><label>Title</label><input type="text" id="cp-hero-title"></div>
+        </div>
+        <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
+        <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
+      </div>
+
+      <div class="edit-section">
+        <h2>Intro</h2>
+        <div class="two-col">
+          <div class="input-group"><label>Greeting (e.g. "Akwaaba.")</label><input type="text" id="cp-intro-greeting"></div>
+          <div class="input-group"><label>Tagline</label><input type="text" id="cp-intro-tagline"></div>
+        </div>
+        <div class="input-group"><label>"Why" title</label><input type="text" id="cp-intro-whytitle"></div>
+        <div class="input-group"><label>"Why" body</label><textarea id="cp-intro-whybody"></textarea></div>
+        <div class="input-group"><label>Extra paragraph</label><textarea id="cp-intro-extra"></textarea></div>
+
+        <h3>Quick facts</h3>
+        <div id="factsList"></div>
+        <button class="list-add-btn" id="addFactBtn" type="button">+ Add fact</button>
+      </div>
+
+      <div class="edit-section">
+        <h2>Regions section header</h2>
+        <div class="two-col">
+          <div class="input-group"><label>Title</label><input type="text" id="cp-regions-title"></div>
+          <div class="input-group"><label>Subtitle</label><input type="text" id="cp-regions-sub"></div>
+        </div>
+      </div>
+
+      <div class="edit-section">
+        <h2>Stop write-ups</h2>
+        <div class="section-info">Each stop's eyebrow label, subtitle, and its list of highlight points. Add or remove points freely.</div>
+        <div id="stopCopyCards"></div>
+      </div>
+
+      <div class="edit-section">
+        <h2>Plan your trip section</h2>
+        <div class="input-group"><label>Title</label><input type="text" id="cp-plan-title"></div>
+        <h3>Plan cards</h3>
+        <div id="planCardsList"></div>
+        <button class="list-add-btn" id="addPlanCardBtn" type="button">+ Add card</button>
+        <div class="input-group" style="margin-top:16px;"><label>Closing line</label><input type="text" id="cp-plan-closing"></div>
+      </div>
+    </div>
+
+    <!-- ================= TAB: REGIONS & SITES ================= -->
+    <div class="tab-panel" id="tab-regions">
+      <div class="edit-section">
+        <h2>Regions, tourist sites & food</h2>
+        <div class="section-info">
+          Coordinates are decimal latitude/longitude (e.g. 5.1053, -1.2466 for Cape Coast Castle). Tourism-site pins should be real, verifiable locations. Food-spot coordinates are shown to visitors as approximate — exact precision isn't required, just a reasonable placement.
+        </div>
+        <div id="regionCards"></div>
+      </div>
+    </div>
+
+    <div class="button-group" style="margin-top: 10px;">
+      <button id="saveBtn" style="flex: 1;">✨ Save All Changes</button>
+    </div>
+    <div class="timestamp">Last updated: <span id="lastUpdated">—</span></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+import {
+  getFirestore, doc, getDoc, setDoc
+} from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+const STOP_NAMES = {
+  castles: 'Castles of Memory',
+  canopy: 'Walk Among Giants',
+  accra: "The Capital's Pulse",
+  kumasi: 'Seat of a Kingdom',
+  savanna: 'Into the Savanna',
+  beaches: 'Where the Coast Slows Down',
+  culture: 'Rhythm, Cloth, Symbol',
+  food: 'Eat Like a Local'
+};
+const STOP_KEYS = Object.keys(STOP_NAMES);
+const REGION_KEYS = ['accra', 'central', 'ashanti', 'volta', 'northern'];
+const REGION_COLORS = ['forest', 'terracotta', 'gold', 'clay', 'faded-gold'];
+
+const ANIMATION_TYPES = {
+  carousel: '📽️ Carousel',
+  social: '📱 Social',
+  transitions: '🔄 Transitions',
+  hero_stripe: '🎬 Hero Stripe (no images needed)'
+};
+
+// Same defaults as index.html — used to pre-fill the editors the
+// first time an admin opens this page, before anything's been saved.
+const DEFAULT_COPY = {
+  hero: { eyebrow: 'A LOOKBOOK OF THE GOLD COAST', title: 'GHANA', sub: 'Castles, canopy walks, kente looms, and the warmest welcome in West Africa.', edition: '2026 EDITION' },
+  intro: {
+    greeting: 'Akwaaba.', tagline: 'The word Ghanaians use to say welcome — and mean it.',
+    whyTitle: 'Why Ghana, why now',
+    whyBody: 'Ghana is West Africa\'s most accessible entry point — stable, English-speaking, and welcoming, with a growing "Year of Return" pilgrimage drawing the diaspora home.',
+    extra: 'In one trip: 500-year-old coastal fortresses, rainforest canopy walks, savanna elephants, kente-weaving villages, and some of the region\'s best-kept beaches. This lookbook moves coast to savanna — Cape Coast, Accra, Kumasi, Mole — as a route you can actually drive.',
+    facts: [{ k: 'CAPITAL', v: 'Accra' }, { k: 'LANGUAGE', v: 'English + local' }, { k: 'CURRENCY', v: 'Ghana Cedi (GHS)' }, { k: 'BEST TIME', v: 'Nov – Mar' }]
+  },
+  regionsIntro: { title: 'Five regions, one route', sub: 'Coast to savanna, roughly north–south — the classic Ghana circuit.' },
+  stops: {
+    castles: { eyebrow: 'CENTRAL REGION', subtitle: 'Cape Coast & Elmina Castles', points: [
+      { title: 'UNESCO World Heritage', body: "Two of the largest of over 40 fortifications along Ghana's coast, built by European traders from the 15th century on." },
+      { title: 'The Door of No Return', body: "A profoundly moving stop for understanding the trans-Atlantic slave trade and the diaspora's roots." },
+      { title: 'Pair it with', body: "A walk through Cape Coast's fishing harbor at dawn, when the wooden boats come in." }
+    ]},
+    canopy: { eyebrow: 'CENTRAL REGION', subtitle: 'Kakum National Park Canopy Walkway', points: [
+      { title: 'Seven rope bridges', body: "Suspended up to 40 meters above the rainforest floor — Ghana's most photographed adventure." },
+      { title: 'Wildlife', body: 'Home to forest elephants, over 300 bird species, and Diana monkeys (best spotted at sunrise).' },
+      { title: 'Good to know', body: 'Arrive early — the walkway gets busy and hot by mid-morning.' }
+    ]},
+    accra: { eyebrow: 'GREATER ACCRA', subtitle: 'Accra: Jamestown to Osu', points: [
+      { title: 'Jamestown', body: 'Colorful colonial-era fishing quarter, boxing gyms, and a lighthouse with sweeping coastal views.' },
+      { title: 'Independence Square & Kwame Nkrumah Mausoleum', body: "The monumental heart of Ghana's 1957 independence — first in sub-Saharan Africa." },
+      { title: "Osu & Accra's art scene", body: "Galleries, live highlife music, and the city's best chop bars and rooftop bars." }
+    ]},
+    kumasi: { eyebrow: 'ASHANTI REGION', subtitle: 'Kumasi & the Ashanti Heartland', points: [
+      { title: 'Manhyia Palace', body: 'Home of the Asantehene, spiritual and cultural seat of the Ashanti Kingdom.' },
+      { title: 'Bonwire', body: 'The kente-weaving village where the iconic strip-woven cloth originated — watch looms in motion.' },
+      { title: 'Kejetia Market', body: "One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life." }
+    ]},
+    savanna: { eyebrow: 'NORTHERN REGION', subtitle: 'Mole National Park', points: [
+      { title: "Ghana's largest wildlife refuge", body: 'Walking safaris that bring you close to elephants, antelope, and baboons — rare on foot in Africa.' },
+      { title: 'Larabanga Mosque', body: "A striking Sudanese-style mud-and-timber mosque, among West Africa's oldest." },
+      { title: 'Getting there', body: 'A long but worthwhile drive north — best combined with an overnight at the park motel.' }
+    ]},
+    beaches: { eyebrow: 'COASTLINE', subtitle: 'Beaches: Busua, Anomabo & Ada', points: [
+      { title: 'Busua', body: "Ghana's laid-back surf town — board rentals, beach bars, and reliable swells." },
+      { title: 'Anomabo', body: 'Boutique beach lodges beside a working fishing village, close to Cape Coast.' },
+      { title: 'Ada Foah', body: 'Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.' }
+    ]},
+    culture: { eyebrow: 'CULTURE', subtitle: 'Festivals & Living Traditions', points: [
+      { title: 'Homowo & Panafest', body: 'Harvest festivals and the biennial Pan-African Historical Theatre Festival draw the diaspora each year.' },
+      { title: 'Adinkra symbols', body: 'Visual proverbs — stamped onto cloth — that encode Akan philosophy in a single mark.' },
+      { title: 'Drumming & dance', body: 'Adowa, kpanlogo, and talking drums remain part of everyday celebration, not performance for tourists.' }
+    ]},
+    food: { eyebrow: 'FLAVOR', subtitle: 'The Ghanaian Table', points: [
+      { title: 'Jollof rice', body: "The dish behind West Africa's friendliest culinary rivalry — try Ghana's smoky version and judge yourself." },
+      { title: 'Banku & grilled tilapia', body: 'Fermented corn-and-cassava dough, best eaten by hand with a fiery pepper sauce.' },
+      { title: 'Kelewele & red red', body: 'Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.' }
+    ]}
+  },
+  plan: {
+    title: 'Plan your trip',
+    cards: [
+      { title: 'Best time to visit', body: 'November–March: dry season, cooler nights, easiest travel between regions.' },
+      { title: 'Getting around', body: 'Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.' },
+      { title: 'Entry', body: 'Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.' },
+      { title: 'Suggested route', body: 'Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.' }
+    ],
+    closing: 'Akwaaba — see you on the coast.'
+  }
+};
+
+const DEFAULT_REGIONS = {
+  accra: { name: 'Greater Accra', blurb: 'Capital energy: Jamestown, Osu, art & nightlife', color: 'forest', center: [5.56, -0.19], zoom: 12,
+    sights: [
+      { name: 'Kwame Nkrumah Mausoleum & Memorial Park', lat: 5.5484, lng: -0.2059, note: "Ghana's independence monument and museum." },
+      { name: 'Independence Square', lat: 5.5480, lng: -0.1934, note: 'Black Star Gate and the parade ground.' },
+      { name: 'Jamestown & Ussher Fort', lat: 5.5306, lng: -0.2106, note: 'Colonial-era fishing quarter and lighthouse.' },
+      { name: 'Osu Castle (Christiansborg)', lat: 5.5423, lng: -0.1770, note: 'Former Danish trading post and seat of government.' },
+      { name: 'Makola Market', lat: 5.5490, lng: -0.2107, note: "Accra's largest, liveliest market." }
+    ],
+    food: [
+      { name: 'Buka Restaurant, Osu', lat: 5.5558, lng: -0.1827, note: 'Ghanaian classics — tilapia, garifotor, fufu.' },
+      { name: 'Azmera, Roman Ridge', lat: 5.5750, lng: -0.1900, note: 'Popular local-food buffet plus à la carte.' },
+      { name: 'Asanka Local, Osu', lat: 5.5556, lng: -0.1822, note: 'Traditional chop bar, known for red red.' }
+    ], foodNote: '' },
+  central: { name: 'Central Region', blurb: 'Cape Coast & Elmina castles, Kakum canopy walk', color: 'terracotta', center: [5.18, -1.30], zoom: 10,
+    sights: [
+      { name: 'Cape Coast Castle', lat: 5.1053, lng: -1.2466, note: 'UNESCO World Heritage fortress and the Door of No Return.' },
+      { name: 'Elmina Castle', lat: 5.0844, lng: -1.3505, note: "West Africa's oldest European-built structure." },
+      { name: 'Kakum National Park Canopy Walkway', lat: 5.3500, lng: -1.3833, note: 'Rope bridges through the rainforest canopy.' }
+    ],
+    food: [
+      { name: 'Oasis Beach Resort, Cape Coast', lat: 5.1030, lng: -1.2460, note: 'Oceanfront dining, easily the local go-to.' },
+      { name: 'Emperor Ital Joint, Cape Coast', lat: 5.1049, lng: -1.2471, note: 'Vegan/vegetarian Ghanaian dishes near the castle.' }
+    ], foodNote: '' },
+  ashanti: { name: 'Ashanti Region', blurb: 'Kumasi, Manhyia Palace, kente-weaving villages', color: 'gold', center: [6.70, -1.62], zoom: 11,
+    sights: [
+      { name: 'Manhyia Palace', lat: 6.7028, lng: -1.6244, note: 'Seat of the Asantehene, Ashanti Kingdom.' },
+      { name: 'Bonwire kente-weaving village', lat: 6.7333, lng: -1.4667, note: 'Where the iconic strip-woven cloth originated.' },
+      { name: 'Kejetia Market', lat: 6.6935, lng: -1.6244, note: "One of West Africa's largest markets." }
+    ],
+    food: [{ name: "Ike's Cafe and Grill, Kumasi", lat: 6.6975, lng: -1.6280, note: 'Traditional Ghanaian dishes, African-art decor.' }], foodNote: '' },
+  volta: { name: 'Volta Region', blurb: 'Waterfalls, Lake Volta, mountain hikes', color: 'clay', center: [6.9, 0.35], zoom: 9,
+    sights: [
+      { name: 'Wli Waterfalls', lat: 7.1167, lng: 0.5833, note: "Ghana's tallest waterfall, a hike through forest to reach." },
+      { name: 'Akosombo Dam & Lake Volta', lat: 6.2986, lng: 0.0562, note: 'Boat cruises on one of the largest reservoirs by surface area worldwide.' },
+      { name: 'Mount Afadjato', lat: 6.85, lng: 0.6167, note: "Ghana's highest peak, a popular sunrise hike." }
+    ], food: [], foodNote: "Fewer named tourist restaurants here — expect home-style chop bars in Hohoe and Ho serving fufu, banku, and freshwater fish from the lake." },
+  northern: { name: 'Northern Region', blurb: 'Mole National Park safari, Larabanga Mosque', color: 'faded-gold', center: [9.24, -1.83], zoom: 10,
+    sights: [
+      { name: 'Mole National Park', lat: 9.2660, lng: -1.8490, note: "Ghana's largest wildlife refuge — walking safaris." },
+      { name: 'Larabanga Mosque', lat: 9.2180, lng: -1.8524, note: "Sudanese-style mud-and-timber mosque, among West Africa's oldest." }
+    ], food: [], foodNote: 'Dining options are limited to the Mole Motel and small local spots in Larabanga — expect simple, hearty northern Ghanaian fare like tuo zaafi and guinea fowl.' }
+};
+
+let auth, db, cloudinaryCloudName;
+let content = { hero_kente: [], stops: {} };
+let copy = JSON.parse(JSON.stringify(DEFAULT_COPY));
+let regions = JSON.parse(JSON.stringify(DEFAULT_REGIONS));
+
+// ---------- Auth / boot ----------
+async function boot() {
+  // Load Firebase config from environment variables
+  const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  };
+  cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+
+  onAuthStateChanged(auth, async (user) => {
+    const authed = !!user;
+    document.getElementById('loginForm').classList.toggle('hidden', authed);
+    document.getElementById('logoutForm').classList.toggle('hidden', !authed);
+    document.getElementById('editSection').classList.toggle('hidden', !authed);
+    if (authed) {
+      document.getElementById('userEmail').textContent = `Signed in as: ${user.email}`;
+      document.getElementById('authStatus').textContent = '✅ Signed in';
+      document.getElementById('authStatus').style.color = '#388e3c';
+      await loadAll();
+      renderStopCards();
+      renderKenteThumbs();
+      renderCopyForm();
+      renderRegionCards();
+    } else {
+      document.getElementById('authStatus').textContent = '🔒 Not signed in';
+      document.getElementById('authStatus').style.color = '#d32f2f';
+    }
+  });
+}
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return showMessage('Enter email and password', 'error');
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    showMessage('Sign-in failed. Check your email and password.', 'error');
+  }
+});
+document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ---------- Load all three docs ----------
+async function loadAll() {
+  const [contentSnap, copySnap, regionsSnap] = await Promise.all([
+    getDoc(doc(db, 'lookbook-content', 'content')),
+    getDoc(doc(db, 'lookbook-content', 'copy')),
+    getDoc(doc(db, 'lookbook-content', 'regions'))
+  ]);
+  content = contentSnap.exists() ? contentSnap.data() : { hero_kente: [], stops: {} };
+  content.hero_kente = content.hero_kente || [];
+  content.stops = content.stops || {};
+  copy = copySnap.exists() ? deepMerge(DEFAULT_COPY, copySnap.data()) : JSON.parse(JSON.stringify(DEFAULT_COPY));
+  regions = regionsSnap.exists() ? deepMerge(DEFAULT_REGIONS, regionsSnap.data()) : JSON.parse(JSON.stringify(DEFAULT_REGIONS));
+
+  const latest = [contentSnap, copySnap, regionsSnap]
+    .map(s => s.exists() && s.data().lastUpdated)
+    .filter(Boolean).sort().reverse()[0];
+  if (latest) document.getElementById('lastUpdated').textContent = new Date(latest).toLocaleString();
+}
+
+function deepMerge(base, override) {
+  // shallow-ish merge sufficient for this fixed shape: object fields merge,
+  // arrays/primitives from override win outright if present.
+  if (Array.isArray(base)) return override !== undefined ? override : base;
+  if (typeof base === 'object' && base !== null) {
+    const result = { ...base };
+    for (const k in base) {
+      if (override && override[k] !== undefined) result[k] = deepMerge(base[k], override[k]);
+    }
+    return result;
+  }
+  return override !== undefined ? override : base;
+}
+
+function thumbUrl(publicId) {
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_200/${publicId}`;
+}
+
+// ---------- Generic add/remove list editor ----------
+// items: array of objects (mutated in place). fieldDefs: [{key,label,type}]
+function createListEditor(container, items, fieldDefs) {
+  function render() {
+    container.innerHTML = '';
+    items.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'list-editor-row';
+      fieldDefs.forEach(fd => {
+        const wrap = document.createElement('div');
+        wrap.className = 'field-mini';
+        const label = document.createElement('label');
+        label.textContent = fd.label;
+        const input = fd.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+        if (fd.type !== 'textarea') input.type = fd.type === 'number' ? 'number' : 'text';
+        if (fd.type === 'number') input.step = 'any';
+        input.value = item[fd.key] ?? '';
+        input.addEventListener('input', () => {
+          item[fd.key] = fd.type === 'number' ? parseFloat(input.value) || 0 : input.value;
+        });
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        row.appendChild(wrap);
+      });
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'list-remove-btn';
+      removeBtn.textContent = '✕ Remove';
+      removeBtn.addEventListener('click', () => { items.splice(idx, 1); render(); });
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+  render();
+  return {
+    addItem(blank) { items.push(blank); render(); }
+  };
+}
+
+// ---------- Images tab (unchanged behavior) ----------
+function renderStopCards() {
+  const container = document.getElementById('stopCards');
+  container.innerHTML = '';
+  Object.entries(STOP_NAMES).forEach(([key, name]) => {
+    const stopData = content.stops[key] || { animation_type: 'carousel', image_public_ids: [] };
+    content.stops[key] = stopData;
+    stopData.image_public_ids = stopData.image_public_ids || [];
+
+    const card = document.createElement('div');
+    card.className = 'stop-card';
+
+    const labelRow = document.createElement('label');
+    labelRow.innerHTML = `<span>${name}</span>`;
+    const select = document.createElement('select');
+    Object.entries(ANIMATION_TYPES).forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = label;
+      if (stopData.animation_type === val) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', () => { stopData.animation_type = select.value; });
+    labelRow.appendChild(select);
+    card.appendChild(labelRow);
+
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    card.appendChild(thumbs);
+
+    const status = document.createElement('div');
+    status.className = 'stop-status';
+
+    function refreshThumbs() {
+      thumbs.innerHTML = '';
+      if (!stopData.image_public_ids.length) thumbs.innerHTML = '<span class="empty">No images yet</span>';
+      stopData.image_public_ids.forEach(id => {
+        const img = document.createElement('img');
+        img.src = thumbUrl(id);
+        thumbs.appendChild(img);
+      });
+    }
+    refreshThumbs();
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.textContent = '📤 Upload';
+    uploadBtn.addEventListener('click', () => openUploadWidget(key, (publicId) => {
+      stopData.image_public_ids.push(publicId);
+      refreshThumbs();
+      status.textContent = 'Image added — remember to Save';
+    }));
+    row.appendChild(uploadBtn);
+
+    const gifBtn = document.createElement('button');
+    gifBtn.className = 'secondary';
+    gifBtn.textContent = '🎞️ Generate GIF';
+    gifBtn.addEventListener('click', async () => {
+      if (stopData.image_public_ids.length < 2) {
+        status.textContent = 'Need at least 2 uploaded images first';
+        return;
+      }
+      gifBtn.disabled = true;
+      status.textContent = 'Generating…';
+      try {
+        const url = await generateGif(key);
+        stopData.gif_url = url;
+        status.textContent = 'GIF generated — remember to Save';
+      } catch (err) {
+        status.textContent = 'GIF generation failed: ' + err.message;
+      } finally {
+        gifBtn.disabled = false;
+      }
+    });
+    row.appendChild(gifBtn);
+
+    card.appendChild(row);
+    card.appendChild(status);
+    container.appendChild(card);
+  });
+}
+
+function renderKenteThumbs() {
+  const container = document.getElementById('kenteThumbs');
+  function refresh() {
+    container.innerHTML = '';
+    if (!content.hero_kente.length) container.innerHTML = '<span class="empty">No stripe images yet — falls back to solid colors</span>';
+    content.hero_kente.forEach(id => {
+      const img = document.createElement('img');
+      img.src = thumbUrl(id);
+      container.appendChild(img);
+    });
+  }
+  refresh();
+  document.getElementById('kenteUploadBtn').onclick = () => openUploadWidget('_kente', (publicId) => {
+    content.hero_kente.push(publicId);
+    refresh();
+    showMessage('Stripe image added — remember to Save', 'info');
+  });
+}
+
+async function getUploadSignature(tag) {
+  const idToken = await auth.currentUser.getIdToken();
+  const res = await fetch('/api/cloudinary-sign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ tag })
+  });
+  if (!res.ok) throw new Error('not authorized to upload');
+  return res.json();
+}
+
+function openUploadWidget(stopKeyOrKente, onDone) {
+  getUploadSignature(`stop-${stopKeyOrKente}`).then((sig) => {
+    const widget = cloudinary.createUploadWidget({
+      cloudName: sig.cloudName,
+      apiKey: sig.apiKey,
+      uploadSignature: (callback) => callback(sig.signature),
+      uploadSignatureTimestamp: sig.timestamp,
+      folder: sig.folder,
+      tags: [sig.tag],
+      sources: ['local', 'url', 'camera'],
+      multiple: false
+    }, (error, result) => {
+      if (!error && result.event === 'success') onDone(result.info.public_id);
+    });
+    widget.open();
+  }).catch(() => showMessage('Upload blocked — you are not on the admin list.', 'error'));
+}
+
+async function generateGif(stopKey) {
+  const idToken = await auth.currentUser.getIdToken();
+  const res = await fetch('/api/generate-gif', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ tag: `stop-${stopKey}` })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'unknown error');
+  return data.url;
+}
+
+// ---------- Site Copy tab ----------
+function renderCopyForm() {
+  document.getElementById('cp-hero-eyebrow').value = copy.hero.eyebrow;
+  document.getElementById('cp-hero-title').value = copy.hero.title;
+  document.getElementById('cp-hero-sub').value = copy.hero.sub;
+  document.getElementById('cp-hero-edition').value = copy.hero.edition;
+  const heroMap = { 'cp-hero-eyebrow':'eyebrow', 'cp-hero-title':'title', 'cp-hero-sub':'sub', 'cp-hero-edition':'edition' };
+  Object.keys(heroMap).forEach(id => {
+    document.getElementById(id).addEventListener('input', (e) => { copy.hero[heroMap[id]] = e.target.value; });
+  });
+
+  document.getElementById('cp-intro-greeting').value = copy.intro.greeting;
+  document.getElementById('cp-intro-tagline').value = copy.intro.tagline;
+  document.getElementById('cp-intro-whytitle').value = copy.intro.whyTitle;
+  document.getElementById('cp-intro-whybody').value = copy.intro.whyBody;
+  document.getElementById('cp-intro-extra').value = copy.intro.extra;
+  const introMap = { 'cp-intro-greeting':'greeting', 'cp-intro-tagline':'tagline', 'cp-intro-whytitle':'whyTitle', 'cp-intro-whybody':'whyBody', 'cp-intro-extra':'extra' };
+  Object.keys(introMap).forEach(id => {
+    document.getElementById(id).addEventListener('input', (e) => { copy.intro[introMap[id]] = e.target.value; });
+  });
+
+  const factsEditor = createListEditor(document.getElementById('factsList'), copy.intro.facts, [
+    { key: 'k', label: 'Label', type: 'text' },
+    { key: 'v', label: 'Value', type: 'text' }
+  ]);
+  document.getElementById('addFactBtn').onclick = () => factsEditor.addItem({ k: 'NEW FACT', v: '' });
+
+  document.getElementById('cp-regions-title').value = copy.regionsIntro.title;
+  document.getElementById('cp-regions-sub').value = copy.regionsIntro.sub;
+  document.getElementById('cp-regions-title').addEventListener('input', (e) => { copy.regionsIntro.title = e.target.value; });
+  document.getElementById('cp-regions-sub').addEventListener('input', (e) => { copy.regionsIntro.sub = e.target.value; });
+
+  const stopCopyContainer = document.getElementById('stopCopyCards');
+  stopCopyContainer.innerHTML = '';
+  STOP_KEYS.forEach(key => {
+    copy.stops[key] = copy.stops[key] || { eyebrow: '', subtitle: '', points: [] };
+    const stopCopy = copy.stops[key];
+
+    const card = document.createElement('div');
+    card.className = 'stop-copy-card';
+    card.innerHTML = `<h4>${STOP_NAMES[key]}</h4>`;
+
+    const twoCol = document.createElement('div');
+    twoCol.className = 'two-col';
+    const eyebrowWrap = document.createElement('div');
+    eyebrowWrap.className = 'input-group';
+    eyebrowWrap.innerHTML = `<label>Eyebrow label</label>`;
+    const eyebrowInput = document.createElement('input');
+    eyebrowInput.type = 'text'; eyebrowInput.value = stopCopy.eyebrow;
+    eyebrowInput.addEventListener('input', () => { stopCopy.eyebrow = eyebrowInput.value; });
+    eyebrowWrap.appendChild(eyebrowInput);
+
+    const subtitleWrap = document.createElement('div');
+    subtitleWrap.className = 'input-group';
+    subtitleWrap.innerHTML = `<label>Subtitle</label>`;
+    const subtitleInput = document.createElement('input');
+    subtitleInput.type = 'text'; subtitleInput.value = stopCopy.subtitle;
+    subtitleInput.addEventListener('input', () => { stopCopy.subtitle = subtitleInput.value; });
+    subtitleWrap.appendChild(subtitleInput);
+
+    twoCol.appendChild(eyebrowWrap);
+    twoCol.appendChild(subtitleWrap);
+    card.appendChild(twoCol);
+
+    const pointsContainer = document.createElement('div');
+    card.appendChild(pointsContainer);
+    const pointsEditor = createListEditor(pointsContainer, stopCopy.points, [
+      { key: 'title', label: 'Point title', type: 'text' },
+      { key: 'body', label: 'Point body', type: 'textarea' }
+    ]);
+    const addPointBtn = document.createElement('button');
+    addPointBtn.type = 'button'; addPointBtn.className = 'list-add-btn';
+    addPointBtn.textContent = '+ Add point';
+    addPointBtn.onclick = () => pointsEditor.addItem({ title: 'New point', body: '' });
+    card.appendChild(addPointBtn);
+
+    stopCopyContainer.appendChild(card);
+  });
+
+  document.getElementById('cp-plan-title').value = copy.plan.title;
+  document.getElementById('cp-plan-title').addEventListener('input', (e) => { copy.plan.title = e.target.value; });
+  document.getElementById('cp-plan-closing').value = copy.plan.closing;
+  document.getElementById('cp-plan-closing').addEventListener('input', (e) => { copy.plan.closing = e.target.value; });
+
+  const planEditor = createListEditor(document.getElementById('planCardsList'), copy.plan.cards, [
+    { key: 'title', label: 'Card title', type: 'text' },
+    { key: 'body', label: 'Card body', type: 'textarea' }
+  ]);
+  document.getElementById('addPlanCardBtn').onclick = () => planEditor.addItem({ title: 'New card', body: '' });
+}
+
+// ---------- Regions & Sites tab ----------
+function renderRegionCards() {
+  const container = document.getElementById('regionCards');
+  container.innerHTML = '';
+  REGION_KEYS.forEach(key => {
+    const region = regions[key];
+    if (!region) return;
+
+    const card = document.createElement('div');
+    card.className = 'region-copy-card';
+    card.innerHTML = `<h4>${region.name}</h4>`;
+
+    const twoCol = document.createElement('div');
+    twoCol.className = 'two-col';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'input-group';
+    nameWrap.innerHTML = '<label>Region name</label>';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.value = region.name;
+    nameInput.addEventListener('input', () => { region.name = nameInput.value; card.querySelector('h4').textContent = nameInput.value; });
+    nameWrap.appendChild(nameInput);
+
+    const colorWrap = document.createElement('div');
+    colorWrap.className = 'input-group';
+    colorWrap.innerHTML = '<label>Accent color</label>';
+    const colorSelect = document.createElement('select');
+    REGION_COLORS.forEach(c => {
+      const opt = document.createElement('option'); opt.value = c; opt.textContent = c;
+      if (region.color === c) opt.selected = true;
+      colorSelect.appendChild(opt);
+    });
+    colorSelect.addEventListener('change', () => { region.color = colorSelect.value; });
+    colorWrap.appendChild(colorSelect);
+
+    twoCol.appendChild(nameWrap);
+    twoCol.appendChild(colorWrap);
+    card.appendChild(twoCol);
+
+    const blurbWrap = document.createElement('div');
+    blurbWrap.className = 'input-group';
+    blurbWrap.innerHTML = '<label>Short blurb (shown on the region row)</label>';
+    const blurbInput = document.createElement('input');
+    blurbInput.type = 'text'; blurbInput.value = region.blurb;
+    blurbInput.addEventListener('input', () => { region.blurb = blurbInput.value; });
+    blurbWrap.appendChild(blurbInput);
+    card.appendChild(blurbWrap);
+
+    // Map center/zoom
+    const mapRow = document.createElement('div');
+    mapRow.className = 'two-col';
+    mapRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+    const centerLat = miniNumberField('Map center lat', region.center[0], v => { region.center[0] = v; });
+    const centerLng = miniNumberField('Map center lng', region.center[1], v => { region.center[1] = v; });
+    const zoom = miniNumberField('Map zoom', region.zoom, v => { region.zoom = v; });
+    mapRow.appendChild(centerLat); mapRow.appendChild(centerLng); mapRow.appendChild(zoom);
+    card.appendChild(mapRow);
+
+    // Sights list
+    const sightsHeader = document.createElement('h3'); sightsHeader.textContent = 'Tourist sites';
+    card.appendChild(sightsHeader);
+    const sightsContainer = document.createElement('div');
+    card.appendChild(sightsContainer);
+    const sightsEditor = createListEditor(sightsContainer, region.sights, [
+      { key: 'name', label: 'Site name', type: 'text' },
+      { key: 'lat', label: 'Latitude', type: 'number' },
+      { key: 'lng', label: 'Longitude', type: 'number' },
+      { key: 'note', label: 'Note', type: 'textarea' }
+    ]);
+    const addSightBtn = document.createElement('button');
+    addSightBtn.type = 'button'; addSightBtn.className = 'list-add-btn';
+    addSightBtn.textContent = '+ Add tourist site';
+    addSightBtn.onclick = () => sightsEditor.addItem({ name: 'New site', lat: region.center[0], lng: region.center[1], note: '' });
+    card.appendChild(addSightBtn);
+
+    // Food list
+    const foodHeader = document.createElement('h3'); foodHeader.textContent = 'Food spots';
+    card.appendChild(foodHeader);
+    const foodContainer = document.createElement('div');
+    card.appendChild(foodContainer);
+    const foodEditor = createListEditor(foodContainer, region.food, [
+      { key: 'name', label: 'Restaurant / spot', type: 'text' },
+      { key: 'lat', label: 'Latitude', type: 'number' },
+      { key: 'lng', label: 'Longitude', type: 'number' },
+      { key: 'note', label: 'Note', type: 'textarea' }
+    ]);
+    const addFoodBtn = document.createElement('button');
+    addFoodBtn.type = 'button'; addFoodBtn.className = 'list-add-btn';
+    addFoodBtn.textContent = '+ Add food spot';
+    addFoodBtn.onclick = () => foodEditor.addItem({ name: 'New spot', lat: region.center[0], lng: region.center[1], note: '' });
+    card.appendChild(addFoodBtn);
+
+    const foodNoteWrap = document.createElement('div');
+    foodNoteWrap.className = 'input-group';
+    foodNoteWrap.style.marginTop = '12px';
+    foodNoteWrap.innerHTML = '<label>Fallback food note (shown only if the food list above is empty)</label>';
+    const foodNoteInput = document.createElement('textarea');
+    foodNoteInput.value = region.foodNote || '';
+    foodNoteInput.addEventListener('input', () => { region.foodNote = foodNoteInput.value; });
+    foodNoteWrap.appendChild(foodNoteInput);
+    card.appendChild(foodNoteWrap);
+
+    container.appendChild(card);
+  });
+}
+
+function miniNumberField(label, value, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'input-group';
+  wrap.innerHTML = `<label>${label}</label>`;
+  const input = document.createElement('input');
+  input.type = 'number'; input.step = 'any'; input.value = value;
+  input.addEventListener('input', () => onChange(parseFloat(input.value) || 0));
+  wrap.appendChild(input);
+  return wrap;
+}
+
+// ---------- Save everything ----------
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  try {
+    const now = Date.now();
+    // Firestore rules enforce the admin allowlist server-side for all
+    // three docs — this write is rejected for anyone else regardless
+    // of what this page attempts.
+    await Promise.all([
+      setDoc(doc(db, 'lookbook-content', 'content'), { ...content, lastUpdated: now }),
+      setDoc(doc(db, 'lookbook-content', 'copy'), { ...copy, lastUpdated: now }),
+      setDoc(doc(db, 'lookbook-content', 'regions'), { ...regions, lastUpdated: now })
+    ]);
+    showMessage('✅ Changes saved. Live page picks this up on next load.', 'success');
+    document.getElementById('lastUpdated').textContent = new Date(now).toLocaleString();
+  } catch (err) {
+    showMessage('Save failed — you may not be an authorized admin.', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+function showMessage(text, type) {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.className = `message ${type}`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => el.classList.add('hidden'), 6000);
+}
+
+boot();
+</script>
+</body>
+</html>
