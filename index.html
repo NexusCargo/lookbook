@@ -922,7 +922,7 @@ const DEFAULT_REGIONS = {
 };
 
 let cloudinaryCloudName = null;
-let REGION_DATA = DEFAULT_REGIONS; // replaced after fetch if a regions doc exists
+let REGION_DATA = DEFAULT_REGIONS; 
 
 function cloudinaryUrl(publicIdOrUrl) {
   if (!publicIdOrUrl) return null;
@@ -1277,7 +1277,7 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
     startDate: form.startDate.value,
     endDate: form.endDate.value,
     message: form.message.value.trim(),
-    company: form.company.value // honeypot; should always be empty
+    company: form.company.value 
   };
 
   if (!payload.name || !payload.email) {
