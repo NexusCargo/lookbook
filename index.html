@@ -198,6 +198,7 @@
     height:340px;
     border-radius:6px;
     background:#1f1c16;
+    border:2px solid transparent;
   }
   .region-lists{
     flex:1 1 300px;
@@ -358,6 +359,7 @@
     color:#fff;
     text-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
+  .stop-visual.light-bg h3{color:var(--ink); text-shadow:none;}
   .stop-content{
     flex:1 1 400px;
     padding:50px 60px;
@@ -483,7 +485,6 @@
   }
   .inquiry .status.success{color:#8fd19e;}
   .inquiry .status.error{color:#e08a6b;}
-  /* honeypot — hidden from real visitors, bots tend to fill every field */
   .inquiry .hp{position:absolute; left:-9999px; opacity:0;}
 
   footer{
@@ -529,7 +530,6 @@
 
 <header class="hero">
   <div class="hero-strip" id="heroKente">
-    <!-- Kente stripe images inserted here; fallback color bars shown until then -->
     <div style="background:var(--gold); flex:1"></div>
     <div style="background:var(--terracotta); flex:1"></div>
     <div style="background:var(--forest); flex:1"></div>
@@ -570,30 +570,28 @@
   <div class="eyebrow-sub" id="regionsSub">Coast to savanna, roughly north–south — the classic Ghana circuit.</div>
   <div class="region-block">
     <button class="region-row" data-region="accra" aria-expanded="false"><div class="region-bar" style="background:var(--forest)"></div><h4>Greater Accra</h4><p>Capital energy: Jamestown, Osu, art & nightlife</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra"></div><div class="region-lists" id="lists-accra"></div></div></div>
+    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra" style="border-color:var(--forest)"></div><div class="region-lists" id="lists-accra"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="central" aria-expanded="false"><div class="region-bar" style="background:var(--terracotta)"></div><h4>Central Region</h4><p>Cape Coast & Elmina castles, Kakum canopy walk</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central"></div><div class="region-lists" id="lists-central"></div></div></div>
+    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central" style="border-color:var(--terracotta)"></div><div class="region-lists" id="lists-central"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="ashanti" aria-expanded="false"><div class="region-bar" style="background:var(--gold)"></div><h4>Ashanti Region</h4><p>Kumasi, Manhyia Palace, kente-weaving villages</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
+    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti" style="border-color:var(--gold)"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="volta" aria-expanded="false"><div class="region-bar" style="background:var(--clay)"></div><h4>Volta Region</h4><p>Waterfalls, Lake Volta, mountain hikes</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta"></div><div class="region-lists" id="lists-volta"></div></div></div>
+    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta" style="border-color:var(--clay)"></div><div class="region-lists" id="lists-volta"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="northern" aria-expanded="false"><div class="region-bar" style="background:var(--faded-gold)"></div><h4>Northern Region</h4><p>Mole National Park safari, Larabanga Mosque</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern"></div><div class="region-lists" id="lists-northern"></div></div></div>
+    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern" style="border-color:var(--faded-gold)"></div><div class="region-lists" id="lists-northern"></div></div></div>
   </div>
 </section>
 
-<!-- STOPS: markup is static (content never needs a database round-trip),
-     only the .stop-visual image is populated dynamically. -->
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="castles">
-  <div class="stop-visual" id="stop-castles"><h3>Castles of<br>Memory</h3></div>
+  <div class="stop-visual" id="stop-castles" style="background-color:var(--terracotta)"><h3>Castles of<br>Memory</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">CENTRAL REGION</div>
     <p class="subtitle">Cape Coast & Elmina Castles</p>
@@ -615,11 +613,11 @@
     <div class="point light"><b>Good to know</b><span>Arrive early — the walkway gets busy and hot by mid-morning.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-canopy"><h3>Walk Among<br>Giants</h3></div>
+  <div class="stop-visual" id="stop-canopy" style="background-color:var(--forest)"><h3>Walk Among<br>Giants</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="accra">
-  <div class="stop-visual" id="stop-accra"><h3>The Capital's<br>Pulse</h3></div>
+  <div class="stop-visual light-bg" id="stop-accra" style="background-color:var(--gold)"><h3>The Capital's<br>Pulse</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">GREATER ACCRA</div>
     <p class="subtitle">Accra: Jamestown to Osu</p>
@@ -641,11 +639,11 @@
     <div class="point light"><b>Kejetia Market</b><span>One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-kumasi"><h3>Seat of a<br>Kingdom</h3></div>
+  <div class="stop-visual" id="stop-kumasi" style="background-color:var(--clay)"><h3>Seat of a<br>Kingdom</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="savanna">
-  <div class="stop-visual" id="stop-savanna"><h3>Into the<br>Savanna</h3></div>
+  <div class="stop-visual light-bg" id="stop-savanna" style="background-color:var(--faded-gold)"><h3>Into the<br>Savanna</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">NORTHERN REGION</div>
     <p class="subtitle">Mole National Park</p>
@@ -667,11 +665,11 @@
     <div class="point light"><b>Ada Foah</b><span>Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-beaches"><h3>Where the Coast<br>Slows Down</h3></div>
+  <div class="stop-visual" id="stop-beaches" style="background-color:var(--forest)"><h3>Where the Coast<br>Slows Down</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="culture">
-  <div class="stop-visual" id="stop-culture"><h3>Rhythm, Cloth,<br>Symbol</h3></div>
+  <div class="stop-visual" id="stop-culture" style="background-color:var(--terracotta)"><h3>Rhythm, Cloth,<br>Symbol</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">CULTURE</div>
     <p class="subtitle">Festivals & Living Traditions</p>
@@ -693,7 +691,7 @@
     <div class="point light"><b>Kelewele & red red</b><span>Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-food"><h3>Eat Like<br>a Local</h3></div>
+  <div class="stop-visual light-bg" id="stop-food" style="background-color:var(--gold)"><h3>Eat Like<br>a Local</h3></div>
 </section>
 
 <section class="plan">
@@ -733,7 +731,6 @@
       <textarea id="inq-message" name="message" placeholder="Group size, must-see stops, budget range..."></textarea>
     </div>
 
-    <!-- honeypot field: real visitors never see or fill this -->
     <div class="field hp">
       <label for="inq-company">Company</label>
       <input id="inq-company" name="company" type="text" tabindex="-1" autocomplete="off">
@@ -769,8 +766,6 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10
 const STOP_KEYS = ['castles','canopy','accra','kumasi','savanna','beaches','culture','food'];
 const REGION_KEYS = ['accra','central','ashanti','volta','northern'];
 
-// Animation type -> small on-image label. Purely cosmetic; the actual
-// visual is whatever image/GIF is stored for that stop.
 const BADGE_LABEL = {
   carousel: '📽️ Carousel',
   social: '📱 Social',
@@ -778,10 +773,6 @@ const BADGE_LABEL = {
   hero_stripe: '🎬 Hero'
 };
 
-// --- Defaults. Used whenever a Firestore doc doesn't exist yet, or
-// the fetch fails — the page always renders something sensible
-// rather than showing blanks. These are also what admin.html
-// pre-fills its editors with on first use. ---
 const DEFAULT_CONTENT = { hero_kente: [], stops: {} };
 
 const DEFAULT_COPY = {
@@ -862,12 +853,6 @@ const DEFAULT_COPY = {
   }
 };
 
-// Region tourism sites & food. Landmark coordinates are real and
-// stable (castles, national parks, palaces — these don't move).
-// Food-spot coordinates are approximate placements near the named
-// neighborhood, since exact building-level coordinates aren't
-// something we can verify — flagged to the visitor, not presented
-// as precise.
 const DEFAULT_REGIONS = {
   accra: {
     name: 'Greater Accra', blurb: 'Capital energy: Jamestown, Osu, art & nightlife', color: 'forest',
@@ -939,14 +924,12 @@ const DEFAULT_REGIONS = {
 let cloudinaryCloudName = null;
 let REGION_DATA = DEFAULT_REGIONS; // replaced after fetch if a regions doc exists
 
-// publicIdOrUrl -> optimized Cloudinary delivery URL.
 function cloudinaryUrl(publicIdOrUrl) {
   if (!publicIdOrUrl) return null;
   if (/^https?:\/\//.test(publicIdOrUrl)) return publicIdOrUrl;
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
 }
 
-// Load config from environment variables (set in .env locally or Vercel dashboard)
 function getFirebaseConfig() {
   return {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -958,9 +941,6 @@ function getFirebaseConfig() {
   };
 }
 
-// ONE-TIME reads, not onSnapshot — this content changes occasionally
-// (an admin edits it), not continuously, so an open real-time
-// listener for the life of every visit isn't earning its cost here.
 async function loadSiteData() {
   const firebaseConfig = getFirebaseConfig();
   const app = initializeApp(firebaseConfig);
@@ -1016,8 +996,6 @@ function applyContent(content) {
   });
 }
 
-// Fills in hero text, intro copy, facts, region blurbs, stop
-// write-ups, and the plan section from Firestore (or the defaults).
 function applyCopy(copy) {
   const c = { ...DEFAULT_COPY, ...copy };
 
@@ -1066,8 +1044,6 @@ function applyCopy(copy) {
   document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
 }
 
-// Fills in each region row's name/description from data instead of
-// the static HTML that used to be there.
 function applyRegionBlurbs() {
   REGION_KEYS.forEach(key => {
     const region = REGION_DATA[key];
@@ -1105,7 +1081,6 @@ function preloadImages(content) {
   });
 }
 
-// --- Region maps (Leaflet) ---
 let leafletLoaded = null;
 function whenLeafletReady() {
   if (leafletLoaded) return leafletLoaded;
@@ -1197,7 +1172,6 @@ document.querySelectorAll('.region-row').forEach(btn => {
 async function init() {
   let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
   try {
-    // Get Cloudinary config from environment variables
     cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     data = await loadSiteData();
   } catch (err) {
@@ -1215,12 +1189,6 @@ document.addEventListener('DOMContentLoaded', init);
 </script>
 
 <script>
-// "View in 3D" — MapLibre GL with terrain elevation (AWS's open,
-// keyless Terrarium DEM tiles) draped under OpenStreetMap raster
-// tiles, pitched for a tilted 3D view. No API key required.
-// Note: tile.openstreetmap.org is meant for light/moderate traffic
-// per OSM's usage policy — fine here, but swap to a dedicated
-// provider (MapTiler, Stadia Maps) if this site sees real traffic.
 let site3dMap = null;
 let lastSite3dView = null;
 
@@ -1297,8 +1265,6 @@ document.getElementById('site3dReset').addEventListener('click', () => {
 </script>
 
 <script>
-// Inquiry form -> /api/send-inquiry. No Firebase/Cloudinary involved —
-// this is just a backend function that emails a notification.
 document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
