@@ -1,17 +1,3 @@
-// POST /api/cloudinary-sign
-// Body (optional): { tag?: string }
-// Auth: Authorization: Bearer <Firebase ID token>
-//
-// Verifies the caller is a signed-in Firebase user on the ADMIN_EMAILS
-// allowlist, then returns a signed Cloudinary upload payload. The
-// Cloudinary API secret is used here, server-side, only — it never
-// reaches the browser. This is what actually enforces "admin-only
-// uploads," not just an unlisted admin.html page.
-//
-// The optional `tag` gets baked into the signed params so every image
-// uploaded for a given stop shares a tag Cloudinary can later group by
-// (used by /api/generate-gif.js).
-
 import admin from 'firebase-admin';
 import { v2 as cloudinary } from 'cloudinary';
 
