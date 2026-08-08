@@ -1,11 +1,3 @@
-// POST /api/send-inquiry
-// Body: { name, email, startDate?, endDate?, message?, company? }
-//
-// Public endpoint (no auth — anyone visiting the page can submit an
-// inquiry, that's the point). Validates input, rejects obvious bot
-// submissions via a honeypot field, then emails a notification using
-// Resend. RESEND_API_KEY and INQUIRY_TO_EMAIL are read from env vars
-// only — nothing here is hardcoded.
 
 import { Resend } from 'resend';
 
@@ -20,8 +12,6 @@ export default async function handler(req, res) {
 
   const { name, email, startDate, endDate, message, company } = req.body || {};
 
-  // Honeypot: real visitors never see or fill this field. If it has a
-  // value, silently pretend success so the bot doesn't learn to skip it.
   if (company) {
     return res.status(200).json({ ok: true });
   }
@@ -40,7 +30,7 @@ export default async function handler(req, res) {
 
   try {
     await resend.emails.send({
-      from: 'Ghana Lookbook <inquiries@yourdomain.com>', // update after domain verification, see README
+      from: 'Ghana Lookbook <inquiries@thegoldcoast.com>',
       to: process.env.INQUIRY_TO_EMAIL,
       reply_to: email,
       subject: `New trip inquiry from ${safeName}`,
