@@ -1,17 +1,3 @@
-// POST /api/generate-gif
-// Body: { tag: string }   e.g. "stop-castles" — set on upload by
-//                          /api/cloudinary-sign.js
-// Auth: Authorization: Bearer <Firebase ID token>
-//
-// Same admin check as cloudinary-sign.js, then calls Cloudinary's
-// Multi API to combine every image sharing `tag` into one animated
-// GIF and returns its delivery URL. The caller (admin.html) stores
-// that URL on the stop's `gif_url` field in Firestore.
-//
-// Note: Cloudinary's multi() groups ALL images currently carrying the
-// tag, in upload order — so re-running this after adding more images
-// to the same stop regenerates the GIF with the new set included.
-
 import admin from 'firebase-admin';
 import { v2 as cloudinary } from 'cloudinary';
 
