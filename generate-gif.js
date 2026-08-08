@@ -55,11 +55,10 @@ export default async function handler(req, res) {
     const result = await cloudinary.uploader.multi(tag, {
       format: 'gif',
       transformation: [{ width: 1600, crop: 'fill' }],
-      delay: 700, // ms between frames
+      delay: 700,
     });
     res.status(200).json({ url: result.url });
   } catch (err) {
-    // Common cause: fewer than 2 images currently carry this tag.
     res.status(502).json({ error: err.message || 'Cloudinary multi() failed' });
   }
 }
