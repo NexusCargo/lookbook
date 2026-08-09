@@ -198,7 +198,7 @@
     height:340px;
     border-radius:6px;
     background:#1f1c16;
-    border:2px solid transparent;
+    border-left:6px solid var(--gold);
   }
   .region-lists{
     flex:1 1 300px;
@@ -359,7 +359,6 @@
     color:#fff;
     text-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
-  .stop-visual.light-bg h3{color:var(--ink); text-shadow:none;}
   .stop-content{
     flex:1 1 400px;
     padding:50px 60px;
@@ -485,6 +484,7 @@
   }
   .inquiry .status.success{color:#8fd19e;}
   .inquiry .status.error{color:#e08a6b;}
+  /* honeypot — hidden from real visitors, bots tend to fill every field */
   .inquiry .hp{position:absolute; left:-9999px; opacity:0;}
 
   footer{
@@ -530,6 +530,7 @@
 
 <header class="hero">
   <div class="hero-strip" id="heroKente">
+    
     <div style="background:var(--gold); flex:1"></div>
     <div style="background:var(--terracotta); flex:1"></div>
     <div style="background:var(--forest); flex:1"></div>
@@ -570,28 +571,28 @@
   <div class="eyebrow-sub" id="regionsSub">Coast to savanna, roughly north–south — the classic Ghana circuit.</div>
   <div class="region-block">
     <button class="region-row" data-region="accra" aria-expanded="false"><div class="region-bar" style="background:var(--forest)"></div><h4>Greater Accra</h4><p>Capital energy: Jamestown, Osu, art & nightlife</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra" style="border-color:var(--forest)"></div><div class="region-lists" id="lists-accra"></div></div></div>
+    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra"></div><div class="region-lists" id="lists-accra"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="central" aria-expanded="false"><div class="region-bar" style="background:var(--terracotta)"></div><h4>Central Region</h4><p>Cape Coast & Elmina castles, Kakum canopy walk</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central" style="border-color:var(--terracotta)"></div><div class="region-lists" id="lists-central"></div></div></div>
+    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central"></div><div class="region-lists" id="lists-central"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="ashanti" aria-expanded="false"><div class="region-bar" style="background:var(--gold)"></div><h4>Ashanti Region</h4><p>Kumasi, Manhyia Palace, kente-weaving villages</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti" style="border-color:var(--gold)"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
+    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="volta" aria-expanded="false"><div class="region-bar" style="background:var(--clay)"></div><h4>Volta Region</h4><p>Waterfalls, Lake Volta, mountain hikes</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta" style="border-color:var(--clay)"></div><div class="region-lists" id="lists-volta"></div></div></div>
+    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta"></div><div class="region-lists" id="lists-volta"></div></div></div>
   </div>
   <div class="region-block">
     <button class="region-row" data-region="northern" aria-expanded="false"><div class="region-bar" style="background:var(--faded-gold)"></div><h4>Northern Region</h4><p>Mole National Park safari, Larabanga Mosque</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern" style="border-color:var(--faded-gold)"></div><div class="region-lists" id="lists-northern"></div></div></div>
+    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern"></div><div class="region-lists" id="lists-northern"></div></div></div>
   </div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="castles">
-  <div class="stop-visual" id="stop-castles" style="background-color:var(--terracotta)"><h3>Castles of<br>Memory</h3></div>
+  <div class="stop-visual" id="stop-castles"><h3>Castles of<br>Memory</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">CENTRAL REGION</div>
     <p class="subtitle">Cape Coast & Elmina Castles</p>
@@ -613,11 +614,11 @@
     <div class="point light"><b>Good to know</b><span>Arrive early — the walkway gets busy and hot by mid-morning.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-canopy" style="background-color:var(--forest)"><h3>Walk Among<br>Giants</h3></div>
+  <div class="stop-visual" id="stop-canopy"><h3>Walk Among<br>Giants</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="accra">
-  <div class="stop-visual light-bg" id="stop-accra" style="background-color:var(--gold)"><h3>The Capital's<br>Pulse</h3></div>
+  <div class="stop-visual" id="stop-accra"><h3>The Capital's<br>Pulse</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">GREATER ACCRA</div>
     <p class="subtitle">Accra: Jamestown to Osu</p>
@@ -639,11 +640,11 @@
     <div class="point light"><b>Kejetia Market</b><span>One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-kumasi" style="background-color:var(--clay)"><h3>Seat of a<br>Kingdom</h3></div>
+  <div class="stop-visual" id="stop-kumasi"><h3>Seat of a<br>Kingdom</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="savanna">
-  <div class="stop-visual light-bg" id="stop-savanna" style="background-color:var(--faded-gold)"><h3>Into the<br>Savanna</h3></div>
+  <div class="stop-visual" id="stop-savanna"><h3>Into the<br>Savanna</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">NORTHERN REGION</div>
     <p class="subtitle">Mole National Park</p>
@@ -665,11 +666,11 @@
     <div class="point light"><b>Ada Foah</b><span>Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.</span></div>
     </div>
   </div>
-  <div class="stop-visual" id="stop-beaches" style="background-color:var(--forest)"><h3>Where the Coast<br>Slows Down</h3></div>
+  <div class="stop-visual" id="stop-beaches"><h3>Where the Coast<br>Slows Down</h3></div>
 </section>
 
 <section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="culture">
-  <div class="stop-visual" id="stop-culture" style="background-color:var(--terracotta)"><h3>Rhythm, Cloth,<br>Symbol</h3></div>
+  <div class="stop-visual" id="stop-culture"><h3>Rhythm, Cloth,<br>Symbol</h3></div>
   <div class="stop-content">
     <div class="eyebrow" style="color:var(--terracotta)">CULTURE</div>
     <p class="subtitle">Festivals & Living Traditions</p>
@@ -691,7 +692,7 @@
     <div class="point light"><b>Kelewele & red red</b><span>Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.</span></div>
     </div>
   </div>
-  <div class="stop-visual light-bg" id="stop-food" style="background-color:var(--gold)"><h3>Eat Like<br>a Local</h3></div>
+  <div class="stop-visual" id="stop-food"><h3>Eat Like<br>a Local</h3></div>
 </section>
 
 <section class="plan">
@@ -731,6 +732,7 @@
       <textarea id="inq-message" name="message" placeholder="Group size, must-see stops, budget range..."></textarea>
     </div>
 
+    
     <div class="field hp">
       <label for="inq-company">Company</label>
       <input id="inq-company" name="company" type="text" tabindex="-1" autocomplete="off">
@@ -922,11 +924,11 @@ const DEFAULT_REGIONS = {
 };
 
 let cloudinaryCloudName = null;
-let REGION_DATA = DEFAULT_REGIONS; 
+let REGION_DATA = DEFAULT_REGIONS;
 
 function cloudinaryUrl(publicIdOrUrl) {
   if (!publicIdOrUrl) return null;
-  if (/^https?:\/\//.test(publicIdOrUrl)) return publicIdOrUrl;
+  if (/^https?:\/\
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
 }
 
@@ -1162,6 +1164,17 @@ document.querySelectorAll('.region-row').forEach(btn => {
     if (!isOpen) {
       panel.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
+      
+
+      const regionBar = btn.querySelector('.region-bar');
+      if (regionBar) {
+        const barColor = window.getComputedStyle(regionBar).backgroundColor;
+        const mapEl = document.getElementById(`map-${key}`);
+        if (mapEl) {
+          mapEl.style.borderLeftColor = barColor;
+        }
+      }
+      
       renderRegionLists(key, REGION_DATA[key]);
       await initRegionMap(key);
       setTimeout(() => mapInstances[key] && mapInstances[key].invalidateSize(), 360);
@@ -1169,9 +1182,32 @@ document.querySelectorAll('.region-row').forEach(btn => {
   });
 });
 
+async function loadAndApplyColors() {
+  try {
+    const firebaseConfig = getFirebaseConfig();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colorsSnap = await getDoc(doc(db, 'lookbook-content', 'colors'));
+    
+    if (colorsSnap.exists()) {
+      const colors = colorsSnap.data();
+      Object.entries(colors).forEach(([key, value]) => {
+        if (key !== 'lastUpdated') {
+          document.documentElement.style.setProperty(`--${key}`, value);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Failed to load colors, using defaults:', err);
+  }
+}
+
 async function init() {
   let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
   try {
+
+    await loadAndApplyColors();
+
     cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     data = await loadSiteData();
   } catch (err) {
@@ -1189,6 +1225,7 @@ document.addEventListener('DOMContentLoaded', init);
 </script>
 
 <script>
+
 let site3dMap = null;
 let lastSite3dView = null;
 
@@ -1265,6 +1302,7 @@ document.getElementById('site3dReset').addEventListener('click', () => {
 </script>
 
 <script>
+
 document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -1277,7 +1315,7 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
     startDate: form.startDate.value,
     endDate: form.endDate.value,
     message: form.message.value.trim(),
-    company: form.company.value 
+    company: form.company.value
   };
 
   if (!payload.name || !payload.email) {

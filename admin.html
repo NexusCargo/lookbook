@@ -7,18 +7,6 @@
 <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 <style>
   * { box-sizing: border-box; }
-  :root{
-    --forest:#0E4D34;
-    --forest-dark:#0A3626;
-    --gold:#F2B705;
-    --faded-gold:#D9A63A;
-    --terracotta:#B5471B;
-    --clay:#8C3A16;
-    --ink:#1B1812;
-    --ivory:#EDE6D6;
-    --cream:#F1EBDD;
-    --muted:#8b8471;
-  }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -26,7 +14,7 @@
     color: #333;
   }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-  header { background: var(--forest-dark); color: #fff; padding: 30px 20px; margin: -20px -20px 30px; text-align: center; }
+  header { background: #0A3626; color: #fff; padding: 30px 20px; margin: -20px -20px 30px; text-align: center; }
   header h1 { margin: 0; font-size: 28px; }
   header .subtitle { font-size: 14px; opacity: 0.9; margin-top: 5px; }
   .auth-section, .edit-section { background: #fff; padding: 30px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -37,7 +25,7 @@
     width: 100%; padding: 9px 11px; border: 1px solid #ddd; border-radius: 4px; font-size: 13.5px; font-family: inherit;
   }
   textarea { resize: vertical; min-height: 56px; }
-  button { background: var(--forest-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  button { background: #0A3626; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
   button:hover { background: #082a1f; }
   button.secondary { background: #666; }
   button.secondary:hover { background: #555; }
@@ -49,8 +37,8 @@
   .message.success { background: #c8e6c9; color: #1b5e20; border: 1px solid #81c784; }
   .message.error { background: #ffcdd2; color: #b71c1c; border: 1px solid #ef5350; }
   .message.info { background: #bbdefb; color: #0d47a1; border: 1px solid #64b5f6; }
-  .edit-section h2 { margin: 0 0 20px; font-size: 20px; color: var(--forest-dark); border-bottom: 2px solid var(--gold); padding-bottom: 12px; }
-  .edit-section h3 { margin: 24px 0 12px; font-size: 15px; color: var(--forest-dark); }
+  .edit-section h2 { margin: 0 0 20px; font-size: 20px; color: #0A3626; border-bottom: 2px solid #F2B705; padding-bottom: 12px; }
+  .edit-section h3 { margin: 24px 0 12px; font-size: 15px; color: #0A3626; }
   .section-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
   .stop-card { background: #f9f9f9; padding: 20px; border-radius: 4px; border: 1px solid #e0e0e0; }
   .stop-card > label { display: flex; justify-content: space-between; align-items: center; }
@@ -63,15 +51,17 @@
   .timestamp { font-size: 12px; color: #999; margin-top: 15px; text-align: right; }
   .section-info { background: #fff3e0; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #ff9800; font-size: 13px; line-height: 1.6; }
 
+  /* Tabs */
   .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
   .tab-btn {
-    background: #fff; color: var(--forest-dark); border: 1px solid #ddd; padding: 10px 18px;
+    background: #fff; color: #0A3626; border: 1px solid #ddd; padding: 10px 18px;
     border-radius: 6px; font-size: 13.5px; font-weight: 600; cursor: pointer;
   }
-  .tab-btn.active { background: var(--forest-dark); color: #fff; border-color: var(--forest-dark); }
+  .tab-btn.active { background: #0A3626; color: #fff; border-color: #0A3626; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
+  /* Generic list editor */
   .list-editor-row {
     display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
     background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px;
@@ -89,11 +79,11 @@
   .stop-copy-card {
     border: 1px solid #e0e0e0; border-radius: 6px; padding: 18px; margin-bottom: 18px; background: #fafafa;
   }
-  .stop-copy-card h4 { margin: 0 0 12px; font-size: 15px; color: var(--forest-dark); }
+  .stop-copy-card h4 { margin: 0 0 12px; font-size: 15px; color: #0A3626; }
   .region-copy-card {
     border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 22px; background: #fafafa;
   }
-  .region-copy-card h4 { margin: 0 0 14px; font-size: 16px; color: var(--forest-dark); }
+  .region-copy-card h4 { margin: 0 0 14px; font-size: 16px; color: #0A3626; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
   @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
 </style>
@@ -134,8 +124,10 @@
       <button class="tab-btn active" data-tab="images">🖼️ Images & Animations</button>
       <button class="tab-btn" data-tab="copy">📝 Site Copy</button>
       <button class="tab-btn" data-tab="regions">📍 Regions & Sites</button>
+      <button class="tab-btn" data-tab="colors">🎨 Colors</button>
     </div>
 
+    
     <div class="tab-panel active" id="tab-images">
       <div class="edit-section">
         <h2>Stop images</h2>
@@ -152,6 +144,7 @@
       </div>
     </div>
 
+    
     <div class="tab-panel" id="tab-copy">
       <div class="edit-section">
         <h2>Hero</h2>
@@ -202,6 +195,7 @@
       </div>
     </div>
 
+    
     <div class="tab-panel" id="tab-regions">
       <div class="edit-section">
         <h2>Regions, tourist sites & food</h2>
@@ -209,6 +203,16 @@
           Coordinates are decimal latitude/longitude (e.g. 5.1053, -1.2466 for Cape Coast Castle). Tourism-site pins should be real, verifiable locations. Food-spot coordinates are shown to visitors as approximate — exact precision isn't required, just a reasonable placement.
         </div>
         <div id="regionCards"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-colors">
+      <div class="edit-section">
+        <h2>Site Colors</h2>
+        <div class="section-info">
+          Edit the color palette for your entire site. Changes appear everywhere — hero section, regional accents, buttons, etc.
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;" id="colorsGrid"></div>
       </div>
     </div>
 
@@ -364,6 +368,7 @@ let copy = JSON.parse(JSON.stringify(DEFAULT_COPY));
 let regions = JSON.parse(JSON.stringify(DEFAULT_REGIONS));
 
 async function boot() {
+
   const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -391,6 +396,7 @@ async function boot() {
       renderKenteThumbs();
       renderCopyForm();
       renderRegionCards();
+      renderColorsForm();
     } else {
       document.getElementById('authStatus').textContent = '🔒 Not signed in';
       document.getElementById('authStatus').style.color = '#d32f2f';
@@ -420,24 +426,31 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 async function loadAll() {
-  const [contentSnap, copySnap, regionsSnap] = await Promise.all([
+  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
-    getDoc(doc(db, 'lookbook-content', 'regions'))
+    getDoc(doc(db, 'lookbook-content', 'regions')),
+    getDoc(doc(db, 'lookbook-content', 'colors'))
   ]);
   content = contentSnap.exists() ? contentSnap.data() : { hero_kente: [], stops: {} };
   content.hero_kente = content.hero_kente || [];
   content.stops = content.stops || {};
   copy = copySnap.exists() ? deepMerge(DEFAULT_COPY, copySnap.data()) : JSON.parse(JSON.stringify(DEFAULT_COPY));
   regions = regionsSnap.exists() ? deepMerge(DEFAULT_REGIONS, regionsSnap.data()) : JSON.parse(JSON.stringify(DEFAULT_REGIONS));
+  
 
-  const latest = [contentSnap, copySnap, regionsSnap]
+  if (colorsSnap.exists()) {
+    window.currentColors = colorsSnap.data();
+  }
+
+  const latest = [contentSnap, copySnap, regionsSnap, colorsSnap]
     .map(s => s.exists() && s.data().lastUpdated)
     .filter(Boolean).sort().reverse()[0];
   if (latest) document.getElementById('lastUpdated').textContent = new Date(latest).toLocaleString();
 }
 
 function deepMerge(base, override) {
+
   if (Array.isArray(base)) return override !== undefined ? override : base;
   if (typeof base === 'object' && base !== null) {
     const result = { ...base };
@@ -840,11 +853,19 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   btn.disabled = true;
   try {
     const now = Date.now();
-    await Promise.all([
+
+    const saves = [
       setDoc(doc(db, 'lookbook-content', 'content'), { ...content, lastUpdated: now }),
       setDoc(doc(db, 'lookbook-content', 'copy'), { ...copy, lastUpdated: now }),
       setDoc(doc(db, 'lookbook-content', 'regions'), { ...regions, lastUpdated: now })
-    ]);
+    ];
+    
+
+    if (window.currentColors) {
+      saves.push(setDoc(doc(db, 'lookbook-content', 'colors'), { ...window.currentColors, lastUpdated: now }));
+    }
+    
+    await Promise.all(saves);
     showMessage('✅ Changes saved. Live page picks this up on next load.', 'success');
     document.getElementById('lastUpdated').textContent = new Date(now).toLocaleString();
   } catch (err) {
@@ -853,6 +874,49 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     btn.disabled = false;
   }
 });
+
+function renderColorsForm() {
+  const defaultColors = {
+    forest: '#0E4D34',
+    'forest-dark': '#0A3626',
+    gold: '#F2B705',
+    'faded-gold': '#D9A63A',
+    terracotta: '#B5471B',
+    clay: '#8C3A16',
+    ink: '#1B1812',
+    ivory: '#EDE6D6',
+    cream: '#F1EBDD',
+    muted: '#8b8471'
+  };
+
+  const colors = window.currentColors || defaultColors;
+  const grid = document.getElementById('colorsGrid');
+  grid.innerHTML = '';
+
+  Object.entries(colors).forEach(([key, value]) => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-size: 13px; text-transform: capitalize;">${key.replace('-', ' ')}</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="color" id="color-${key}" value="${value}" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;">
+          <input type="text" id="hex-${key}" value="${value}" style="flex: 1; font-family: monospace; font-size: 12px;" readonly>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+
+    const colorInput = document.getElementById(`color-${key}`);
+    const hexInput = document.getElementById(`hex-${key}`);
+    
+    colorInput.addEventListener('change', (e) => {
+      const hex = e.target.value.toUpperCase();
+      hexInput.value = hex;
+      window.currentColors = window.currentColors || {};
+      window.currentColors[key] = hex;
+    });
+  });
+}
 
 function showMessage(text, type) {
   const el = document.getElementById('message');
