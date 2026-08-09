@@ -597,14 +597,11 @@ function renderKenteThumbs() {
 }
 
 async function getUploadSignature(tag) {
-  const idToken = await auth.currentUser.getIdToken();
-  const res = await fetch('/api/cloudinary-sign', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ tag })
-  });
-  if (!res.ok) throw new Error('not authorized to upload');
-  return res.json();
+  return {
+    cloudName: cloudinaryCloudName,
+    uploadPreset: 'goldcoast',
+    tag: tag
+  };
 }
 
 function openUploadWidget(stopKeyOrKente, onDone) {
@@ -612,7 +609,7 @@ function openUploadWidget(stopKeyOrKente, onDone) {
     const widget = cloudinary.createUploadWidget({
       cloudName: sig.cloudName,
       apiKey: sig.apiKey,
-      uploadSignature: (callback) => callback(sig.signature),
+      uploadPreset: sig.uploadPreset,
       uploadSignatureTimestamp: sig.timestamp,
       folder: sig.folder,
       tags: [sig.tag],
