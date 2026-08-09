@@ -368,17 +368,9 @@ let copy = JSON.parse(JSON.stringify(DEFAULT_COPY));
 let regions = JSON.parse(JSON.stringify(DEFAULT_REGIONS));
 
 async function boot() {
-
-  const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  };
-  cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const app = initializeApp(firebaseConfig);
+  const config = await (await fetch('/api/config')).json();
+  cloudinaryCloudName = config.cloudinaryCloudName;
+  const app = initializeApp(config.firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
 

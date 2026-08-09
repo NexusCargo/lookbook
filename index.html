@@ -932,26 +932,31 @@ function cloudinaryUrl(publicIdOrUrl) {
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
 }
 
-function getFirebaseConfig() {
-  return {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  };
+async function loadConfig() {
+  const res = await fetch('/api/config');
+  if (!res.ok) throw new Error('config fetch failed');
+  return res.json();
 }
 
-async function loadSiteData() {
-  const firebaseConfig = getFirebaseConfig();
+async function loadSiteData(firebaseConfig) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const [contentSnap, copySnap, regionsSnap] = await Promise.all([
+  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
-    getDoc(doc(db, 'lookbook-content', 'regions'))
+    getDoc(doc(db, 'lookbook-content', 'regions')),
+    getDoc(doc(db, 'lookbook-content', 'colors'))
   ]);
+  
+  if (colorsSnap.exists()) {
+    const colors = colorsSnap.data();
+    Object.entries(colors).forEach(([key, value]) => {
+      if (key !== 'lastUpdated') {
+        document.documentElement.style.setProperty(`--${key}`, value);
+      }
+    });
+  }
+  
   return {
     content: contentSnap.exists() ? contentSnap.data() : DEFAULT_CONTENT,
     copy: copySnap.exists() ? copySnap.data() : DEFAULT_COPY,
@@ -1182,34 +1187,12 @@ document.querySelectorAll('.region-row').forEach(btn => {
   });
 });
 
-async function loadAndApplyColors() {
-  try {
-    const firebaseConfig = getFirebaseConfig();
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const colorsSnap = await getDoc(doc(db, 'lookbook-content', 'colors'));
-    
-    if (colorsSnap.exists()) {
-      const colors = colorsSnap.data();
-      Object.entries(colors).forEach(([key, value]) => {
-        if (key !== 'lastUpdated') {
-          document.documentElement.style.setProperty(`--${key}`, value);
-        }
-      });
-    }
-  } catch (err) {
-    console.error('Failed to load colors, using defaults:', err);
-  }
-}
-
 async function init() {
   let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
   try {
-
-    await loadAndApplyColors();
-
-    cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    data = await loadSiteData();
+    const config = await loadConfig();
+    cloudinaryCloudName = config.cloudinaryCloudName;
+    data = await loadSiteData(config.firebaseConfig);
   } catch (err) {
     console.error('Falling back to default content/copy/regions:', err);
   }
