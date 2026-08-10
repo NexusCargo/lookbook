@@ -212,7 +212,7 @@ button:disabled{opacity:0.5;cursor:not-allowed;}
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
 import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
 async function boot() {
@@ -241,8 +241,6 @@ async function boot() {
     inquiry:{title:''},
     colors:defaultColors
   };
-
-  const { getAuth } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js');
 
   onAuthStateChanged(auth, async user => {
     if(user) {
