@@ -941,12 +941,19 @@ async function loadConfig() {
 async function loadSiteData(firebaseConfig) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
+  
+  const [contentSnap, copySnap, regionsSnap, colorsSnap, cmsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
     getDoc(doc(db, 'lookbook-content', 'regions')),
-    getDoc(doc(db, 'lookbook-content', 'colors'))
+    getDoc(doc(db, 'lookbook-content', 'colors')),
+    getDoc(doc(db, 'lookbook-cms', 'content'))
   ]);
+  
+  let cmsData = {};
+  if (cmsSnap.exists()) {
+    cmsData = cmsSnap.data();
+  }
   
   if (colorsSnap.exists()) {
     const colors = colorsSnap.data();
@@ -957,10 +964,19 @@ async function loadSiteData(firebaseConfig) {
     });
   }
   
+  if (cmsData.colors) {
+    Object.entries(cmsData.colors).forEach(([key, value]) => {
+      if (key !== 'lastUpdated') {
+        document.documentElement.style.setProperty(`--${key}`, value);
+      }
+    });
+  }
+  
   return {
     content: contentSnap.exists() ? contentSnap.data() : DEFAULT_CONTENT,
     copy: copySnap.exists() ? copySnap.data() : DEFAULT_COPY,
-    regions: regionsSnap.exists() ? regionsSnap.data() : DEFAULT_REGIONS
+    regions: regionsSnap.exists() ? regionsSnap.data() : DEFAULT_REGIONS,
+    cms: cmsData
   };
 }
 
@@ -1003,18 +1019,19 @@ function applyContent(content) {
   });
 }
 
-function applyCopy(copy) {
+function applyCopy(copy, cms) {
   const c = { ...DEFAULT_COPY, ...copy };
+  const cmsData = cms || {};
 
-  document.getElementById('heroEyebrow').textContent = c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
-  document.getElementById('heroTitle').textContent = c.hero?.title ?? DEFAULT_COPY.hero.title;
-  document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
-  document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
+  document.getElementById('heroEyebrow').textContent = cmsData.hero?.eyebrow ?? c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
+  document.getElementById('heroTitle').textContent = cmsData.hero?.title ?? c.hero?.title ?? DEFAULT_COPY.hero.title;
+  document.getElementById('heroSub').textContent = cmsData.hero?.subtitle ?? c.hero?.sub ?? DEFAULT_COPY.hero.sub;
+  document.getElementById('heroEdition').textContent = cmsData.hero?.edition ?? c.hero?.edition ?? DEFAULT_COPY.hero.edition;
 
-  document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
-  document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
-  document.getElementById('whyTitle').textContent = c.intro?.whyTitle ?? DEFAULT_COPY.intro.whyTitle;
-  document.getElementById('whyBody').textContent = c.intro?.whyBody ?? DEFAULT_COPY.intro.whyBody;
+  document.getElementById('introGreeting').textContent = cmsData.intro?.greeting ?? c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
+  document.getElementById('introTagline').textContent = cmsData.intro?.tagline ?? c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
+  document.getElementById('whyTitle').textContent = cmsData.intro?.whyTitle ?? c.intro?.whyTitle ?? DEFAULT_COPY.intro.whyTitle;
+  document.getElementById('whyBody').textContent = cmsData.intro?.whyBody ?? c.intro?.whyBody ?? DEFAULT_COPY.intro.whyBody;
   document.getElementById('introExtra').textContent = c.intro?.extra ?? DEFAULT_COPY.intro.extra;
 
   const facts = (c.intro?.facts && c.intro.facts.length) ? c.intro.facts : DEFAULT_COPY.intro.facts;
@@ -1043,7 +1060,7 @@ function applyCopy(copy) {
     }
   });
 
-  document.getElementById('planTitle').textContent = c.plan?.title ?? DEFAULT_COPY.plan.title;
+  document.getElementById('planTitle').textContent = cmsData.plan?.title ?? c.plan?.title ?? DEFAULT_COPY.plan.title;
   const planCards = (c.plan?.cards && c.plan.cards.length) ? c.plan.cards : DEFAULT_COPY.plan.cards;
   document.getElementById('planCardsContainer').innerHTML = planCards.map(card =>
     `<div class="plan-card"><h4>${card.title}</h4><p>${card.body}</p></div>`
@@ -1188,7 +1205,7 @@ document.querySelectorAll('.region-row').forEach(btn => {
 });
 
 async function init() {
-  let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
+  let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS, cms: {} };
   try {
     const config = await loadConfig();
     cloudinaryCloudName = config.cloudinaryCloudName;
@@ -1197,7 +1214,7 @@ async function init() {
     console.error('Falling back to default content/copy/regions:', err);
   }
   REGION_DATA = data.regions;
-  applyCopy(data.copy);
+  applyCopy(data.copy, data.cms);
   applyRegionBlurbs();
   applyContent(data.content);
   attachErrorHandling();
