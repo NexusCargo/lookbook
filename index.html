@@ -77,6 +77,15 @@
     width:100%;
     height:100%;
   }
+  .hero-stripe-overlay{
+    position:absolute; inset:0;
+    z-index:1;
+    pointer-events:none;
+    mix-blend-mode:soft-light;
+    opacity:0.92;
+  }
+  .hero-stripe-overlay svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
     font-size:clamp(60px,11vw,140px);
     margin:0;
@@ -538,6 +547,7 @@
 <body>
 
 <header class="hero">
+  <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -697,6 +707,7 @@ const DEFAULT_HERO_STRIPE = [
 
 const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
+  heroStripeStyle: 'straight',
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -910,25 +921,114 @@ async function loadSiteData(firebaseConfig) {
   };
 }
 
-function renderHeroStripe(segments) {
-  const container = document.getElementById('heroStrip');
-  container.innerHTML = '';
-  (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
-    if (seg.type === 'image' && seg.image) {
-      const url = cloudinaryUrl(seg.image);
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = 'Kente pattern';
-        img.loading = 'lazy';
-        container.appendChild(img);
-        return;
-      }
+const STRIPE_STYLE_SVG = {
+  colorsOf(segments) {
+    const cols = (segments || []).filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
+    return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
+  },
+  ribbon(uid, d, colors, width, fade) {
+    const n = colors.length;
+    const strokes = colors.map((c, i) =>
+      `<path d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+    ).join('');
+    return `
+    <defs>
+      <mask id="fade-${uid}">
+        <linearGradient id="fadegrad-${uid}" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
+          <stop offset="0.18" stop-color="white" stop-opacity="1"/>
+          <stop offset="0.82" stop-color="white" stop-opacity="1"/>
+          <stop offset="1" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
+        </linearGradient>
+        <rect x="0" y="0" width="1000" height="420" fill="url(#fadegrad-${uid})"/>
+      </mask>
+    </defs>
+    <g mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
+  },
+  build(styleId, colors) {
+    const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
+    const INK = '#171310', IVORY = '#F5EFE3';
+    if (styleId === 'serpentine') {
+      return this.ribbon('hs-a',
+        'M -60 340 C 160 340, 160 120, 380 120 S 600 330, 820 330 S 1000 100 1060 100',
+        [c0, INK, c1, c2, c0], 30, true);
     }
-    const div = document.createElement('div');
-    div.style.background = seg.color || '#0E4D34';
-    container.appendChild(div);
-  });
+    if (styleId === 'horizon') {
+      return `
+        <rect x="0" y="356" width="1000" height="64" fill="${c2}" opacity="0.9"/>
+        <rect x="0" y="356" width="1000" height="8" fill="${c0}"/>
+        ${this.ribbon('hs-b', 'M -60 330 C 220 330, 260 220, 460 250 S 700 340, 900 230 S 1000 190 1060 190', [c0, c1, INK], 22, true)}
+      `;
+    }
+    if (styleId === 'trail') {
+      return `
+        ${this.ribbon('hs-c1', 'M -60 70 C 200 70 250 210 460 190 S 720 40 1060 90', [c0], 7, true)}
+        ${this.ribbon('hs-c2', 'M -60 170 C 230 170 270 310 490 290 S 730 150 1060 190', [c1], 7, true)}
+        ${this.ribbon('hs-c3', 'M -60 270 C 250 270 280 390 510 370 S 750 250 1060 290', [c2], 7, true)}
+        <g fill="${IVORY}" opacity="0.9">
+          <rect x="228" y="132" width="10" height="10" transform="rotate(45 233 137)"/>
+          <rect x="468" y="232" width="10" height="10" transform="rotate(45 473 237)"/>
+          <rect x="708" y="72" width="10" height="10" transform="rotate(45 713 77)"/>
+        </g>
+      `;
+    }
+    if (styleId === 'fold') {
+      return `
+        <defs>
+          <filter id="hs-foldshadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="${INK}" flood-opacity="0.45"/>
+          </filter>
+          <linearGradient id="hs-foldgrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="${c0}"/>
+            <stop offset="0.5" stop-color="${c1}"/>
+            <stop offset="1" stop-color="${c2}"/>
+          </linearGradient>
+        </defs>
+        <g filter="url(#hs-foldshadow)">
+          <polygon points="1000,-20 1140,-20 500,420 260,420" fill="url(#hs-foldgrad)" opacity="0.95"/>
+        </g>
+        <polyline points="260,420 300,388 340,420 380,388 420,420 460,388 500,420"
+          fill="none" stroke="${IVORY}" stroke-width="4" stroke-linejoin="round" opacity="0.85"/>
+      `;
+    }
+    return '';
+  }
+};
+
+function renderHeroStripe(segments) {
+  const style = (content.heroStripeStyle) || 'straight';
+  const stripEl = document.getElementById('heroStrip');
+  const overlayEl = document.getElementById('heroStripeOverlay');
+
+  if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
+    overlayEl.style.display = 'none';
+    overlayEl.innerHTML = '';
+    stripEl.style.display = '';
+    stripEl.innerHTML = '';
+    (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
+      if (seg.type === 'image' && seg.image) {
+        const url = cloudinaryUrl(seg.image);
+        if (url) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = 'Kente pattern';
+          img.loading = 'lazy';
+          stripEl.appendChild(img);
+          return;
+        }
+      }
+      const div = document.createElement('div');
+      div.style.background = seg.color || '#0E4D34';
+      stripEl.appendChild(div);
+    });
+    return;
+  }
+
+  stripEl.style.display = 'none';
+  stripEl.innerHTML = '';
+  overlayEl.style.display = '';
+  const colors = STRIPE_STYLE_SVG.colorsOf(segments);
+  overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
 }
 
 function applySectionBg(sectionBg) {

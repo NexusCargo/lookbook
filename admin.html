@@ -105,6 +105,25 @@
     background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 6px 14px; cursor: pointer; margin: 0;
   }
   .pill-select input { width: auto; margin: 0; }
+
+  .stripe-style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stripe-style-card {
+    border: 2px solid #e5e5e5; border-radius: 8px; overflow: hidden; cursor: pointer; background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .stripe-style-card:hover { border-color: #cbbf95; }
+  .stripe-style-card.selected { border-color: #F2B705; box-shadow: 0 0 0 1px #F2B705; }
+  .stripe-style-card .ssc-preview { position: relative; width: 100%; aspect-ratio: 1000/300; background: #0A3626; overflow: hidden; }
+  .stripe-style-card .ssc-preview svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stripe-style-card .ssc-check {
+    position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.7);
+    display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .15s ease;
+  }
+  .stripe-style-card.selected .ssc-check { opacity: 1; background: #F2B705; border-color: #F2B705; }
+  .stripe-style-card .ssc-check svg { width: 11px; height: 11px; }
+  .stripe-style-card .ssc-label { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0A3626; }
+  .stripe-style-card .ssc-label span { display: block; font-weight: 400; font-size: 11.5px; color: #888; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -161,7 +180,11 @@
         <h3>Background</h3>
         <div id="bg-hero"></div>
 
-        <h3>Hero stripe</h3>
+        <h3>Hero stripe style</h3>
+        <p style="font-size:12.5px; color:#888; margin:-4px 0 14px;">Preview uses your segment colors below. Pick a treatment, then Save.</p>
+        <div id="stripeStyleGrid" class="stripe-style-grid"></div>
+
+        <h3>Hero stripe colors</h3>
         <div id="stripeSegments"></div>
         <button id="addStripeSegmentBtn" type="button" class="list-add-btn">+ Add segment</button>
       </div>
@@ -391,6 +414,7 @@ const DEFAULT_HERO_STRIPE = [
 function defaultContent() {
   return {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
+    heroStripeStyle: 'straight',
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
       acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
@@ -466,6 +490,7 @@ function mergeContent(loaded) {
   const defaults = defaultContent();
   const c = { ...defaults, ...(loaded || {}) };
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
+  c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -738,6 +763,116 @@ function renderCopyForm() {
   document.getElementById('addPlanCardBtn').onclick = () => planEditor.addItem({ title: 'New card', body: '' });
 }
 
+const STRIPE_STYLES = [
+  { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
+  { id: 'serpentine', label: 'Serpentine Selvedge', desc: 'One band s-curves, fades at both ends' },
+  { id: 'horizon', label: 'Horizon Weave', desc: 'Footer band with a rising wave' },
+  { id: 'trail', label: 'Adinkra Trail', desc: 'Three thin threads wander independently' },
+  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' }
+];
+
+function stripeColors() {
+  const cols = content.heroStripe.filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
+  return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
+}
+
+function ribbonBandSvg(uid, d, colors, width, fade) {
+  const n = colors.length;
+  const strokes = colors.map((c, i) =>
+    `<path d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+  ).join('');
+  return `
+  <defs>
+    <mask id="fade-${uid}">
+      <linearGradient id="fadegrad-${uid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
+        <stop offset="0.18" stop-color="white" stop-opacity="1"/>
+        <stop offset="0.82" stop-color="white" stop-opacity="1"/>
+        <stop offset="1" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
+      </linearGradient>
+      <rect x="0" y="0" width="1000" height="300" fill="url(#fadegrad-${uid})"/>
+    </mask>
+  </defs>
+  <g mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
+}
+
+function buildStripeStyleSvg(styleId, colors) {
+  const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1, c3 = colors[3] || c0, c4 = colors[4] || c1;
+  const INK = '#171310', IVORY = '#F5EFE3';
+  if (styleId === 'straight') {
+    const n = colors.length;
+    const bandH = 300 / n;
+    return colors.map((c, i) => `<rect x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
+  }
+  if (styleId === 'serpentine') {
+    return ribbonBandSvg('ss-a',
+      'M -60 240 C 160 240, 160 80, 380 80 S 600 230, 820 230 S 1000 70 1060 70',
+      [c0, INK, c1, c2, c0], 22, true);
+  }
+  if (styleId === 'horizon') {
+    return `
+      <rect x="0" y="252" width="1000" height="48" fill="${c2}" opacity="0.9"/>
+      <rect x="0" y="252" width="1000" height="6" fill="${c0}"/>
+      ${ribbonBandSvg('ss-b', 'M -60 230 C 220 230, 260 140, 460 165 S 700 235, 900 150 S 1000 120 1060 120', [c0, c1, INK], 16, true)}
+    `;
+  }
+  if (styleId === 'trail') {
+    return `
+      ${ribbonBandSvg('ss-c1', 'M -60 50 C 200 50 250 150 460 135 S 720 30 1060 65', [c0], 6, true)}
+      ${ribbonBandSvg('ss-c2', 'M -60 120 C 230 120 270 220 490 205 S 730 105 1060 135', [c1], 6, true)}
+      ${ribbonBandSvg('ss-c3', 'M -60 190 C 250 190 280 275 510 260 S 750 175 1060 205', [c2], 6, true)}
+      <g fill="${IVORY}" opacity="0.9">
+        <rect x="228" y="95" width="8" height="8" transform="rotate(45 232 99)"/>
+        <rect x="468" y="165" width="8" height="8" transform="rotate(45 472 169)"/>
+        <rect x="708" y="52" width="8" height="8" transform="rotate(45 712 56)"/>
+      </g>
+    `;
+  }
+  if (styleId === 'fold') {
+    return `
+      <defs>
+        <filter id="ssc-foldshadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="${INK}" flood-opacity="0.45"/>
+        </filter>
+        <linearGradient id="ssc-foldgrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="${c0}"/>
+          <stop offset="0.5" stop-color="${c1}"/>
+          <stop offset="1" stop-color="${c2}"/>
+        </linearGradient>
+      </defs>
+      <g filter="url(#ssc-foldshadow)">
+        <polygon points="1000,-20 1120,-20 460,300 240,300" fill="url(#ssc-foldgrad)" opacity="0.95"/>
+      </g>
+      <polyline points="240,300 275,272 310,300 345,272 380,300 415,272 450,300"
+        fill="none" stroke="${IVORY}" stroke-width="3" stroke-linejoin="round" opacity="0.85"/>
+    `;
+  }
+  return '';
+}
+
+function renderStripeStyleGrid() {
+  const grid = document.getElementById('stripeStyleGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const colors = stripeColors();
+  STRIPE_STYLES.forEach(style => {
+    const card = document.createElement('div');
+    card.className = 'stripe-style-card' + (content.heroStripeStyle === style.id ? ' selected' : '');
+    card.innerHTML = `
+      <div class="ssc-preview">
+        <span class="ssc-check"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="#0A3626" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid slice">${buildStripeStyleSvg(style.id, colors)}</svg>
+      </div>
+      <div class="ssc-label">${style.label}<span>${style.desc}</span></div>
+    `;
+    card.addEventListener('click', () => {
+      content.heroStripeStyle = style.id;
+      renderStripeStyleGrid();
+    });
+    grid.appendChild(card);
+  });
+}
+
 function renderStripeSegments() {
   const container = document.getElementById('stripeSegments');
   container.innerHTML = '';
@@ -801,12 +936,14 @@ function renderStripeSegments() {
         seg.color = colorInput.value.toUpperCase();
         hexInput.value = seg.color;
         refreshSwatch();
+        renderStripeStyleGrid();
       });
       hexInput.addEventListener('input', () => {
         if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
           seg.color = hexInput.value.toUpperCase();
           colorInput.value = seg.color;
           refreshSwatch();
+          renderStripeStyleGrid();
         }
       });
       colorRow.appendChild(colorInput);
@@ -850,6 +987,7 @@ function renderStripeSegments() {
     card.appendChild(controls);
     container.appendChild(card);
   });
+  renderStripeStyleGrid();
 }
 
 document.getElementById('addStripeSegmentBtn').addEventListener('click', () => {
