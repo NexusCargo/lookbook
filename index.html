@@ -3,96 +3,1333 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ghana Lookbook</title>
+<title>Ghana — A Lookbook of the Gold Coast</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
-:root{--forest:#0E4D34;--forest-dark:#0A3626;--gold:#F2B705;--faded-gold:#D9A63A;--terracotta:#B5471B;--clay:#8C3A16;--ink:#1B1812;--ivory:#EDE6D6;--cream:#F1EBDD;--muted:#8b8471;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);}
-section{min-height:400px;position:relative;display:flex;align-items:center;justify-content:center;padding:60px 20px;background-size:cover;background-position:center;}
-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:0;}
-.content{position:relative;z-index:1;max-width:1200px;text-align:center;}
-.editable{padding:20px;border-radius:8px;transition:all 0.3s;}
-.editable h1{font-size:48px;margin:20px 0;color:var(--ivory);}
-.editable h2{font-size:36px;margin:15px 0;color:var(--ivory);}
-.editable h3{font-size:28px;margin:12px 0;color:var(--ivory);}
-.editable p{font-size:16px;line-height:1.6;color:var(--ivory);}
-.typewriter{animation:type 0.05s steps(40);}
-@keyframes type{from{width:0;}to{width:100%;}}
+  :root{
+    --forest:#0E4D34;
+    --forest-dark:#0A3626;
+    --gold:#F2B705;
+    --faded-gold:#D9A63A;
+    --terracotta:#B5471B;
+    --clay:#8C3A16;
+    --ink:#1B1812;
+    --ivory:#EDE6D6;
+    --cream:#F1EBDD;
+    --muted:#8b8471;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+  }
+  .sans{font-family:Verdana,Geneva,sans-serif;}
+  .eyebrow{
+    font-family:Verdana,Geneva,sans-serif;
+    font-size:11px;
+    letter-spacing:3px;
+    font-weight:bold;
+    text-transform:uppercase;
+  }
+
+  header.hero{
+    position:relative;
+    min-height:100vh;
+    background:var(--forest-dark);
+    color:var(--ivory);
+    display:flex;
+    align-items:stretch;
+    overflow:hidden;
+  }
+  .hero-main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:6vw;
+  }
+  .hero-strip{
+    width:9%;
+    min-width:70px;
+    display:flex;
+    flex-direction:column;
+  }
+  .hero-strip img{
+    flex:1;
+    object-fit:cover;
+    display:block;
+    width:100%;
+    height:100%;
+  }
+  .hero h1{
+    font-size:clamp(60px,11vw,140px);
+    margin:0;
+    line-height:0.9;
+    letter-spacing:1px;
+    animation:fadeUp 1s ease-out both;
+  }
+  .hero .eyebrow{color:var(--gold); margin-bottom:18px; animation:fadeUp 1s ease-out .15s both;}
+  .hero p.sub{
+    font-size:clamp(15px,1.6vw,19px);
+    font-style:italic;
+    max-width:520px;
+    margin-top:22px;
+    color:var(--ivory);
+    animation:fadeUp 1s ease-out .3s both;
+  }
+  .hero .edition{
+    margin-top:60px;
+    color:var(--faded-gold);
+    animation:fadeUp 1s ease-out .45s both;
+  }
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(16px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
+  }
+
+  .scroll-cue{
+    position:absolute;
+    bottom:28px;
+    left:6vw;
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    letter-spacing:2px;
+    color:var(--faded-gold);
+  }
+
+  section.intro{
+    display:flex;
+    min-height:70vh;
+    flex-wrap:wrap;
+  }
+  .intro-left{
+    background:var(--forest);
+    color:var(--ivory);
+    flex:1 1 340px;
+    padding:70px 50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    position:relative;
+  }
+  .intro-left h2{font-size:52px; margin:0 0 14px;}
+  .intro-left p{color:var(--gold); font-style:italic; max-width:320px;}
+  .intro-right{
+    flex:2 1 480px;
+    padding:70px 60px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:26px;
+  }
+  .intro-right h3{font-size:26px; margin:0 0 6px;}
+  .intro-right p{font-family:Verdana,sans-serif; font-size:14.5px; line-height:1.6; color:#3a3527; max-width:640px;}
+  .facts{
+    display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;
+  }
+  .fact{
+    border:1px solid var(--gold);
+    background:var(--cream);
+    padding:14px 18px;
+    min-width:120px;
+  }
+  .fact .k{font-family:Verdana,sans-serif; font-size:9.5px; letter-spacing:1.5px; color:var(--terracotta); font-weight:bold;}
+  .fact .v{font-family:Verdana,sans-serif; font-weight:bold; font-size:14px; margin-top:6px;}
+
+  .regions{
+    background:var(--ink);
+    color:var(--ivory);
+    padding:80px 6vw;
+  }
+  .regions h2{font-size:38px; margin:0 0 6px;}
+  .regions .eyebrow-sub{font-family:Georgia,serif; font-style:italic; color:var(--gold); font-size:15px; margin-bottom:40px;}
+  .region-block{border-bottom:1px solid #2a2620;}
+  .region-block:last-child{border-bottom:none;}
+  .region-row{
+    display:flex;
+    align-items:center;
+    gap:26px;
+    padding:20px 0;
+    cursor:pointer;
+    background:none;
+    border:none;
+    width:100%;
+    text-align:left;
+    color:inherit;
+    font-family:inherit;
+  }
+  .region-bar{width:10px; height:46px; flex-shrink:0;}
+  .region-row h4{font-size:20px; margin:0; width:230px; flex-shrink:0;}
+  .region-row p{font-family:Verdana,sans-serif; font-size:13.5px; color:#c9c2b2; margin:0; flex:1;}
+  .region-toggle{
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--gold);
+    flex-shrink:0;
+    transition:transform 0.2s ease;
+  }
+  .region-row[aria-expanded="true"] .region-toggle{transform:rotate(180deg);}
+
+  .region-panel{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.35s ease;
+  }
+  .region-panel.open{max-height:900px;}
+  .region-panel-inner{
+    display:flex;
+    gap:26px;
+    flex-wrap:wrap;
+    padding:0 0 30px;
+  }
+  .region-map{
+    flex:1 1 380px;
+    min-width:280px;
+    height:340px;
+    border-radius:6px;
+    background:#1f1c16;
+    border-left:6px solid var(--gold);
+  }
+  .region-lists{
+    flex:1 1 300px;
+    min-width:260px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+  .region-lists h5{
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    margin:0 0 10px;
+  }
+  .region-lists h5.sights{color:var(--gold);}
+  .region-lists h5.food{color:var(--terracotta);}
+  .region-lists ul{list-style:none; margin:0; padding:0;}
+  .region-lists li{
+    font-family:Verdana,sans-serif;
+    font-size:13px;
+    color:#c9c2b2;
+    padding:8px 0 8px 18px;
+    position:relative;
+    border-bottom:1px solid #26221b;
+  }
+  .region-lists li:last-child{border-bottom:none;}
+  .region-lists li::before{
+    content:'';
+    position:absolute;
+    left:0; top:14px;
+    width:8px; height:8px;
+    border-radius:50%;
+  }
+  .region-lists ul.sights li::before{background:var(--gold);}
+  .region-lists ul.food li::before{background:var(--terracotta);}
+  .region-lists li b{color:var(--ivory); display:block; font-size:13.5px; margin-bottom:2px;}
+  .region-lists .approx-note{
+    font-family:Verdana,sans-serif;
+    font-size:10.5px;
+    color:#8b8471;
+    font-style:italic;
+    margin-top:2px;
+  }
+
+  .view-3d-btn{
+    margin-top:8px;
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:0.5px;
+    background:var(--gold);
+    color:var(--ink);
+    border:none;
+    padding:6px 10px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .leaflet-popup-content{font-family:Verdana,sans-serif; font-size:12.5px;}
+
+  .site3d-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(10,9,7,0.92);
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+  }
+  .site3d-overlay.open{display:flex;}
+  .site3d-box{
+    width:min(1000px, 92vw);
+    height:min(640px, 82vh);
+    background:var(--ink);
+    border-radius:8px;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .site3d-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 18px;
+    background:var(--forest-dark);
+    color:var(--ivory);
+  }
+  .site3d-header h4{margin:0; font-size:17px;}
+  .site3d-header .hint{
+    font-family:Verdana,sans-serif;
+    font-size:10.5px;
+    color:var(--faded-gold);
+    margin-top:2px;
+  }
+  .site3d-close, .site3d-reset{
+    font-family:Verdana,sans-serif;
+    font-size:12px;
+    background:none;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:6px 12px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .site3d-actions{display:flex; gap:10px; align-items:center;}
+  #site3dMap{flex:1;}
+  .site3d-loading{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ivory);
+    font-family:Verdana,sans-serif;
+    font-size:13px;
+    background:var(--ink);
+  }
+
+  .stop{
+    display:flex;
+    min-height:78vh;
+    flex-wrap:wrap;
+  }
+  .stop-visual{
+    flex:1 1 360px;
+    position:relative;
+    overflow:hidden;
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-start;
+    padding:40px;
+    background-color:var(--forest-dark);
+  }
+  .stop-visual::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.25);
+    z-index:1;
+  }
+  .stop-visual img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:0;
+  }
+  .stop-visual h3{
+    font-size:36px;
+    margin:0;
+    line-height:1.1;
+    position:relative;
+    z-index:2;
+    color:#fff;
+    text-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .stop-content{
+    flex:1 1 400px;
+    padding:50px 60px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:var(--ivory);
+  }
+  .stop-content.dark{
+    background:var(--ink);
+  }
+  .stop .subtitle{
+    font-size:22px;
+    font-weight:bold;
+    margin:10px 0 30px;
+  }
+  .stop .subtitle.ivory{color:var(--ivory);}
+  .point{
+    border-left:3px solid var(--gold);
+    padding-left:20px;
+    margin-bottom:22px;
+  }
+  .point b{color:var(--ink);}
+  .point span{
+    display:block;
+    font-family:Verdana,sans-serif;
+    font-size:13.5px;
+    line-height:1.6;
+    color:#6b6556;
+    margin-top:4px;
+  }
+  .point.light{border-color:rgba(255,255,255,0.3);}
+  .point.light b{color:var(--ivory);}
+  .point.light span{color:#c9c2b2;}
+
+  .plan{
+    background:var(--ink);
+    color:var(--ivory);
+    padding:80px 6vw;
+  }
+  .plan h2{font-size:38px; margin:0 0 50px;}
+  .plan-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    gap:30px;
+    margin-bottom:40px;
+  }
+  .plan-card{
+    border-top:3px solid var(--gold);
+    padding:30px 0;
+  }
+  .plan-card h4{font-size:18px; margin:15px 0 8px; font-weight:bold;}
+  .plan-card p{font-family:Verdana,sans-serif; font-size:14px; color:#c9c2b2; margin:0;}
+  .plan .closing{
+    text-align:center;
+    font-style:italic;
+    color:var(--gold);
+    font-size:16px;
+    margin-top:50px;
+  }
+
+  .inquiry{
+    max-width:560px;
+    margin:60px auto 0;
+    background:var(--forest-dark);
+    border:1px solid #234438;
+    border-radius:6px;
+    padding:34px 36px;
+  }
+  .inquiry h3{
+    font-size:22px;
+    margin:0 0 6px;
+    color:var(--ivory);
+  }
+  .inquiry .lede{
+    font-family:Verdana,sans-serif;
+    font-size:13px;
+    color:#c9c2b2;
+    margin-bottom:22px;
+  }
+  .inquiry label{
+    display:block;
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--gold);
+    margin-bottom:6px;
+    text-transform:uppercase;
+  }
+  .inquiry .field{margin-bottom:16px;}
+  .inquiry input, .inquiry textarea{
+    width:100%;
+    padding:10px 12px;
+    font-family:Verdana,sans-serif;
+    font-size:13.5px;
+    background:var(--ivory);
+    border:1px solid #234438;
+    border-radius:4px;
+    color:var(--ink);
+  }
+  .inquiry textarea{resize:vertical; min-height:70px;}
+  .inquiry .row2{display:flex; gap:14px;}
+  .inquiry .row2 > div{flex:1;}
+  .inquiry button{
+    font-family:Verdana,sans-serif;
+    font-size:13px;
+    font-weight:bold;
+    letter-spacing:1px;
+    background:var(--gold);
+    color:var(--ink);
+    border:none;
+    padding:12px 22px;
+    border-radius:4px;
+    cursor:pointer;
+    width:100%;
+  }
+  .inquiry button:disabled{opacity:0.6; cursor:not-allowed;}
+  .inquiry .status{
+    font-family:Verdana,sans-serif;
+    font-size:12.5px;
+    margin-top:12px;
+    min-height:16px;
+  }
+  .inquiry .status.success{color:#8fd19e;}
+  .inquiry .status.error{color:#e08a6b;}
+  /* honeypot — hidden from real visitors, bots tend to fill every field */
+  .inquiry .hp{position:absolute; left:-9999px; opacity:0;}
+
+  footer{
+    text-align:center;
+    padding:30px;
+    background:var(--forest-dark);
+    color:var(--ivory);
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    letter-spacing:2px;
+  }
+
+  a{
+    color:var(--gold);
+    text-decoration:underline;
+  }
+
+  ::selection{background:var(--gold); color:var(--ink);}
+
+  .animation-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(242, 183, 5, 0.9);
+    color: #333;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 3;
+  }
+
+  @media (max-width:768px){
+    .stop{flex-direction:column-reverse;}
+    .stop[data-order="normal"] .stop-visual{order:0;}
+    .stop[data-order="normal"] .stop-content{order:1;}
+    .stop[data-order="reversed"] .stop-visual{order:1;}
+    .stop[data-order="reversed"] .stop-content{order:0;}
+  }
 </style>
 </head>
 <body>
 
-<div id="pageContainer"></div>
+<header class="hero">
+  <div class="hero-strip" id="heroKente">
+    
+    <div style="background:var(--gold); flex:1"></div>
+    <div style="background:var(--terracotta); flex:1"></div>
+    <div style="background:var(--forest); flex:1"></div>
+    <div style="background:var(--gold); flex:1"></div>
+    <div style="background:var(--clay); flex:1"></div>
+  </div>
+  <div class="hero-main">
+    <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
+    <h1 id="heroTitle">GHANA</h1>
+    <p class="sub" id="heroSub">Castles, canopy walks, kente looms, and the warmest welcome in West Africa.</p>
+    <div class="eyebrow edition" id="heroEdition">2026 EDITION</div>
+  </div>
+  <div class="scroll-cue">SCROLL ↓</div>
+</header>
+
+<section class="intro">
+  <div class="intro-left">
+    <h2 id="introGreeting">Akwaaba.</h2>
+    <p id="introTagline">The word Ghanaians use to say welcome — and mean it.</p>
+  </div>
+  <div class="intro-right">
+    <div>
+      <h3 id="whyTitle">Why Ghana, why now</h3>
+      <p id="whyBody">Ghana is West Africa's most accessible entry point — stable, English-speaking, and welcoming, with a growing "Year of Return" pilgrimage drawing the diaspora home.</p>
+    </div>
+    <p id="introExtra">In one trip: 500-year-old coastal fortresses, rainforest canopy walks, savanna elephants, kente-weaving villages, and some of the region's best-kept beaches. This lookbook moves coast to savanna — Cape Coast, Accra, Kumasi, Mole — as a route you can actually drive.</p>
+    <div class="facts" id="factsContainer">
+      <div class="fact"><div class="k">CAPITAL</div><div class="v">Accra</div></div>
+      <div class="fact"><div class="k">LANGUAGE</div><div class="v">English + local</div></div>
+      <div class="fact"><div class="k">CURRENCY</div><div class="v">Ghana Cedi (GHS)</div></div>
+      <div class="fact"><div class="k">BEST TIME</div><div class="v">Nov – Mar</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="regions">
+  <h2 id="regionsTitle">Five regions, one route</h2>
+  <div class="eyebrow-sub" id="regionsSub">Coast to savanna, roughly north–south — the classic Ghana circuit.</div>
+  <div class="region-block">
+    <button class="region-row" data-region="accra" aria-expanded="false"><div class="region-bar" style="background:var(--forest)"></div><h4>Greater Accra</h4><p>Capital energy: Jamestown, Osu, art & nightlife</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra"></div><div class="region-lists" id="lists-accra"></div></div></div>
+  </div>
+  <div class="region-block">
+    <button class="region-row" data-region="central" aria-expanded="false"><div class="region-bar" style="background:var(--terracotta)"></div><h4>Central Region</h4><p>Cape Coast & Elmina castles, Kakum canopy walk</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central"></div><div class="region-lists" id="lists-central"></div></div></div>
+  </div>
+  <div class="region-block">
+    <button class="region-row" data-region="ashanti" aria-expanded="false"><div class="region-bar" style="background:var(--gold)"></div><h4>Ashanti Region</h4><p>Kumasi, Manhyia Palace, kente-weaving villages</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
+  </div>
+  <div class="region-block">
+    <button class="region-row" data-region="volta" aria-expanded="false"><div class="region-bar" style="background:var(--clay)"></div><h4>Volta Region</h4><p>Waterfalls, Lake Volta, mountain hikes</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta"></div><div class="region-lists" id="lists-volta"></div></div></div>
+  </div>
+  <div class="region-block">
+    <button class="region-row" data-region="northern" aria-expanded="false"><div class="region-bar" style="background:var(--faded-gold)"></div><h4>Northern Region</h4><p>Mole National Park safari, Larabanga Mosque</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern"></div><div class="region-lists" id="lists-northern"></div></div></div>
+  </div>
+</section>
+
+<section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="castles">
+  <div class="stop-visual" id="stop-castles"><h3>Castles of<br>Memory</h3></div>
+  <div class="stop-content">
+    <div class="eyebrow" style="color:var(--terracotta)">CENTRAL REGION</div>
+    <p class="subtitle">Cape Coast & Elmina Castles</p>
+    <div class="stop-points">
+    <div class="point"><b>UNESCO World Heritage</b><span>Two of the largest of over 40 fortifications along Ghana's coast, built by European traders from the 15th century on.</span></div>
+    <div class="point"><b>The Door of No Return</b><span>A profoundly moving stop for understanding the trans-Atlantic slave trade and the diaspora's roots.</span></div>
+    <div class="point"><b>Pair it with</b><span>A walk through Cape Coast's fishing harbor at dawn, when the wooden boats come in.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="stop" data-order="reversed" style="background:var(--ink)" data-stop="canopy">
+  <div class="stop-content dark">
+    <div class="eyebrow" style="color:var(--forest)">CENTRAL REGION</div>
+    <p class="subtitle ivory">Kakum National Park Canopy Walkway</p>
+    <div class="stop-points">
+    <div class="point light"><b>Seven rope bridges</b><span>Suspended up to 40 meters above the rainforest floor — Ghana's most photographed adventure.</span></div>
+    <div class="point light"><b>Wildlife</b><span>Home to forest elephants, over 300 bird species, and Diana monkeys (best spotted at sunrise).</span></div>
+    <div class="point light"><b>Good to know</b><span>Arrive early — the walkway gets busy and hot by mid-morning.</span></div>
+    </div>
+  </div>
+  <div class="stop-visual" id="stop-canopy"><h3>Walk Among<br>Giants</h3></div>
+</section>
+
+<section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="accra">
+  <div class="stop-visual" id="stop-accra"><h3>The Capital's<br>Pulse</h3></div>
+  <div class="stop-content">
+    <div class="eyebrow" style="color:var(--terracotta)">GREATER ACCRA</div>
+    <p class="subtitle">Accra: Jamestown to Osu</p>
+    <div class="stop-points">
+    <div class="point"><b>Jamestown</b><span>Colorful colonial-era fishing quarter, boxing gyms, and a lighthouse with sweeping coastal views.</span></div>
+    <div class="point"><b>Independence Square & Kwame Nkrumah Mausoleum</b><span>The monumental heart of Ghana's 1957 independence — first in sub-Saharan Africa.</span></div>
+    <div class="point"><b>Osu & Accra's art scene</b><span>Galleries, live highlife music, and the city's best chop bars and rooftop bars.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="stop" data-order="reversed" style="background:var(--ink)" data-stop="kumasi">
+  <div class="stop-content dark">
+    <div class="eyebrow" style="color:var(--faded-gold)">ASHANTI REGION</div>
+    <p class="subtitle ivory">Kumasi & the Ashanti Heartland</p>
+    <div class="stop-points">
+    <div class="point light"><b>Manhyia Palace</b><span>Home of the Asantehene, spiritual and cultural seat of the Ashanti Kingdom.</span></div>
+    <div class="point light"><b>Bonwire</b><span>The kente-weaving village where the iconic strip-woven cloth originated — watch looms in motion.</span></div>
+    <div class="point light"><b>Kejetia Market</b><span>One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life.</span></div>
+    </div>
+  </div>
+  <div class="stop-visual" id="stop-kumasi"><h3>Seat of a<br>Kingdom</h3></div>
+</section>
+
+<section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="savanna">
+  <div class="stop-visual" id="stop-savanna"><h3>Into the<br>Savanna</h3></div>
+  <div class="stop-content">
+    <div class="eyebrow" style="color:var(--terracotta)">NORTHERN REGION</div>
+    <p class="subtitle">Mole National Park</p>
+    <div class="stop-points">
+    <div class="point"><b>Ghana's largest wildlife refuge</b><span>Walking safaris that bring you close to elephants, antelope, and baboons — rare on foot in Africa.</span></div>
+    <div class="point"><b>Larabanga Mosque</b><span>A striking Sudanese-style mud-and-timber mosque, among West Africa's oldest.</span></div>
+    <div class="point"><b>Getting there</b><span>A long but worthwhile drive north — best combined with an overnight at the park motel.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="stop" data-order="reversed" style="background:var(--ink)" data-stop="beaches">
+  <div class="stop-content dark">
+    <div class="eyebrow" style="color:var(--forest)">COASTLINE</div>
+    <p class="subtitle ivory">Beaches: Busua, Anomabo & Ada</p>
+    <div class="stop-points">
+    <div class="point light"><b>Busua</b><span>Ghana's laid-back surf town — board rentals, beach bars, and reliable swells.</span></div>
+    <div class="point light"><b>Anomabo</b><span>Boutique beach lodges beside a working fishing village, close to Cape Coast.</span></div>
+    <div class="point light"><b>Ada Foah</b><span>Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.</span></div>
+    </div>
+  </div>
+  <div class="stop-visual" id="stop-beaches"><h3>Where the Coast<br>Slows Down</h3></div>
+</section>
+
+<section class="stop" data-order="normal" style="background:var(--ivory)" data-stop="culture">
+  <div class="stop-visual" id="stop-culture"><h3>Rhythm, Cloth,<br>Symbol</h3></div>
+  <div class="stop-content">
+    <div class="eyebrow" style="color:var(--terracotta)">CULTURE</div>
+    <p class="subtitle">Festivals & Living Traditions</p>
+    <div class="stop-points">
+    <div class="point"><b>Homowo & Panafest</b><span>Harvest festivals and the biennial Pan-African Historical Theatre Festival draw the diaspora each year.</span></div>
+    <div class="point"><b>Adinkra symbols</b><span>Visual proverbs — stamped onto cloth — that encode Akan philosophy in a single mark.</span></div>
+    <div class="point"><b>Drumming & dance</b><span>Adowa, kpanlogo, and talking drums remain part of everyday celebration, not performance for tourists.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="stop" data-order="reversed" style="background:var(--ink)" data-stop="food">
+  <div class="stop-content dark">
+    <div class="eyebrow" style="color:var(--faded-gold)">FLAVOR</div>
+    <p class="subtitle ivory">The Ghanaian Table</p>
+    <div class="stop-points">
+    <div class="point light"><b>Jollof rice</b><span>The dish behind West Africa's friendliest culinary rivalry — try Ghana's smoky version and judge yourself.</span></div>
+    <div class="point light"><b>Banku & grilled tilapia</b><span>Fermented corn-and-cassava dough, best eaten by hand with a fiery pepper sauce.</span></div>
+    <div class="point light"><b>Kelewele & red red</b><span>Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.</span></div>
+    </div>
+  </div>
+  <div class="stop-visual" id="stop-food"><h3>Eat Like<br>a Local</h3></div>
+</section>
+
+<section class="plan">
+  <h2 id="planTitle">Plan your trip</h2>
+  <div class="plan-grid" id="planCardsContainer">
+    <div class="plan-card"><h4>Best time to visit</h4><p>November–March: dry season, cooler nights, easiest travel between regions.</p></div>
+    <div class="plan-card"><h4>Getting around</h4><p>Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.</p></div>
+    <div class="plan-card"><h4>Entry</h4><p>Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.</p></div>
+    <div class="plan-card"><h4>Suggested route</h4><p>Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.</p></div>
+  </div>
+  <p class="closing" id="planClosing">Akwaaba — see you on the coast.</p>
+
+  <form class="inquiry" id="inquiryForm" novalidate>
+    <h3>Plan this trip with us</h3>
+    <p class="lede">Send your dates and we'll follow up with a route and pricing.</p>
+
+    <div class="field">
+      <label for="inq-name">Name</label>
+      <input id="inq-name" name="name" type="text" required autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="inq-email">Email</label>
+      <input id="inq-email" name="email" type="email" required autocomplete="email">
+    </div>
+    <div class="field row2">
+      <div>
+        <label for="inq-start">Earliest travel date</label>
+        <input id="inq-start" name="startDate" type="date">
+      </div>
+      <div>
+        <label for="inq-end">Latest travel date</label>
+        <input id="inq-end" name="endDate" type="date">
+      </div>
+    </div>
+    <div class="field">
+      <label for="inq-message">Anything else? (optional)</label>
+      <textarea id="inq-message" name="message" placeholder="Group size, must-see stops, budget range..."></textarea>
+    </div>
+
+    
+    <div class="field hp">
+      <label for="inq-company">Company</label>
+      <input id="inq-company" name="company" type="text" tabindex="-1" autocomplete="off">
+    </div>
+
+    <button type="submit" id="inquirySubmit">Send inquiry</button>
+    <div class="status" id="inquiryStatus"></div>
+  </form>
+</section>
+
+<footer>GHANA · A LOOKBOOK OF THE GOLD COAST · 2026</footer>
+
+<div class="site3d-overlay" id="site3dOverlay">
+  <div class="site3d-box">
+    <div class="site3d-header">
+      <div>
+        <h4 id="site3dTitle">Site name</h4>
+        <div class="hint">Drag to rotate • Two-finger drag (or Ctrl+drag) to tilt</div>
+      </div>
+      <div class="site3d-actions">
+        <button class="site3d-reset" id="site3dReset">Reset view</button>
+        <button class="site3d-close" id="site3dClose">✕ Close</button>
+      </div>
+    </div>
+    <div id="site3dMap"></div>
+  </div>
+</div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-import { getFirestore, doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-let db;
+const STOP_KEYS = ['castles','canopy','accra','kumasi','savanna','beaches','culture','food'];
+const REGION_KEYS = ['accra','central','ashanti','volta','northern'];
 
-async function boot() {
-  const config = await (await fetch('/api/config')).json();
-  const app = initializeApp(config.firebaseConfig);
-  db = getFirestore(app);
-  
-  onSnapshot(doc(db, 'lookbook-visual', 'page'), snapshot => {
-    if (snapshot.exists()) {
-      renderPage(snapshot.data());
-    }
-  });
+const BADGE_LABEL = {
+  carousel: '📽️ Carousel',
+  social: '📱 Social',
+  transitions: '🔄 Transitions',
+  hero_stripe: '🎬 Hero'
+};
+
+const DEFAULT_CONTENT = { hero_kente: [], stops: {} };
+
+const DEFAULT_COPY = {
+  hero: {
+    eyebrow: 'A LOOKBOOK OF THE GOLD COAST',
+    title: 'GHANA',
+    sub: 'Castles, canopy walks, kente looms, and the warmest welcome in West Africa.',
+    edition: '2026 EDITION'
+  },
+  intro: {
+    greeting: 'Akwaaba.',
+    tagline: 'The word Ghanaians use to say welcome — and mean it.',
+    whyTitle: 'Why Ghana, why now',
+    whyBody: 'Ghana is West Africa\'s most accessible entry point — stable, English-speaking, and welcoming, with a growing "Year of Return" pilgrimage drawing the diaspora home.',
+    extra: 'In one trip: 500-year-old coastal fortresses, rainforest canopy walks, savanna elephants, kente-weaving villages, and some of the region\'s best-kept beaches. This lookbook moves coast to savanna — Cape Coast, Accra, Kumasi, Mole — as a route you can actually drive.',
+    facts: [
+      { k: 'CAPITAL', v: 'Accra' },
+      { k: 'LANGUAGE', v: 'English + local' },
+      { k: 'CURRENCY', v: 'Ghana Cedi (GHS)' },
+      { k: 'BEST TIME', v: 'Nov – Mar' }
+    ]
+  },
+  regionsIntro: {
+    title: 'Five regions, one route',
+    sub: 'Coast to savanna, roughly north–south — the classic Ghana circuit.'
+  },
+  stops: {
+    castles: { eyebrow: 'CENTRAL REGION', subtitle: 'Cape Coast & Elmina Castles', points: [
+      { title: 'UNESCO World Heritage', body: "Two of the largest of over 40 fortifications along Ghana's coast, built by European traders from the 15th century on." },
+      { title: 'The Door of No Return', body: "A profoundly moving stop for understanding the trans-Atlantic slave trade and the diaspora's roots." },
+      { title: 'Pair it with', body: "A walk through Cape Coast's fishing harbor at dawn, when the wooden boats come in." }
+    ]},
+    canopy: { eyebrow: 'CENTRAL REGION', subtitle: 'Kakum National Park Canopy Walkway', points: [
+      { title: 'Seven rope bridges', body: "Suspended up to 40 meters above the rainforest floor — Ghana's most photographed adventure." },
+      { title: 'Wildlife', body: 'Home to forest elephants, over 300 bird species, and Diana monkeys (best spotted at sunrise).' },
+      { title: 'Good to know', body: 'Arrive early — the walkway gets busy and hot by mid-morning.' }
+    ]},
+    accra: { eyebrow: 'GREATER ACCRA', subtitle: 'Accra: Jamestown to Osu', points: [
+      { title: 'Jamestown', body: 'Colorful colonial-era fishing quarter, boxing gyms, and a lighthouse with sweeping coastal views.' },
+      { title: 'Independence Square & Kwame Nkrumah Mausoleum', body: "The monumental heart of Ghana's 1957 independence — first in sub-Saharan Africa." },
+      { title: "Osu & Accra's art scene", body: "Galleries, live highlife music, and the city's best chop bars and rooftop bars." }
+    ]},
+    kumasi: { eyebrow: 'ASHANTI REGION', subtitle: 'Kumasi & the Ashanti Heartland', points: [
+      { title: 'Manhyia Palace', body: 'Home of the Asantehene, spiritual and cultural seat of the Ashanti Kingdom.' },
+      { title: 'Bonwire', body: 'The kente-weaving village where the iconic strip-woven cloth originated — watch looms in motion.' },
+      { title: 'Kejetia Market', body: "One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life." }
+    ]},
+    savanna: { eyebrow: 'NORTHERN REGION', subtitle: 'Mole National Park', points: [
+      { title: "Ghana's largest wildlife refuge", body: 'Walking safaris that bring you close to elephants, antelope, and baboons — rare on foot in Africa.' },
+      { title: 'Larabanga Mosque', body: "A striking Sudanese-style mud-and-timber mosque, among West Africa's oldest." },
+      { title: 'Getting there', body: 'A long but worthwhile drive north — best combined with an overnight at the park motel.' }
+    ]},
+    beaches: { eyebrow: 'COASTLINE', subtitle: 'Beaches: Busua, Anomabo & Ada', points: [
+      { title: 'Busua', body: "Ghana's laid-back surf town — board rentals, beach bars, and reliable swells." },
+      { title: 'Anomabo', body: 'Boutique beach lodges beside a working fishing village, close to Cape Coast.' },
+      { title: 'Ada Foah', body: 'Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.' }
+    ]},
+    culture: { eyebrow: 'CULTURE', subtitle: 'Festivals & Living Traditions', points: [
+      { title: 'Homowo & Panafest', body: 'Harvest festivals and the biennial Pan-African Historical Theatre Festival draw the diaspora each year.' },
+      { title: 'Adinkra symbols', body: 'Visual proverbs — stamped onto cloth — that encode Akan philosophy in a single mark.' },
+      { title: 'Drumming & dance', body: 'Adowa, kpanlogo, and talking drums remain part of everyday celebration, not performance for tourists.' }
+    ]},
+    food: { eyebrow: 'FLAVOR', subtitle: 'The Ghanaian Table', points: [
+      { title: 'Jollof rice', body: "The dish behind West Africa's friendliest culinary rivalry — try Ghana's smoky version and judge yourself." },
+      { title: 'Banku & grilled tilapia', body: 'Fermented corn-and-cassava dough, best eaten by hand with a fiery pepper sauce.' },
+      { title: 'Kelewele & red red', body: 'Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.' }
+    ]}
+  },
+  plan: {
+    title: 'Plan your trip',
+    cards: [
+      { title: 'Best time to visit', body: 'November–March: dry season, cooler nights, easiest travel between regions.' },
+      { title: 'Getting around', body: 'Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.' },
+      { title: 'Entry', body: 'Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.' },
+      { title: 'Suggested route', body: 'Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.' }
+    ],
+    closing: 'Akwaaba — see you on the coast.'
+  }
+};
+
+const DEFAULT_REGIONS = {
+  accra: {
+    name: 'Greater Accra', blurb: 'Capital energy: Jamestown, Osu, art & nightlife', color: 'forest',
+    center: [5.56, -0.19], zoom: 12,
+    sights: [
+      { name: 'Kwame Nkrumah Mausoleum & Memorial Park', lat: 5.5484, lng: -0.2059, note: "Ghana's independence monument and museum." },
+      { name: 'Independence Square', lat: 5.5480, lng: -0.1934, note: 'Black Star Gate and the parade ground.' },
+      { name: 'Jamestown & Ussher Fort', lat: 5.5306, lng: -0.2106, note: 'Colonial-era fishing quarter and lighthouse.' },
+      { name: 'Osu Castle (Christiansborg)', lat: 5.5423, lng: -0.1770, note: 'Former Danish trading post and seat of government.' },
+      { name: 'Makola Market', lat: 5.5490, lng: -0.2107, note: "Accra's largest, liveliest market." }
+    ],
+    food: [
+      { name: 'Buka Restaurant, Osu', lat: 5.5558, lng: -0.1827, note: 'Ghanaian classics — tilapia, garifotor, fufu.' },
+      { name: 'Azmera, Roman Ridge', lat: 5.5750, lng: -0.1900, note: 'Popular local-food buffet plus à la carte.' },
+      { name: 'Asanka Local, Osu', lat: 5.5556, lng: -0.1822, note: 'Traditional chop bar, known for red red.' }
+    ],
+    foodNote: ''
+  },
+  central: {
+    name: 'Central Region', blurb: 'Cape Coast & Elmina castles, Kakum canopy walk', color: 'terracotta',
+    center: [5.18, -1.30], zoom: 10,
+    sights: [
+      { name: 'Cape Coast Castle', lat: 5.1053, lng: -1.2466, note: 'UNESCO World Heritage fortress and the Door of No Return.' },
+      { name: 'Elmina Castle', lat: 5.0844, lng: -1.3505, note: "West Africa's oldest European-built structure." },
+      { name: 'Kakum National Park Canopy Walkway', lat: 5.3500, lng: -1.3833, note: 'Rope bridges through the rainforest canopy.' }
+    ],
+    food: [
+      { name: 'Oasis Beach Resort, Cape Coast', lat: 5.1030, lng: -1.2460, note: 'Oceanfront dining, easily the local go-to.' },
+      { name: 'Emperor Ital Joint, Cape Coast', lat: 5.1049, lng: -1.2471, note: 'Vegan/vegetarian Ghanaian dishes near the castle.' }
+    ],
+    foodNote: ''
+  },
+  ashanti: {
+    name: 'Ashanti Region', blurb: 'Kumasi, Manhyia Palace, kente-weaving villages', color: 'gold',
+    center: [6.70, -1.62], zoom: 11,
+    sights: [
+      { name: 'Manhyia Palace', lat: 6.7028, lng: -1.6244, note: 'Seat of the Asantehene, Ashanti Kingdom.' },
+      { name: 'Bonwire kente-weaving village', lat: 6.7333, lng: -1.4667, note: 'Where the iconic strip-woven cloth originated.' },
+      { name: 'Kejetia Market', lat: 6.6935, lng: -1.6244, note: "One of West Africa's largest markets." }
+    ],
+    food: [
+      { name: "Ike's Cafe and Grill, Kumasi", lat: 6.6975, lng: -1.6280, note: 'Traditional Ghanaian dishes, African-art decor.' }
+    ],
+    foodNote: ''
+  },
+  volta: {
+    name: 'Volta Region', blurb: 'Waterfalls, Lake Volta, mountain hikes', color: 'clay',
+    center: [6.9, 0.35], zoom: 9,
+    sights: [
+      { name: 'Wli Waterfalls', lat: 7.1167, lng: 0.5833, note: "Ghana's tallest waterfall, a hike through forest to reach." },
+      { name: 'Akosombo Dam & Lake Volta', lat: 6.2986, lng: 0.0562, note: 'Boat cruises on one of the largest reservoirs by surface area worldwide.' },
+      { name: 'Mount Afadjato', lat: 6.85, lng: 0.6167, note: "Ghana's highest peak, a popular sunrise hike." }
+    ],
+    food: [],
+    foodNote: "Fewer named tourist restaurants here — expect home-style chop bars in Hohoe and Ho serving fufu, banku, and freshwater fish from the lake."
+  },
+  northern: {
+    name: 'Northern Region', blurb: 'Mole National Park safari, Larabanga Mosque', color: 'faded-gold',
+    center: [9.24, -1.83], zoom: 10,
+    sights: [
+      { name: 'Mole National Park', lat: 9.2660, lng: -1.8490, note: "Ghana's largest wildlife refuge — walking safaris." },
+      { name: 'Larabanga Mosque', lat: 9.2180, lng: -1.8524, note: "Sudanese-style mud-and-timber mosque, among West Africa's oldest." }
+    ],
+    food: [],
+    foodNote: 'Dining options are limited to the Mole Motel and small local spots in Larabanga — expect simple, hearty northern Ghanaian fare like tuo zaafi and guinea fowl.'
+  }
+};
+
+let cloudinaryCloudName = null;
+let REGION_DATA = DEFAULT_REGIONS;
+
+function cloudinaryUrl(publicIdOrUrl) {
+  if (!publicIdOrUrl) return null;
+  if (/^https?:\/\
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
 }
 
-function renderPage(pageData) {
-  const container = document.getElementById('pageContainer');
-  container.innerHTML = '';
+async function loadConfig() {
+  const res = await fetch('/api/config');
+  if (!res.ok) throw new Error('config fetch failed');
+  return res.json();
+}
+
+async function loadSiteData(firebaseConfig) {
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
+    getDoc(doc(db, 'lookbook-content', 'content')),
+    getDoc(doc(db, 'lookbook-content', 'copy')),
+    getDoc(doc(db, 'lookbook-content', 'regions')),
+    getDoc(doc(db, 'lookbook-content', 'colors'))
+  ]);
   
-  (pageData.sections || []).forEach(section => {
-    if (!section.visible) return;
-    
-    const sectionEl = document.createElement('section');
-    sectionEl.style.backgroundColor = section.bgColor;
-    
-    if (section.bgMedia) {
-      sectionEl.style.backgroundImage = `url(${section.bgMedia})`;
-    }
-    
-    const content = document.createElement('div');
-    content.className = 'content editable';
-    
-    Object.entries(section.elements || {}).forEach(([key, value]) => {
-      if (key.endsWith('_typewriter')) return;
-      
-      let el;
-      if (key === 'title') {
-        el = document.createElement('h2');
-      } else if (key === 'eyebrow') {
-        el = document.createElement('div');
-        el.style.fontSize = '14px';
-        el.style.textTransform = 'uppercase';
-        el.style.letterSpacing = '2px';
-      } else if (key === 'subtitle' || key === 'tagline') {
-        el = document.createElement('p');
-        el.style.fontSize = '18px';
-      } else {
-        el = document.createElement('p');
+  if (colorsSnap.exists()) {
+    const colors = colorsSnap.data();
+    Object.entries(colors).forEach(([key, value]) => {
+      if (key !== 'lastUpdated') {
+        document.documentElement.style.setProperty(`--${key}`, value);
       }
-      
-      const useTypewriter = section.elements[key + '_typewriter'];
-      if (useTypewriter) {
-        el.innerHTML = `<span class="typewriter">${value}</span>`;
-      } else {
-        el.textContent = value;
-      }
-      
-      content.appendChild(el);
     });
-    
-    sectionEl.appendChild(content);
-    container.appendChild(sectionEl);
+  }
+  
+  return {
+    content: contentSnap.exists() ? contentSnap.data() : DEFAULT_CONTENT,
+    copy: copySnap.exists() ? copySnap.data() : DEFAULT_COPY,
+    regions: regionsSnap.exists() ? regionsSnap.data() : DEFAULT_REGIONS
+  };
+}
+
+function applyContent(content) {
+  const kenteContainer = document.getElementById('heroKente');
+  const kenteIds = (content.hero_kente || []).filter(Boolean);
+  if (kenteIds.length) {
+    kenteContainer.innerHTML = '';
+    kenteIds.forEach(publicId => {
+      const url = cloudinaryUrl(publicId);
+      if (!url) return;
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'Kente pattern';
+      img.loading = 'lazy';
+      kenteContainer.appendChild(img);
+    });
+  }
+
+  STOP_KEYS.forEach(key => {
+    const stop = (content.stops && content.stops[key]) || null;
+    const container = document.getElementById(`stop-${key}`);
+    if (!stop || !container) return;
+
+    const src = stop.gif_url || (stop.image_public_ids && stop.image_public_ids[0]);
+    const url = cloudinaryUrl(src);
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = container.querySelector('h3')?.textContent || key;
+      img.loading = 'lazy';
+      container.insertBefore(img, container.firstChild);
+    }
+    if (stop.animation_type && BADGE_LABEL[stop.animation_type]) {
+      const badge = document.createElement('div');
+      badge.className = 'animation-badge';
+      badge.textContent = BADGE_LABEL[stop.animation_type];
+      container.appendChild(badge);
+    }
   });
 }
 
-boot().catch(console.error);
+function applyCopy(copy) {
+  const c = { ...DEFAULT_COPY, ...copy };
+
+  document.getElementById('heroEyebrow').textContent = c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
+  document.getElementById('heroTitle').textContent = c.hero?.title ?? DEFAULT_COPY.hero.title;
+  document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
+  document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
+
+  document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
+  document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
+  document.getElementById('whyTitle').textContent = c.intro?.whyTitle ?? DEFAULT_COPY.intro.whyTitle;
+  document.getElementById('whyBody').textContent = c.intro?.whyBody ?? DEFAULT_COPY.intro.whyBody;
+  document.getElementById('introExtra').textContent = c.intro?.extra ?? DEFAULT_COPY.intro.extra;
+
+  const facts = (c.intro?.facts && c.intro.facts.length) ? c.intro.facts : DEFAULT_COPY.intro.facts;
+  document.getElementById('factsContainer').innerHTML = facts.map(f =>
+    `<div class="fact"><div class="k">${f.k}</div><div class="v">${f.v}</div></div>`
+  ).join('');
+
+  document.getElementById('regionsTitle').textContent = c.regionsIntro?.title ?? DEFAULT_COPY.regionsIntro.title;
+  document.getElementById('regionsSub').textContent = c.regionsIntro?.sub ?? DEFAULT_COPY.regionsIntro.sub;
+
+  STOP_KEYS.forEach(key => {
+    const stopCopy = (c.stops && c.stops[key]) || DEFAULT_COPY.stops[key];
+    const section = document.querySelector(`section.stop[data-stop="${key}"]`);
+    if (!section || !stopCopy) return;
+
+    const eyebrowEl = section.querySelector('.stop-content .eyebrow');
+    const subtitleEl = section.querySelector('.stop-content .subtitle');
+    const pointsEl = section.querySelector('.stop-content .stop-points');
+    if (eyebrowEl) eyebrowEl.textContent = stopCopy.eyebrow || '';
+    if (subtitleEl) subtitleEl.textContent = stopCopy.subtitle || '';
+    if (pointsEl) {
+      const isLight = pointsEl.closest('.stop-content').classList.contains('dark');
+      pointsEl.innerHTML = (stopCopy.points || []).map(p =>
+        `<div class="point${isLight ? ' light' : ''}"><b>${p.title}</b><span>${p.body}</span></div>`
+      ).join('');
+    }
+  });
+
+  document.getElementById('planTitle').textContent = c.plan?.title ?? DEFAULT_COPY.plan.title;
+  const planCards = (c.plan?.cards && c.plan.cards.length) ? c.plan.cards : DEFAULT_COPY.plan.cards;
+  document.getElementById('planCardsContainer').innerHTML = planCards.map(card =>
+    `<div class="plan-card"><h4>${card.title}</h4><p>${card.body}</p></div>`
+  ).join('');
+  document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
+}
+
+function applyRegionBlurbs() {
+  REGION_KEYS.forEach(key => {
+    const region = REGION_DATA[key];
+    if (!region) return;
+    const row = document.querySelector(`.region-row[data-region="${key}"]`);
+    if (!row) return;
+    const h4 = row.querySelector('h4');
+    const p = row.querySelector('p');
+    if (h4) h4.textContent = region.name;
+    if (p) p.textContent = region.blurb;
+    const bar = row.querySelector('.region-bar');
+    if (bar) bar.style.background = `var(--${region.color || 'forest'})`;
+  });
+}
+
+function attachErrorHandling() {
+  document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('error', () => { img.style.display = 'none'; }, { once: true });
+  });
+}
+
+function preloadImages(content) {
+  const ids = [
+    ...(content.hero_kente || []),
+    ...Object.values(content.stops || {}).map(s => s.gif_url || (s.image_public_ids && s.image_public_ids[0]))
+  ].filter(Boolean);
+  ids.forEach(id => {
+    const url = cloudinaryUrl(id);
+    if (!url) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = url;
+    document.head.appendChild(link);
+  });
+}
+
+let leafletLoaded = null;
+function whenLeafletReady() {
+  if (leafletLoaded) return leafletLoaded;
+  leafletLoaded = new Promise((resolve) => {
+    if (window.L) return resolve();
+    window.addEventListener('load', () => resolve());
+  });
+  return leafletLoaded;
+}
+
+const mapInstances = {};
+
+function renderRegionLists(key, data) {
+  const container = document.getElementById(`lists-${key}`);
+  const sightItems = data.sights.map(s =>
+    `<li><b>${s.name}</b>${s.note}</li>`
+  ).join('');
+
+  let foodHtml;
+  if (data.food.length) {
+    foodHtml = `<ul class="food">${data.food.map(f => `<li><b>${f.name}</b>${f.note}</li>`).join('')}</ul>
+      <div class="approx-note">Pin locations for food spots are approximate.</div>`;
+  } else {
+    foodHtml = `<div class="approx-note" style="font-style:normal; color:#c9c2b2;">${data.foodNote || ''}</div>`;
+  }
+
+  container.innerHTML = `
+    <div>
+      <h5 class="sights">Tourism sites</h5>
+      <ul class="sights">${sightItems}</ul>
+    </div>
+    <div>
+      <h5 class="food">Food</h5>
+      ${foodHtml}
+    </div>
+  `;
+}
+
+async function initRegionMap(key) {
+  if (mapInstances[key]) return;
+  await whenLeafletReady();
+  const data = REGION_DATA[key];
+  const map = L.map(`map-${key}`, { scrollWheelZoom: false }).setView(data.center, data.zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(map);
+
+  function pin(color) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #1B1812;"></div>`,
+      iconSize: [14, 14]
+    });
+  }
+
+  data.sights.forEach(s => {
+    const safeName = s.name.replace(/"/g, '&quot;');
+    L.marker([s.lat, s.lng], { icon: pin('#F2B705') }).addTo(map)
+      .bindPopup(`<b>${s.name}</b><br>${s.note}<br><button class="view-3d-btn" data-lat="${s.lat}" data-lng="${s.lng}" data-name="${safeName}">🌐 View in 3D</button>`);
+  });
+  data.food.forEach(f => {
+    L.marker([f.lat, f.lng], { icon: pin('#B5471B') }).addTo(map)
+      .bindPopup(`<b>${f.name}</b><br>${f.note}`);
+  });
+
+  mapInstances[key] = map;
+}
+
+document.querySelectorAll('.region-row').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const key = btn.getAttribute('data-region');
+    const panel = document.getElementById(`panel-${key}`);
+    const isOpen = panel.classList.contains('open');
+
+    document.querySelectorAll('.region-panel').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.region-row').forEach(r => r.setAttribute('aria-expanded', 'false'));
+
+    if (!isOpen) {
+      panel.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      
+
+      const regionBar = btn.querySelector('.region-bar');
+      if (regionBar) {
+        const barColor = window.getComputedStyle(regionBar).backgroundColor;
+        const mapEl = document.getElementById(`map-${key}`);
+        if (mapEl) {
+          mapEl.style.borderLeftColor = barColor;
+        }
+      }
+      
+      renderRegionLists(key, REGION_DATA[key]);
+      await initRegionMap(key);
+      setTimeout(() => mapInstances[key] && mapInstances[key].invalidateSize(), 360);
+    }
+  });
+});
+
+async function init() {
+  let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
+  try {
+    const config = await loadConfig();
+    cloudinaryCloudName = config.cloudinaryCloudName;
+    data = await loadSiteData(config.firebaseConfig);
+  } catch (err) {
+    console.error('Falling back to default content/copy/regions:', err);
+  }
+  REGION_DATA = data.regions;
+  applyCopy(data.copy);
+  applyRegionBlurbs();
+  applyContent(data.content);
+  attachErrorHandling();
+  preloadImages(data.content);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+
+let site3dMap = null;
+let lastSite3dView = null;
+
+function site3dStyle() {
+  return {
+    version: 8,
+    sources: {
+      osm: {
+        type: 'raster',
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        attribution: '&copy; OpenStreetMap contributors'
+      },
+      terrainSource: {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        encoding: 'terrarium',
+        maxzoom: 15
+      }
+    },
+    layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+    terrain: { source: 'terrainSource', exaggeration: 1.6 }
+  };
+}
+
+function openSite3D(lat, lng, name) {
+  const overlay = document.getElementById('site3dOverlay');
+  document.getElementById('site3dTitle').textContent = name;
+  overlay.classList.add('open');
+
+  lastSite3dView = { center: [lng, lat], zoom: 15.2, pitch: 65, bearing: -20 };
+
+  if (!site3dMap) {
+    site3dMap = new maplibregl.Map({
+      container: 'site3dMap',
+      style: site3dStyle(),
+      ...lastSite3dView,
+      attributionControl: true
+    });
+    site3dMap.addControl(new maplibregl.NavigationControl({ visualizePitch: true }));
+    site3dMap.on('load', () => {
+      site3dMap.setTerrain({ source: 'terrainSource', exaggeration: 1.6 });
+      addSite3DMarker(lng, lat);
+    });
+  } else {
+    site3dMap.jumpTo(lastSite3dView);
+    site3dMap.resize();
+    addSite3DMarker(lng, lat);
+  }
+}
+
+let site3dMarker = null;
+function addSite3DMarker(lng, lat) {
+  if (site3dMarker) site3dMarker.remove();
+  const el = document.createElement('div');
+  el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#F2B705;border:2px solid #1B1812;';
+  site3dMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(site3dMap);
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.view-3d-btn');
+  if (btn) {
+    openSite3D(parseFloat(btn.dataset.lat), parseFloat(btn.dataset.lng), btn.dataset.name);
+  }
+});
+
+document.getElementById('site3dClose').addEventListener('click', () => {
+  document.getElementById('site3dOverlay').classList.remove('open');
+});
+document.getElementById('site3dReset').addEventListener('click', () => {
+  if (site3dMap && lastSite3dView) site3dMap.jumpTo(lastSite3dView);
+});
+</script>
+
+<script>
+
+document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const submitBtn = document.getElementById('inquirySubmit');
+  const status = document.getElementById('inquiryStatus');
+
+  const payload = {
+    name: form.name.value.trim(),
+    email: form.email.value.trim(),
+    startDate: form.startDate.value,
+    endDate: form.endDate.value,
+    message: form.message.value.trim(),
+    company: form.company.value
+  };
+
+  if (!payload.name || !payload.email) {
+    status.textContent = 'Name and email are required.';
+    status.className = 'status error';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  status.textContent = 'Sending…';
+  status.className = 'status';
+
+  try {
+    const res = await fetch('/api/send-inquiry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+    status.textContent = "Sent — we'll be in touch soon.";
+    status.className = 'status success';
+    form.reset();
+  } catch (err) {
+    status.textContent = "Couldn't send that — please try again in a moment.";
+    status.className = 'status error';
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
 </script>
 
 </body>
