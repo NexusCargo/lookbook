@@ -52,6 +52,9 @@
     align-items:stretch;
     overflow:hidden;
   }
+  header.hero.pos-right{ flex-direction:row-reverse; }
+  header.hero.pos-top{ flex-direction:column; }
+  header.hero.pos-bottom{ flex-direction:column-reverse; }
   .hero-main{
     flex:1;
     display:flex;
@@ -64,6 +67,14 @@
     min-width:70px;
     display:flex;
     flex-direction:column;
+  }
+  header.hero.pos-top .hero-strip,
+  header.hero.pos-bottom .hero-strip{
+    width:100%;
+    height:9%;
+    min-width:0;
+    min-height:70px;
+    flex-direction:row;
   }
   .hero-strip > div{
     flex:1;
@@ -95,7 +106,10 @@
     mix-blend-mode:soft-light;
     opacity:0.92;
   }
-  .hero-stripe-overlay svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .hero-stripe-overlay svg{ position:absolute; inset:0; width:100%; height:100%; display:block; transition:transform .3s ease; }
+  .hero-stripe-overlay.pos-right svg{ transform:scaleX(-1); }
+  .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
+  .hero-stripe-overlay.pos-bottom svg{ transform:none; }
   .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
   .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 3.4s linear infinite; }
   .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
@@ -109,6 +123,29 @@
   @keyframes clothSway{
     0%, 100%{ transform:rotate(-0.6deg); }
     50%{ transform:rotate(0.6deg); }
+  }
+  .hero-light-beam{
+    position:absolute; inset:0;
+    z-index:1;
+    pointer-events:none;
+    display:none;
+    background:linear-gradient(112deg,
+      transparent 32%,
+      rgba(255,255,255,.10) 42%,
+      rgba(255,250,225,.45) 49%,
+      rgba(255,255,255,.10) 56%,
+      transparent 66%);
+    background-size:260% 100%;
+    background-position:-70% 0%;
+    mix-blend-mode:screen;
+    opacity:0.85;
+    animation:lightSweep 7s ease-in-out infinite;
+  }
+  .hero-light-beam.active{ display:block; }
+  @keyframes lightSweep{
+    0%{ background-position:-70% 0%; }
+    50%{ background-position:170% 0%; }
+    100%{ background-position:-70% 0%; }
   }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
@@ -138,7 +175,8 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape{animation:none;}
+    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-light-beam{animation:none;}
+    .hero-light-beam{display:none !important;}
   }
 
   .scroll-cue{
@@ -574,6 +612,7 @@
 
 <header class="hero">
   <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
+  <div class="hero-light-beam" id="heroLightBeam"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -734,6 +773,8 @@ const DEFAULT_HERO_STRIPE = [
 const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
+  heroStripePosition: 'left',
+  heroLightBeam: false,
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -1021,10 +1062,17 @@ const STRIPE_STYLE_SVG = {
   }
 };
 
-function renderHeroStripe(segments, styleId) {
+function renderHeroStripe(segments, styleId, position) {
   const style = styleId || 'straight';
+  const pos = position || 'left';
+  const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
+
+  heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
+  heroEl.classList.add(`pos-${pos}`);
+  overlayEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
+  overlayEl.classList.add(`pos-${pos}`);
 
   if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
     overlayEl.style.display = 'none';
@@ -1055,6 +1103,12 @@ function renderHeroStripe(segments, styleId) {
   overlayEl.style.display = '';
   const colors = STRIPE_STYLE_SVG.colorsOf(segments);
   overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
+}
+
+function renderHeroLightBeam(enabled) {
+  const beam = document.getElementById('heroLightBeam');
+  if (!beam) return;
+  beam.classList.toggle('active', !!enabled);
 }
 
 function applySectionBg(sectionBg) {
@@ -1347,7 +1401,8 @@ async function init() {
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
-  renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle);
+  renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
+  renderHeroLightBeam(data.content.heroLightBeam);
   attachErrorHandling();
   preloadImages(data.content);
 }

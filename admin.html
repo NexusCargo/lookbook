@@ -195,6 +195,16 @@
         <p style="font-size:12.5px; color:#888; margin:-4px 0 14px;">Preview uses your segment colors below. Pick a treatment, then Save.</p>
         <div id="stripeStyleGrid" class="stripe-style-grid"></div>
 
+        <h3 style="margin-top:20px;">Stripe position</h3>
+        <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges.</p>
+        <div class="pill-select" id="stripePositionPicker"></div>
+
+        <h3 style="margin-top:20px;">Light beam sweep</h3>
+        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:13.5px; cursor:pointer;">
+          <input type="checkbox" id="cp-hero-lightbeam" style="width:auto;">
+          Add a soft light beam sweeping across the hero image
+        </label>
+
         <h3>Hero stripe colors</h3>
         <div id="stripeSegments"></div>
         <button id="addStripeSegmentBtn" type="button" class="list-add-btn">+ Add segment</button>
@@ -426,6 +436,8 @@ function defaultContent() {
   return {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
     heroStripeStyle: 'straight',
+    heroStripePosition: 'left',
+    heroLightBeam: false,
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
       acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
@@ -463,6 +475,8 @@ async function boot() {
       await loadAll();
       renderCopyForm();
       renderStripeSegments();
+      renderStripePositionPicker();
+      document.getElementById('cp-hero-lightbeam').checked = !!content.heroLightBeam;
       renderBgEditor('hero', 'Hero background');
       renderBgEditor('welcome', 'Welcome panel background');
       renderBgEditor('regionsBanner', 'Regions banner background');
@@ -502,6 +516,8 @@ function mergeContent(loaded) {
   const c = { ...defaults, ...(loaded || {}) };
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
   c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
+  c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
+  c.heroLightBeam = (loaded && typeof loaded.heroLightBeam === 'boolean') ? loaded.heroLightBeam : defaults.heroLightBeam;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -861,18 +877,27 @@ function buildStripeStyleSvg(styleId, colors) {
   return '';
 }
 
+function stripePreviewTransform() {
+  const pos = content.heroStripePosition || 'left';
+  if (pos === 'right') return 'scaleX(-1)';
+  if (pos === 'top') return 'scaleY(-1)';
+  return 'none';
+}
+
 function renderStripeStyleGrid() {
   const grid = document.getElementById('stripeStyleGrid');
   if (!grid) return;
   grid.innerHTML = '';
   const colors = stripeColors();
+  const previewTransform = stripePreviewTransform();
   STRIPE_STYLES.forEach(style => {
     const card = document.createElement('div');
     card.className = 'stripe-style-card' + (content.heroStripeStyle === style.id ? ' selected' : '');
+    const svgTransform = style.id === 'straight' ? 'none' : previewTransform;
     card.innerHTML = `
       <div class="ssc-preview">
         <span class="ssc-check"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="#0A3626" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid slice">${buildStripeStyleSvg(style.id, colors)}</svg>
+        <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid slice" style="transform:${svgTransform};">${buildStripeStyleSvg(style.id, colors)}</svg>
       </div>
       <div class="ssc-label">${style.label}<span>${style.desc}</span></div>
     `;
@@ -881,6 +906,34 @@ function renderStripeStyleGrid() {
       renderStripeStyleGrid();
     });
     grid.appendChild(card);
+  });
+}
+
+const STRIPE_POSITIONS = [
+  ['left', 'Left'],
+  ['right', 'Right'],
+  ['top', 'Top'],
+  ['bottom', 'Bottom']
+];
+
+function renderStripePositionPicker() {
+  const wrap = document.getElementById('stripePositionPicker');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  STRIPE_POSITIONS.forEach(([val, label]) => {
+    const pill = document.createElement('label');
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'stripe-position';
+    radio.value = val;
+    radio.checked = (content.heroStripePosition || 'left') === val;
+    radio.addEventListener('change', () => {
+      content.heroStripePosition = val;
+      renderStripeStyleGrid();
+    });
+    pill.appendChild(radio);
+    pill.appendChild(document.createTextNode(label));
+    wrap.appendChild(pill);
   });
 }
 
@@ -1004,6 +1057,9 @@ function renderStripeSegments() {
 document.getElementById('addStripeSegmentBtn').addEventListener('click', () => {
   content.heroStripe.push({ type: 'color', color: '#0E4D34' });
   renderStripeSegments();
+});
+document.getElementById('cp-hero-lightbeam').addEventListener('change', (e) => {
+  content.heroLightBeam = e.target.checked;
 });
 function renderRegionCards() {
   const container = document.getElementById('regionCards');
