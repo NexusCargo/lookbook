@@ -995,8 +995,8 @@ const STRIPE_STYLE_SVG = {
   }
 };
 
-function renderHeroStripe(segments) {
-  const style = (content.heroStripeStyle) || 'straight';
+function renderHeroStripe(segments, styleId) {
+  const style = styleId || 'straight';
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
 
@@ -1321,7 +1321,7 @@ async function init() {
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
-  renderHeroStripe(data.content.heroStripe);
+  renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle);
   attachErrorHandling();
   preloadImages(data.content);
 }
