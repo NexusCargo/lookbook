@@ -1,12 +1,21 @@
 import admin from 'firebase-admin';
 import { v2 as cloudinary } from 'cloudinary';
 
+let initError = null;
+
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    ),
-  });
+  try {
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT env var is missing');
+    const serviceAccount = JSON.parse(raw);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  } catch (err) {
+    // Don't crash the whole module on import — surface this as a clean 500 instead
+    initError = `Firebase admin init failed: ${err.message}`;
+    console.error(initError);
+  }
 }
 
 cloudinary.config({
@@ -27,45 +36,12 @@ async function requireAdmin(req) {
     throw { status: 401, message: 'Invalid or expired token' };
   }
 
-  // 🔍 DEBUG: Log what we got from the token
-  console.log('🔐 Token decoded:', {
-    uid: decoded.uid,
-    email: decoded.email,
-    email_verified: decoded.email_verified,
-    hasAdminClaim: decoded.admin || false,
-    allClaims: Object.keys(decoded)
-  });
-
-  // ✅ IMPROVED: Check custom claim first, then fallback to email list
   const allowedEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
+    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
-  console.log('📋 Allowed admin emails from env:', allowedEmails);
-
-  // Check custom claim (preferred method)
-  if (decoded.admin === true) {
-    console.log('✅ User authorized via custom claim');
-    return;
+  if (!decoded.email || !allowedEmails.includes(decoded.email.toLowerCase())) {
+    throw { status: 403, message: 'Not authorized as admin' };
   }
-
-  // Fallback: check email list
-  if (decoded.email) {
-    const userEmail = decoded.email.toLowerCase();
-    console.log(`📧 Checking user email: "${userEmail}" against allowed list`);
-    
-    if (allowedEmails.includes(userEmail)) {
-      console.log('✅ User email found in admin list');
-      return;
-    }
-  }
-
-  // Neither method worked
-  throw {
-    status: 403,
-    message: `Not authorized as admin. Email: ${decoded.email || 'NOT_PROVIDED'}`
-  };
 }
 
 export default async function handler(req, res) {
@@ -73,21 +49,40 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (initError) {
+    return res.status(500).json({ error: initError });
+  }
+
+  const missingCloudinaryVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+    .filter((key) => !process.env[key]);
+  if (missingCloudinaryVars.length) {
+    return res.status(500).json({
+      error: `Missing Cloudinary env vars: ${missingCloudinaryVars.join(', ')}`,
+    });
+  }
+
   try {
     await requireAdmin(req);
   } catch (err) {
-    console.error('❌ Auth error:', err);
     return res.status(err.status || 401).json({ error: err.message || 'Unauthorized' });
   }
 
-  const { tag } = req.body || {};
+  const { tag, paramsToSign: widgetParams } = req.body || {};
   if (!tag) {
     return res.status(400).json({ error: 'Missing tag' });
   }
 
   const timestamp = Math.round(Date.now() / 1000);
   const folder = 'lookbook';
-  const paramsToSign = { timestamp, folder, tags: tag };
+
+  // If the widget sent its own params_to_sign (the real params it's about to
+  // upload with — this includes things like `source: uw` that the Cloudinary
+  // widget adds automatically), sign exactly those so the signature matches
+  // what Cloudinary recomputes on its end. Force folder/tags server-side so
+  // the client can't smuggle in different values.
+  const paramsToSign = widgetParams
+    ? { ...widgetParams, folder, tags: tag }
+    : { timestamp, folder, tags: tag };
 
   try {
     const signature = cloudinary.utils.api_sign_request(
@@ -97,14 +92,13 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       signature,
-      timestamp,
+      timestamp: paramsToSign.timestamp || timestamp,
       cloudName: process.env.CLOUDINARY_CLOUD_NAME,
       apiKey: process.env.CLOUDINARY_API_KEY,
       folder,
       tag,
     });
   } catch (err) {
-    console.error('❌ Signature error:', err);
     res.status(500).json({ error: err.message || 'Failed to sign upload' });
   }
 }
