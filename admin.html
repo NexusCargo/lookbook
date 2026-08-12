@@ -256,7 +256,6 @@ const REGION_COLORS = ['forest', 'terracotta', 'gold', 'clay', 'faded-gold'];
 const ANIMATION_TYPES = {
   carousel: '📽️ Carousel',
   social: '📱 Social',
-  transitions: '🔄 Transitions',
   hero_stripe: '🎬 Hero Stripe (no images needed)'
 };
 
@@ -1139,6 +1138,8 @@ function renderStopsList() {
 
     const imgHeader = document.createElement('h5'); imgHeader.textContent = 'Image side';
     card.appendChild(imgHeader);
+
+    if (!ANIMATION_TYPES[sd.animation_type]) sd.animation_type = 'carousel';
 
     const animSelect = document.createElement('select');
     Object.entries(ANIMATION_TYPES).forEach(([val, label]) => {
