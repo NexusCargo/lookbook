@@ -127,10 +127,14 @@
   .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
   .stripe-style-card .ssc-preview .rb-drift{ animation: sscDrift 9s ease-in-out infinite; }
   .stripe-style-card .ssc-preview .rb-flow{ animation: sscFlow 3.2s linear infinite; }
+  .stripe-style-card .ssc-preview .rb-flow.tight-wave{ animation: sscTightWaveFlow 2.8s linear infinite; }
+  .stripe-style-card .ssc-preview .wave-flag{ animation: sscWaveFlag 4s ease-in-out infinite; transform-origin:0% 0%; }
   .stripe-style-card .ssc-preview .fold-drape{ animation: sscSway 5.5s ease-in-out infinite; transform-origin:100% 0%; }
   @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
   @keyframes sscDrift{ 0%,100%{transform:translateX(-10px);} 50%{transform:translateX(10px);} }
   @keyframes sscFlow{ to{ stroke-dashoffset:-100; } }
+  @keyframes sscTightWaveFlow{ to{ stroke-dashoffset:-85; } }
+  @keyframes sscWaveFlag{ 0%,100%{transform:scaleX(1) scaleY(1);} 25%{transform:scaleX(0.98) scaleY(1.06);} 50%{transform:scaleX(0.96) scaleY(1.1);} 75%{transform:scaleX(0.98) scaleY(1.06);} }
   @keyframes sscSway{ 0%,100%{transform:rotate(-0.6deg);} 50%{transform:rotate(0.6deg);} }
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
@@ -199,13 +203,7 @@
         <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges.</p>
         <div class="pill-select" id="stripePositionPicker"></div>
 
-        <h3 style="margin-top:20px;">Light beam sweep</h3>
-        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:13.5px; cursor:pointer;">
-          <input type="checkbox" id="cp-hero-lightbeam" style="width:auto;">
-          Add a soft light beam sweeping across the hero image
-        </label>
-
-        <h3>Hero stripe colors</h3>
+        <h3 style="margin-top:20px;">Hero stripe colors</h3>
         <div id="stripeSegments"></div>
         <button id="addStripeSegmentBtn" type="button" class="list-add-btn">+ Add segment</button>
       </div>
@@ -437,7 +435,6 @@ function defaultContent() {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
     heroStripeStyle: 'straight',
     heroStripePosition: 'left',
-    heroLightBeam: false,
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
       acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
@@ -476,7 +473,6 @@ async function boot() {
       renderCopyForm();
       renderStripeSegments();
       renderStripePositionPicker();
-      document.getElementById('cp-hero-lightbeam').checked = !!content.heroLightBeam;
       renderBgEditor('hero', 'Hero background');
       renderBgEditor('welcome', 'Welcome panel background');
       renderBgEditor('regionsBanner', 'Regions banner background');
@@ -517,7 +513,6 @@ function mergeContent(loaded) {
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
   c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
-  c.heroLightBeam = (loaded && typeof loaded.heroLightBeam === 'boolean') ? loaded.heroLightBeam : defaults.heroLightBeam;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -792,9 +787,8 @@ function renderCopyForm() {
 
 const STRIPE_STYLES = [
   { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
-  { id: 'serpentine', label: 'Serpentine Selvedge', desc: 'One band s-curves, fades at both ends' },
-  { id: 'horizon', label: 'Horizon Weave', desc: 'Footer band with a rising wave' },
-  { id: 'trail', label: 'Adinkra Trail', desc: 'Three thin threads wander independently' },
+  { id: 'trail', label: 'Sea Wave', desc: 'Three threads undulating like ocean waves' },
+  { id: 'flag', label: 'Waving Flag', desc: 'Billowing fabric edge, living motion' },
   { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' }
 ];
 
@@ -803,10 +797,10 @@ function stripeColors() {
   return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
 }
 
-function ribbonBandSvg(uid, d, colors, width, fade) {
+function ribbonBandSvg(uid, d, colors, width, fade, extraClass = '') {
   const n = colors.length;
   const strokes = colors.map((c, i) =>
-    `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+    `<path class="rb-flow ${extraClass}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
   ).join('');
   return `
   <defs>
@@ -831,27 +825,30 @@ function buildStripeStyleSvg(styleId, colors) {
     const bandH = 300 / n;
     return colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
   }
-  if (styleId === 'serpentine') {
-    return ribbonBandSvg('ss-a',
-      'M -60 240 C 160 240, 160 80, 380 80 S 600 230, 820 230 S 1000 70 1060 70',
-      [c0, INK, c1, c2, c0], 22, true);
-  }
-  if (styleId === 'horizon') {
-    return `
-      <rect x="0" y="252" width="1000" height="48" fill="${c2}" opacity="0.9"/>
-      <rect x="0" y="252" width="1000" height="6" fill="${c0}"/>
-      ${ribbonBandSvg('ss-b', 'M -60 230 C 220 230, 260 140, 460 165 S 700 235, 900 150 S 1000 120 1060 120', [c0, c1, INK], 16, true)}
-    `;
-  }
   if (styleId === 'trail') {
     return `
-      ${ribbonBandSvg('ss-c1', 'M -60 50 C 200 50 250 150 460 135 S 720 30 1060 65', [c0], 6, true)}
-      ${ribbonBandSvg('ss-c2', 'M -60 120 C 230 120 270 220 490 205 S 730 105 1060 135', [c1], 6, true)}
-      ${ribbonBandSvg('ss-c3', 'M -60 190 C 250 190 280 275 510 260 S 750 175 1060 205', [c2], 6, true)}
-      <g fill="${IVORY}" opacity="0.9">
-        <rect x="228" y="95" width="8" height="8" transform="rotate(45 232 99)"/>
-        <rect x="468" y="165" width="8" height="8" transform="rotate(45 472 169)"/>
-        <rect x="708" y="52" width="8" height="8" transform="rotate(45 712 56)"/>
+      ${ribbonBandSvg('ss-c1', 'M -60 70 C 180 70 280 130 480 130 S 780 70 1060 85', [c0], 7, false, 'tight-wave')}
+      ${ribbonBandSvg('ss-c2', 'M -60 150 C 200 150 300 210 500 210 S 800 150 1060 165', [c1], 7, false, 'tight-wave')}
+      ${ribbonBandSvg('ss-c3', 'M -60 230 C 220 230 320 290 520 290 S 820 230 1060 245', [c2], 7, false, 'tight-wave')}
+    `;
+  }
+  if (styleId === 'flag') {
+    return `
+      <defs>
+        <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${c0}" stop-opacity="0.9"/>
+          <stop offset="1" stop-color="${c1}" stop-opacity="0.9"/>
+        </linearGradient>
+        <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${c1}" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="${c2}" stop-opacity="0.85"/>
+        </linearGradient>
+      </defs>
+      <g class="wave-flag">
+        <path d="M 0 60 Q 120 20 240 60 T 480 60 T 720 60 T 960 60 L 960 160 Q 840 200 720 160 T 480 160 T 240 160 T 0 160 Z" 
+          fill="url(#flag-grad-1)"/>
+        <path d="M 0 160 Q 120 120 240 160 T 480 160 T 720 160 T 960 160 L 960 240 Q 840 280 720 240 T 480 240 T 240 240 T 0 240 Z" 
+          fill="url(#flag-grad-2)"/>
       </g>
     `;
   }
@@ -1058,9 +1055,7 @@ document.getElementById('addStripeSegmentBtn').addEventListener('click', () => {
   content.heroStripe.push({ type: 'color', color: '#0E4D34' });
   renderStripeSegments();
 });
-document.getElementById('cp-hero-lightbeam').addEventListener('change', (e) => {
-  content.heroLightBeam = e.target.checked;
-});
+
 function renderRegionCards() {
   const container = document.getElementById('regionCards');
   container.innerHTML = '';

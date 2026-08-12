@@ -111,8 +111,10 @@
   .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
   .hero-stripe-overlay.pos-bottom svg{ transform:none; }
   .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
-  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 3.4s linear infinite; }
+  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 2.8s linear infinite; }
+  .hero-stripe-overlay .rb-flow.tight-wave{ animation:tightWaveFlow 3s linear infinite; }
   .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
+  .hero-stripe-overlay .wave-flag{ animation:waveFlag 4s ease-in-out infinite; transform-origin:0% 0%; will-change:transform; }
   @keyframes ribbonDrift{
     0%, 100%{ transform:translateX(-14px); }
     50%{ transform:translateX(14px); }
@@ -120,32 +122,45 @@
   @keyframes ribbonFlow{
     to{ stroke-dashoffset:-144; }
   }
+  @keyframes tightWaveFlow{
+    to{ stroke-dashoffset:-102; }
+  }
   @keyframes clothSway{
     0%, 100%{ transform:rotate(-0.6deg); }
     50%{ transform:rotate(0.6deg); }
+  }
+  @keyframes waveFlag{
+    0%, 100%{ transform:scaleX(1) scaleY(1); }
+    25%{ transform:scaleX(0.98) scaleY(1.08); }
+    50%{ transform:scaleX(0.96) scaleY(1.12); }
+    75%{ transform:scaleX(0.98) scaleY(1.08); }
   }
   .hero-light-beam{
     position:absolute; inset:0;
     z-index:1;
     pointer-events:none;
     display:none;
-    background:linear-gradient(112deg,
-      transparent 32%,
-      rgba(255,255,255,.10) 42%,
-      rgba(255,250,225,.45) 49%,
-      rgba(255,255,255,.10) 56%,
-      transparent 66%);
-    background-size:260% 100%;
-    background-position:-70% 0%;
+    background:linear-gradient(90deg,
+      transparent 0%,
+      transparent 8%,
+      rgba(255,255,255,.06) 18%,
+      rgba(255,250,225,.32) 35%,
+      rgba(255,255,255,.32) 50%,
+      rgba(255,250,225,.32) 65%,
+      rgba(255,255,255,.06) 82%,
+      transparent 92%,
+      transparent 100%);
+    background-size:100% 100%;
+    background-position:0% 0%;
     mix-blend-mode:screen;
-    opacity:0.85;
-    animation:lightSweep 7s ease-in-out infinite;
+    opacity:0.88;
+    animation:lightBeamSweep 8.5s ease-in-out infinite;
   }
   .hero-light-beam.active{ display:block; }
-  @keyframes lightSweep{
-    0%{ background-position:-70% 0%; }
-    50%{ background-position:170% 0%; }
-    100%{ background-position:-70% 0%; }
+  @keyframes lightBeamSweep{
+    0%{ transform:translateX(-120%); }
+    50%{ transform:translateX(120%); }
+    100%{ transform:translateX(-120%); }
   }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
@@ -774,7 +789,6 @@ const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
-  heroLightBeam: false,
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -993,10 +1007,11 @@ const STRIPE_STYLE_SVG = {
     const cols = (segments || []).filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
     return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
   },
-  ribbon(uid, d, colors, width, fade) {
+  ribbon(uid, d, colors, width, fade, tightWave = false) {
     const n = colors.length;
+    const dashArray = tightWave ? '34 20' : '46 26';
     const strokes = colors.map((c, i) =>
-      `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="46 26" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+      `<path class="rb-flow${tightWave ? ' tight-wave' : ''}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="${dashArray}" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
     ).join('');
     return `
     <defs>
@@ -1015,27 +1030,30 @@ const STRIPE_STYLE_SVG = {
   build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
     const INK = '#171310', IVORY = '#F5EFE3';
-    if (styleId === 'serpentine') {
-      return this.ribbon('hs-a',
-        'M -60 340 C 160 340, 160 120, 380 120 S 600 330, 820 330 S 1000 100 1060 100',
-        [c0, INK, c1, c2, c0], 30, true);
-    }
-    if (styleId === 'horizon') {
-      return `
-        <rect x="0" y="356" width="1000" height="64" fill="${c2}" opacity="0.9"/>
-        <rect x="0" y="356" width="1000" height="8" fill="${c0}"/>
-        ${this.ribbon('hs-b', 'M -60 330 C 220 330, 260 220, 460 250 S 700 340, 900 230 S 1000 190 1060 190', [c0, c1, INK], 22, true)}
-      `;
-    }
     if (styleId === 'trail') {
       return `
-        ${this.ribbon('hs-c1', 'M -60 70 C 200 70 250 210 460 190 S 720 40 1060 90', [c0], 7, true)}
-        ${this.ribbon('hs-c2', 'M -60 170 C 230 170 270 310 490 290 S 730 150 1060 190', [c1], 7, true)}
-        ${this.ribbon('hs-c3', 'M -60 270 C 250 270 280 390 510 370 S 750 250 1060 290', [c2], 7, true)}
-        <g fill="${IVORY}" opacity="0.9">
-          <rect x="228" y="132" width="10" height="10" transform="rotate(45 233 137)"/>
-          <rect x="468" y="232" width="10" height="10" transform="rotate(45 473 237)"/>
-          <rect x="708" y="72" width="10" height="10" transform="rotate(45 713 77)"/>
+        ${this.ribbon('hs-c1', 'M -60 90 C 200 90 280 160 480 160 S 780 90 1060 110', [c0], 8, false, true)}
+        ${this.ribbon('hs-c2', 'M -60 190 C 220 190 300 260 500 260 S 800 190 1060 210', [c1], 8, false, true)}
+        ${this.ribbon('hs-c3', 'M -60 290 C 240 290 320 360 520 360 S 820 290 1060 310', [c2], 8, false, true)}
+      `;
+    }
+    if (styleId === 'flag') {
+      return `
+        <defs>
+          <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="${c0}" stop-opacity="0.92"/>
+            <stop offset="1" stop-color="${c1}" stop-opacity="0.92"/>
+          </linearGradient>
+          <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="${c1}" stop-opacity="0.87"/>
+            <stop offset="1" stop-color="${c2}" stop-opacity="0.87"/>
+          </linearGradient>
+        </defs>
+        <g class="wave-flag">
+          <path d="M 0 80 Q 150 30 300 80 T 600 80 T 900 80 T 1200 80 L 1200 200 Q 1050 250 900 200 T 600 200 T 300 200 T 0 200 Z" 
+            fill="url(#flag-grad-1)"/>
+          <path d="M 0 200 Q 150 150 300 200 T 600 200 T 900 200 T 1200 200 L 1200 320 Q 1050 370 900 320 T 600 320 T 300 320 T 0 320 Z" 
+            fill="url(#flag-grad-2)"/>
         </g>
       `;
     }
@@ -1068,6 +1086,7 @@ function renderHeroStripe(segments, styleId, position) {
   const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
+  const beam = document.getElementById('heroLightBeam');
 
   heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   heroEl.classList.add(`pos-${pos}`);
@@ -1079,6 +1098,7 @@ function renderHeroStripe(segments, styleId, position) {
     overlayEl.innerHTML = '';
     stripEl.style.display = '';
     stripEl.innerHTML = '';
+    if (beam) beam.classList.remove('active');
     (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
       if (seg.type === 'image' && seg.image) {
         const url = cloudinaryUrl(seg.image);
@@ -1103,12 +1123,7 @@ function renderHeroStripe(segments, styleId, position) {
   overlayEl.style.display = '';
   const colors = STRIPE_STYLE_SVG.colorsOf(segments);
   overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
-}
-
-function renderHeroLightBeam(enabled) {
-  const beam = document.getElementById('heroLightBeam');
-  if (!beam) return;
-  beam.classList.toggle('active', !!enabled);
+  if (beam) beam.classList.add('active');
 }
 
 function applySectionBg(sectionBg) {
@@ -1402,7 +1417,6 @@ async function init() {
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
   renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
-  renderHeroLightBeam(data.content.heroLightBeam);
   attachErrorHandling();
   preloadImages(data.content);
 }
