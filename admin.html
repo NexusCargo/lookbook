@@ -40,13 +40,9 @@
   .edit-section h2 { margin: 0 0 20px; font-size: 20px; color: #0A3626; border-bottom: 2px solid #F2B705; padding-bottom: 12px; }
   .edit-section h3 { margin: 24px 0 12px; font-size: 15px; color: #0A3626; }
   .section-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-  .stop-card { background: #f9f9f9; padding: 20px; border-radius: 4px; border: 1px solid #e0e0e0; }
-  .stop-card > label { display: flex; justify-content: space-between; align-items: center; }
   .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
   .thumbs img { width: 70px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
   .thumbs .empty { font-size: 12px; color: #999; }
-  .stop-card .row { display: flex; gap: 8px; margin-top: 10px; }
-  .stop-card .row button { flex: 1; font-size: 13px; }
   .stop-status { font-size: 11px; color: #888; margin-top: 8px; min-height: 14px; }
   .timestamp { font-size: 12px; color: #999; margin-top: 15px; text-align: right; }
   .section-info { background: #fff3e0; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #ff9800; font-size: 13px; line-height: 1.6; }
@@ -76,23 +72,55 @@
   .list-remove-btn:hover { background: #ffecec; }
   .list-add-btn { font-size: 12px; padding: 8px 14px; margin-top: 4px; }
 
-  .stop-copy-card {
-    border: 1px solid #e0e0e0; border-radius: 6px; padding: 18px; margin-bottom: 18px; background: #fafafa;
-  }
-  .stop-copy-card h4 { margin: 0 0 12px; font-size: 15px; color: #0A3626; }
   .region-copy-card {
     border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 22px; background: #fafafa;
   }
   .region-copy-card h4 { margin: 0 0 14px; font-size: 16px; color: #0A3626; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
-  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+  @media (max-width: 700px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+  /* Background (color + image) editor block, reused across Hero/Welcome/Regions/Stops */
+  .bg-editor {
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px; padding: 14px;
+  }
+  .bg-editor .swatch {
+    width: 64px; height: 64px; border-radius: 6px; flex: 0 0 auto;
+    background-size: cover; background-position: center; border: 1px solid #ddd;
+  }
+  .bg-editor .bg-controls { display: flex; flex-direction: column; gap: 8px; flex: 1 1 220px; min-width: 200px; }
+  .bg-editor .color-row { display: flex; gap: 8px; align-items: center; }
+  .bg-editor .color-row input[type="color"] { width: 46px; height: 34px; padding: 2px; cursor: pointer; }
+  .bg-editor .color-row input[type="text"] { font-family: monospace; font-size: 12px; }
+  .bg-editor .bg-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bg-editor .bg-actions button { font-size: 12px; padding: 7px 12px; }
+
+  /* Stop cards */
+  .stop-card-full {
+    border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fafafa;
+  }
+  .stop-card-full .stop-head {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 1px solid #e5e5e5;
+  }
+  .stop-card-full .stop-head h4 { margin: 0; font-size: 16px; color: #0A3626; }
+  .stop-card-full .stop-head-actions { display: flex; gap: 6px; }
+  .stop-card-full .stop-head-actions button { font-size: 12px; padding: 6px 10px; }
+  .stop-card-full h5 { margin: 18px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; }
+  .pill-select { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill-select label {
+    display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 13px;
+    background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 6px 14px; cursor: pointer; margin: 0;
+  }
+  .pill-select input { width: auto; margin: 0; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Ghana Lookbook Admin</h1>
-  <div class="subtitle">Manage images, page copy, and regional tourist sites & food</div>
+  <div class="subtitle">Edit every section's text, background, and layout in one place</div>
 </header>
 
 <div class="container">
@@ -121,48 +149,49 @@
   <div id="editSection" class="hidden">
 
     <div class="tabs">
-      <button class="tab-btn active" data-tab="images">🖼️ Images & Animations</button>
-      <button class="tab-btn" data-tab="copy">📝 Site Copy</button>
-      <button class="tab-btn" data-tab="regions">📍 Regions & Sites</button>
-      <button class="tab-btn" data-tab="backgrounds">🖼️ Section Backgrounds</button>
+      <button class="tab-btn active" data-tab="hero">🏠 Hero</button>
+      <button class="tab-btn" data-tab="welcome">👋 Welcome</button>
+      <button class="tab-btn" data-tab="regions">📍 Regions</button>
+      <button class="tab-btn" data-tab="stops">🧭 Stops</button>
+      <button class="tab-btn" data-tab="plan">🗺️ Plan Your Trip</button>
       <button class="tab-btn" data-tab="colors">🎨 Colors</button>
     </div>
 
-    
-    <div class="tab-panel active" id="tab-images">
-      <div class="edit-section">
-        <h2>Stop images</h2>
-        <div class="section-info">
-          Each stop can hold multiple images (used for Carousel/Social/Transitions) or none (Hero Stripe needs no images). Upload, pick an animation type, then Save. "Generate GIF" turns multiple uploaded images into one animated image — it needs at least 2.
-        </div>
-        <div class="section-row" id="stopCards"></div>
-      </div>
-
-      <div class="edit-section">
-        <h2>Hero kente stripe</h2>
-        <div id="kenteThumbs" class="thumbs"></div>
-        <button id="kenteUploadBtn">Upload stripe image</button>
-      </div>
-    </div>
-
-    
-    <div class="tab-panel" id="tab-copy">
+    <!-- HERO -->
+    <div class="tab-panel active" id="tab-hero">
       <div class="edit-section">
         <h2>Hero</h2>
+        <div class="section-info">The full-screen top banner. Set the text, and either a background color or an image (image takes priority when both are set).</div>
         <div class="two-col">
           <div class="input-group"><label>Eyebrow</label><input type="text" id="cp-hero-eyebrow"></div>
           <div class="input-group"><label>Title</label><input type="text" id="cp-hero-title"></div>
         </div>
         <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
-      </div>
 
+        <h3>Background</h3>
+        <div id="bg-hero"></div>
+
+        <h3>Kente stripe (the vertical strip beside the hero text)</h3>
+        <div class="section-info">Shown only if at least one image is uploaded — otherwise falls back to solid color blocks.</div>
+        <div id="kenteThumbs" class="thumbs"></div>
+        <button id="kenteUploadBtn">Upload stripe image</button>
+      </div>
+    </div>
+
+    <!-- WELCOME -->
+    <div class="tab-panel" id="tab-welcome">
       <div class="edit-section">
-        <h2>Intro</h2>
+        <h2>Welcome (Akwaaba panel)</h2>
         <div class="two-col">
           <div class="input-group"><label>Greeting (e.g. "Akwaaba.")</label><input type="text" id="cp-intro-greeting"></div>
           <div class="input-group"><label>Tagline</label><input type="text" id="cp-intro-tagline"></div>
         </div>
+
+        <h3>Background (left panel)</h3>
+        <div id="bg-welcome"></div>
+
+        <h3 style="margin-top:28px;">Right-hand copy</h3>
         <div class="input-group"><label>"Why" title</label><input type="text" id="cp-intro-whytitle"></div>
         <div class="input-group"><label>"Why" body</label><textarea id="cp-intro-whybody"></textarea></div>
         <div class="input-group"><label>Extra paragraph</label><textarea id="cp-intro-extra"></textarea></div>
@@ -171,33 +200,20 @@
         <div id="factsList"></div>
         <button class="list-add-btn" id="addFactBtn" type="button">+ Add fact</button>
       </div>
+    </div>
 
+    <!-- REGIONS -->
+    <div class="tab-panel" id="tab-regions">
       <div class="edit-section">
-        <h2>Regions section header</h2>
+        <h2>Five regions banner</h2>
         <div class="two-col">
           <div class="input-group"><label>Title</label><input type="text" id="cp-regions-title"></div>
           <div class="input-group"><label>Subtitle</label><input type="text" id="cp-regions-sub"></div>
         </div>
+        <h3>Background</h3>
+        <div id="bg-regionsBanner"></div>
       </div>
 
-      <div class="edit-section">
-        <h2>Stop write-ups</h2>
-        <div class="section-info">Each stop's eyebrow label, subtitle, and its list of highlight points. Add or remove points freely.</div>
-        <div id="stopCopyCards"></div>
-      </div>
-
-      <div class="edit-section">
-        <h2>Plan your trip section</h2>
-        <div class="input-group"><label>Title</label><input type="text" id="cp-plan-title"></div>
-        <h3>Plan cards</h3>
-        <div id="planCardsList"></div>
-        <button class="list-add-btn" id="addPlanCardBtn" type="button">+ Add card</button>
-        <div class="input-group" style="margin-top:16px;"><label>Closing line</label><input type="text" id="cp-plan-closing"></div>
-      </div>
-    </div>
-
-    
-    <div class="tab-panel" id="tab-regions">
       <div class="edit-section">
         <h2>Regions, tourist sites & food</h2>
         <div class="section-info">
@@ -207,21 +223,36 @@
       </div>
     </div>
 
-    <div class="tab-panel" id="tab-backgrounds">
+    <!-- STOPS -->
+    <div class="tab-panel" id="tab-stops">
       <div class="edit-section">
-        <h2>Section backgrounds</h2>
+        <h2>Stops</h2>
         <div class="section-info">
-          Optional background image for each section below, uploaded straight (no GIF generation). If a section has no image here, it falls back to its solid theme color from the Colors tab. Note: for the 8 stops, this is a separate visual from the stop images in the Images & Animations tab — if both are set, this background image takes priority on the live site.
+          Each stop is one full-screen section on the live page: an image side and a text side. Reorder with ▲▼, flip which side the image sits on, choose a light or dark text theme (or set your own background color), and add or remove stops freely. "Generate GIF" turns 2+ uploaded images into one animated image.
         </div>
-        <div class="section-row" id="backgroundCards"></div>
+        <div id="stopsList"></div>
+        <button id="addStopBtn" type="button" style="margin-top: 10px;">+ Add stop</button>
       </div>
     </div>
 
+    <!-- PLAN -->
+    <div class="tab-panel" id="tab-plan">
+      <div class="edit-section">
+        <h2>Plan your trip</h2>
+        <div class="input-group"><label>Title</label><input type="text" id="cp-plan-title"></div>
+        <h3>Cards</h3>
+        <div id="planCardsList"></div>
+        <button class="list-add-btn" id="addPlanCardBtn" type="button">+ Add card</button>
+        <div class="input-group" style="margin-top:16px;"><label>Closing line</label><input type="text" id="cp-plan-closing"></div>
+      </div>
+    </div>
+
+    <!-- COLORS -->
     <div class="tab-panel" id="tab-colors">
       <div class="edit-section">
         <h2>Site Colors</h2>
         <div class="section-info">
-          Edit the color palette for your entire site. Changes appear everywhere — hero section, regional accents, buttons, etc.
+          Edit the shared color palette. Changes appear everywhere that uses the theme colors — accents, buttons, region bars, and any section left on a solid background.
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;" id="colorsGrid"></div>
       </div>
@@ -244,33 +275,9 @@ import {
   getFirestore, doc, getDoc, setDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-const STOP_NAMES = {
-  castles: 'Castles of Memory',
-  canopy: 'Walk Among Giants',
-  accra: "The Capital's Pulse",
-  kumasi: 'Seat of a Kingdom',
-  savanna: 'Into the Savanna',
-  beaches: 'Where the Coast Slows Down',
-  culture: 'Rhythm, Cloth, Symbol',
-  food: 'Eat Like a Local'
-};
-const STOP_KEYS = Object.keys(STOP_NAMES);
+const STOP_KEYS = ['castles', 'canopy', 'accra', 'kumasi', 'savanna', 'beaches', 'culture', 'food'];
 const REGION_KEYS = ['accra', 'central', 'ashanti', 'volta', 'northern'];
 const REGION_COLORS = ['forest', 'terracotta', 'gold', 'clay', 'faded-gold'];
-
-const BACKGROUND_SECTIONS = {
-  hero: 'Hero (top banner)',
-  intro_left: 'Welcome / Akwaaba panel',
-  regions: 'Five Regions banner',
-  castles: 'Stop: Castles of Memory',
-  canopy: 'Stop: Walk Among Giants',
-  accra: "Stop: The Capital's Pulse",
-  kumasi: 'Stop: Seat of a Kingdom',
-  savanna: 'Stop: Into the Savanna',
-  beaches: 'Stop: Where the Coast Slows Down',
-  culture: 'Stop: Rhythm, Cloth, Symbol',
-  food: 'Stop: Eat Like a Local'
-};
 
 const ANIMATION_TYPES = {
   carousel: '📽️ Carousel',
@@ -278,6 +285,19 @@ const ANIMATION_TYPES = {
   transitions: '🔄 Transitions',
   hero_stripe: '🎬 Hero Stripe (no images needed)'
 };
+
+const DEFAULT_STOP_META = {
+  castles: { side: 'normal', theme: 'light', accent: '#B5471B' },
+  canopy: { side: 'reversed', theme: 'dark', accent: '#0E4D34' },
+  accra: { side: 'normal', theme: 'light', accent: '#B5471B' },
+  kumasi: { side: 'reversed', theme: 'dark', accent: '#D9A63A' },
+  savanna: { side: 'normal', theme: 'light', accent: '#B5471B' },
+  beaches: { side: 'reversed', theme: 'dark', accent: '#0E4D34' },
+  culture: { side: 'normal', theme: 'light', accent: '#B5471B' },
+  food: { side: 'reversed', theme: 'dark', accent: '#D9A63A' }
+};
+
+const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812' };
 
 const DEFAULT_COPY = {
   hero: { eyebrow: 'A LOOKBOOK OF THE GOLD COAST', title: 'GHANA', sub: 'Castles, canopy walks, kente looms, and the warmest welcome in West Africa.', edition: '2026 EDITION' },
@@ -290,42 +310,42 @@ const DEFAULT_COPY = {
   },
   regionsIntro: { title: 'Five regions, one route', sub: 'Coast to savanna, roughly north–south — the classic Ghana circuit.' },
   stops: {
-    castles: { eyebrow: 'CENTRAL REGION', subtitle: 'Cape Coast & Elmina Castles', points: [
+    castles: { heading: 'Castles of\nMemory', eyebrow: 'CENTRAL REGION', subtitle: 'Cape Coast & Elmina Castles', points: [
       { title: 'UNESCO World Heritage', body: "Two of the largest of over 40 fortifications along Ghana's coast, built by European traders from the 15th century on." },
       { title: 'The Door of No Return', body: "A profoundly moving stop for understanding the trans-Atlantic slave trade and the diaspora's roots." },
       { title: 'Pair it with', body: "A walk through Cape Coast's fishing harbor at dawn, when the wooden boats come in." }
     ]},
-    canopy: { eyebrow: 'CENTRAL REGION', subtitle: 'Kakum National Park Canopy Walkway', points: [
+    canopy: { heading: 'Walk Among\nGiants', eyebrow: 'CENTRAL REGION', subtitle: 'Kakum National Park Canopy Walkway', points: [
       { title: 'Seven rope bridges', body: "Suspended up to 40 meters above the rainforest floor — Ghana's most photographed adventure." },
       { title: 'Wildlife', body: 'Home to forest elephants, over 300 bird species, and Diana monkeys (best spotted at sunrise).' },
       { title: 'Good to know', body: 'Arrive early — the walkway gets busy and hot by mid-morning.' }
     ]},
-    accra: { eyebrow: 'GREATER ACCRA', subtitle: 'Accra: Jamestown to Osu', points: [
+    accra: { heading: "The Capital's\nPulse", eyebrow: 'GREATER ACCRA', subtitle: 'Accra: Jamestown to Osu', points: [
       { title: 'Jamestown', body: 'Colorful colonial-era fishing quarter, boxing gyms, and a lighthouse with sweeping coastal views.' },
       { title: 'Independence Square & Kwame Nkrumah Mausoleum', body: "The monumental heart of Ghana's 1957 independence — first in sub-Saharan Africa." },
       { title: "Osu & Accra's art scene", body: "Galleries, live highlife music, and the city's best chop bars and rooftop bars." }
     ]},
-    kumasi: { eyebrow: 'ASHANTI REGION', subtitle: 'Kumasi & the Ashanti Heartland', points: [
+    kumasi: { heading: 'Seat of a\nKingdom', eyebrow: 'ASHANTI REGION', subtitle: 'Kumasi & the Ashanti Heartland', points: [
       { title: 'Manhyia Palace', body: 'Home of the Asantehene, spiritual and cultural seat of the Ashanti Kingdom.' },
       { title: 'Bonwire', body: 'The kente-weaving village where the iconic strip-woven cloth originated — watch looms in motion.' },
       { title: 'Kejetia Market', body: "One of West Africa's largest markets — a sensory deep-dive into daily Ghanaian life." }
     ]},
-    savanna: { eyebrow: 'NORTHERN REGION', subtitle: 'Mole National Park', points: [
+    savanna: { heading: 'Into the\nSavanna', eyebrow: 'NORTHERN REGION', subtitle: 'Mole National Park', points: [
       { title: "Ghana's largest wildlife refuge", body: 'Walking safaris that bring you close to elephants, antelope, and baboons — rare on foot in Africa.' },
       { title: 'Larabanga Mosque', body: "A striking Sudanese-style mud-and-timber mosque, among West Africa's oldest." },
       { title: 'Getting there', body: 'A long but worthwhile drive north — best combined with an overnight at the park motel.' }
     ]},
-    beaches: { eyebrow: 'COASTLINE', subtitle: 'Beaches: Busua, Anomabo & Ada', points: [
+    beaches: { heading: 'Where the Coast\nSlows Down', eyebrow: 'COASTLINE', subtitle: 'Beaches: Busua, Anomabo & Ada', points: [
       { title: 'Busua', body: "Ghana's laid-back surf town — board rentals, beach bars, and reliable swells." },
       { title: 'Anomabo', body: 'Boutique beach lodges beside a working fishing village, close to Cape Coast.' },
       { title: 'Ada Foah', body: 'Where the Volta River meets the Atlantic — kayaking, river islands, and sandbar sunsets.' }
     ]},
-    culture: { eyebrow: 'CULTURE', subtitle: 'Festivals & Living Traditions', points: [
+    culture: { heading: 'Rhythm, Cloth,\nSymbol', eyebrow: 'CULTURE', subtitle: 'Festivals & Living Traditions', points: [
       { title: 'Homowo & Panafest', body: 'Harvest festivals and the biennial Pan-African Historical Theatre Festival draw the diaspora each year.' },
       { title: 'Adinkra symbols', body: 'Visual proverbs — stamped onto cloth — that encode Akan philosophy in a single mark.' },
       { title: 'Drumming & dance', body: 'Adowa, kpanlogo, and talking drums remain part of everyday celebration, not performance for tourists.' }
     ]},
-    food: { eyebrow: 'FLAVOR', subtitle: 'The Ghanaian Table', points: [
+    food: { heading: 'Eat Like\na Local', eyebrow: 'FLAVOR', subtitle: 'The Ghanaian Table', points: [
       { title: 'Jollof rice', body: "The dish behind West Africa's friendliest culinary rivalry — try Ghana's smoky version and judge yourself." },
       { title: 'Banku & grilled tilapia', body: 'Fermented corn-and-cassava dough, best eaten by hand with a fiery pepper sauce.' },
       { title: 'Kelewele & red red', body: 'Spiced fried plantain, and a black-eyed-pea stew fried in palm oil — street food royalty.' }
@@ -333,13 +353,13 @@ const DEFAULT_COPY = {
   },
   plan: {
     title: 'Plan your trip',
+    closing: 'Akwaaba — see you on the coast.',
     cards: [
       { title: 'Best time to visit', body: 'November–March: dry season, cooler nights, easiest travel between regions.' },
       { title: 'Getting around', body: 'Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.' },
       { title: 'Entry', body: 'Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.' },
       { title: 'Suggested route', body: 'Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.' }
-    ],
-    closing: 'Akwaaba — see you on the coast.'
+    ]
   }
 };
 
@@ -387,11 +407,26 @@ const DEFAULT_REGIONS = {
     ], food: [], foodNote: 'Dining options are limited to the Mole Motel and small local spots in Larabanga — expect simple, hearty northern Ghanaian fare like tuo zaafi and guinea fowl.' }
 };
 
+function defaultContent() {
+  return {
+    hero_kente: [],
+    stopOrder: [...STOP_KEYS],
+    stops: STOP_KEYS.reduce((acc, key) => {
+      acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
+      return acc;
+    }, {}),
+    sectionBg: {
+      hero: { color: DEFAULT_SECTION_COLOR.hero, image: null },
+      welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null },
+      regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null }
+    }
+  };
+}
+
 let auth, db, cloudinaryCloudName;
-let content = { hero_kente: [], stops: {} };
+let content = defaultContent();
 let copy = JSON.parse(JSON.stringify(DEFAULT_COPY));
 let regions = JSON.parse(JSON.stringify(DEFAULT_REGIONS));
-let sectionBackgrounds = {};
 
 async function boot() {
   const config = await (await fetch('/api/config')).json();
@@ -410,11 +445,13 @@ async function boot() {
       document.getElementById('authStatus').textContent = '✅ Signed in';
       document.getElementById('authStatus').style.color = '#388e3c';
       await loadAll();
-      renderStopCards();
-      renderKenteThumbs();
       renderCopyForm();
+      renderKenteThumbs();
+      renderBgEditor('hero', 'Hero background');
+      renderBgEditor('welcome', 'Welcome panel background');
+      renderBgEditor('regionsBanner', 'Regions banner background');
       renderRegionCards();
-      renderBackgroundCards();
+      renderStopsList();
       renderColorsForm();
     } else {
       document.getElementById('authStatus').textContent = '🔒 Not signed in';
@@ -444,41 +481,52 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
+function mergeContent(loaded) {
+  const defaults = defaultContent();
+  const c = { ...defaults, ...(loaded || {}) };
+  c.hero_kente = c.hero_kente || [];
+  c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
+  const loadedStops = (loaded && loaded.stops) || {};
+  c.stops = {};
+  c.stopOrder.forEach(key => {
+    const meta = DEFAULT_STOP_META[key] || { side: 'normal', theme: 'light', accent: '#B5471B' };
+    c.stops[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...meta, ...(loadedStops[key] || {}) };
+    c.stops[key].image_public_ids = c.stops[key].image_public_ids || [];
+  });
+  c.sectionBg = {
+    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
+    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
+  };
+  return c;
+}
+
 async function loadAll() {
-  const [contentSnap, copySnap, regionsSnap, colorsSnap, backgroundsSnap] = await Promise.all([
+  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
     getDoc(doc(db, 'lookbook-content', 'regions')),
-    getDoc(doc(db, 'lookbook-content', 'colors')),
-    getDoc(doc(db, 'lookbook-content', 'section-backgrounds'))
+    getDoc(doc(db, 'lookbook-content', 'colors'))
   ]);
-  content = contentSnap.exists() ? contentSnap.data() : { hero_kente: [], stops: {} };
-  content.hero_kente = content.hero_kente || [];
-  content.stops = content.stops || {};
+  content = mergeContent(contentSnap.exists() ? contentSnap.data() : null);
   copy = copySnap.exists() ? deepMerge(DEFAULT_COPY, copySnap.data()) : JSON.parse(JSON.stringify(DEFAULT_COPY));
+  copy.stops = copy.stops || {};
+  content.stopOrder.forEach(key => {
+    if (!copy.stops[key]) copy.stops[key] = { heading: '', eyebrow: '', subtitle: '', points: [] };
+  });
   regions = regionsSnap.exists() ? deepMerge(DEFAULT_REGIONS, regionsSnap.data()) : JSON.parse(JSON.stringify(DEFAULT_REGIONS));
-  
 
   if (colorsSnap.exists()) {
     window.currentColors = colorsSnap.data();
   }
 
-  if (backgroundsSnap.exists()) {
-    const bgData = backgroundsSnap.data();
-    delete bgData.lastUpdated;
-    sectionBackgrounds = bgData;
-  } else {
-    sectionBackgrounds = {};
-  }
-
-  const latest = [contentSnap, copySnap, regionsSnap, colorsSnap, backgroundsSnap]
+  const latest = [contentSnap, copySnap, regionsSnap, colorsSnap]
     .map(s => s.exists() && s.data().lastUpdated)
     .filter(Boolean).sort().reverse()[0];
   if (latest) document.getElementById('lastUpdated').textContent = new Date(latest).toLocaleString();
 }
 
 function deepMerge(base, override) {
-
   if (Array.isArray(base)) return override !== undefined ? override : base;
   if (typeof base === 'object' && base !== null) {
     const result = { ...base };
@@ -494,6 +542,48 @@ function thumbUrl(publicId) {
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_200/${publicId}`;
 }
 
+async function getUploadSignature(tag) {
+  const idToken = await auth.currentUser.getIdToken();
+  const res = await fetch('/api/cloudinary-sign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ tag })
+  });
+  if (!res.ok) throw new Error('not authorized to upload');
+  return res.json();
+}
+
+function openUploadWidget(tag, onDone) {
+  getUploadSignature(tag).then((sig) => {
+    const widget = cloudinary.createUploadWidget({
+      cloudName: sig.cloudName,
+      apiKey: sig.apiKey,
+      uploadSignature: (callback) => callback(sig.signature),
+      uploadSignatureTimestamp: sig.timestamp,
+      folder: sig.folder,
+      tags: [sig.tag],
+      sources: ['local', 'url', 'camera'],
+      multiple: false
+    }, (error, result) => {
+      if (!error && result.event === 'success') onDone(result.info.public_id);
+    });
+    widget.open();
+  }).catch(() => showMessage('Upload blocked — you are not on the admin list.', 'error'));
+}
+
+async function generateGif(tag) {
+  const idToken = await auth.currentUser.getIdToken();
+  const res = await fetch('/api/generate-gif', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ tag })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'unknown error');
+  return data.url;
+}
+
+/* ---------- Generic list editor (title/body style rows) ---------- */
 function createListEditor(container, items, fieldDefs) {
   function render() {
     container.innerHTML = '';
@@ -531,210 +621,87 @@ function createListEditor(container, items, fieldDefs) {
   };
 }
 
-function renderStopCards() {
-  const container = document.getElementById('stopCards');
+/* ---------- Background editor (color + optional image), reused for hero/welcome/regionsBanner ---------- */
+function renderBgEditor(key, label) {
+  const container = document.getElementById(`bg-${key}`);
   container.innerHTML = '';
-  Object.entries(STOP_NAMES).forEach(([key, name]) => {
-    const stopData = content.stops[key] || { animation_type: 'carousel', image_public_ids: [] };
-    content.stops[key] = stopData;
-    stopData.image_public_ids = stopData.image_public_ids || [];
+  const cfg = content.sectionBg[key];
 
-    const card = document.createElement('div');
-    card.className = 'stop-card';
+  const wrap = document.createElement('div');
+  wrap.className = 'bg-editor';
 
-    const labelRow = document.createElement('label');
-    labelRow.innerHTML = `<span>${name}</span>`;
-    const select = document.createElement('select');
-    Object.entries(ANIMATION_TYPES).forEach(([val, label]) => {
-      const opt = document.createElement('option');
-      opt.value = val; opt.textContent = label;
-      if (stopData.animation_type === val) opt.selected = true;
-      select.appendChild(opt);
-    });
-    select.addEventListener('change', () => { stopData.animation_type = select.value; });
-    labelRow.appendChild(select);
-    card.appendChild(labelRow);
+  const swatch = document.createElement('div');
+  swatch.className = 'swatch';
 
-    const thumbs = document.createElement('div');
-    thumbs.className = 'thumbs';
-    card.appendChild(thumbs);
-
-    const status = document.createElement('div');
-    status.className = 'stop-status';
-
-    function refreshThumbs() {
-      thumbs.innerHTML = '';
-      if (!stopData.image_public_ids.length) thumbs.innerHTML = '<span class="empty">No images yet</span>';
-      stopData.image_public_ids.forEach(id => {
-        const img = document.createElement('img');
-        img.src = thumbUrl(id);
-        thumbs.appendChild(img);
-      });
+  function refreshSwatch() {
+    if (cfg.image) {
+      swatch.style.backgroundImage = `url(${thumbUrl(cfg.image)})`;
+      swatch.style.backgroundColor = '';
+    } else {
+      swatch.style.backgroundImage = '';
+      swatch.style.backgroundColor = cfg.color;
     }
-    refreshThumbs();
-
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    const uploadBtn = document.createElement('button');
-    uploadBtn.textContent = '📤 Upload';
-    uploadBtn.addEventListener('click', () => openUploadWidget(key, (publicId) => {
-      stopData.image_public_ids.push(publicId);
-      refreshThumbs();
-      status.textContent = 'Image added — remember to Save';
-    }));
-    row.appendChild(uploadBtn);
-
-    const gifBtn = document.createElement('button');
-    gifBtn.className = 'secondary';
-    gifBtn.textContent = '🎞️ Generate GIF';
-    gifBtn.addEventListener('click', async () => {
-      if (stopData.image_public_ids.length < 2) {
-        status.textContent = 'Need at least 2 uploaded images first';
-        return;
-      }
-      gifBtn.disabled = true;
-      status.textContent = 'Generating…';
-      try {
-        const url = await generateGif(key);
-        stopData.gif_url = url;
-        status.textContent = 'GIF generated — remember to Save';
-      } catch (err) {
-        status.textContent = 'GIF generation failed: ' + err.message;
-      } finally {
-        gifBtn.disabled = false;
-      }
-    });
-    row.appendChild(gifBtn);
-
-    card.appendChild(row);
-    card.appendChild(status);
-    container.appendChild(card);
-  });
-}
-
-function renderKenteThumbs() {
-  const container = document.getElementById('kenteThumbs');
-  function refresh() {
-    container.innerHTML = '';
-    if (!content.hero_kente.length) container.innerHTML = '<span class="empty">No stripe images yet — falls back to solid colors</span>';
-    content.hero_kente.forEach(id => {
-      const img = document.createElement('img');
-      img.src = thumbUrl(id);
-      container.appendChild(img);
-    });
   }
-  refresh();
-  document.getElementById('kenteUploadBtn').onclick = () => openUploadWidget('_kente', (publicId) => {
-    content.hero_kente.push(publicId);
-    refresh();
-    showMessage('Stripe image added — remember to Save', 'info');
+  refreshSwatch();
+
+  const controls = document.createElement('div');
+  controls.className = 'bg-controls';
+
+  const colorRow = document.createElement('div');
+  colorRow.className = 'color-row';
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color'; colorInput.value = cfg.color;
+  const hexInput = document.createElement('input');
+  hexInput.type = 'text'; hexInput.value = cfg.color; hexInput.style.flex = '1';
+  colorInput.addEventListener('input', () => {
+    cfg.color = colorInput.value.toUpperCase();
+    hexInput.value = cfg.color;
+    refreshSwatch();
   });
-}
+  colorRow.appendChild(colorInput);
+  colorRow.appendChild(hexInput);
 
-function renderBackgroundCards() {
-  const container = document.getElementById('backgroundCards');
-  container.innerHTML = '';
+  const status = document.createElement('div');
+  status.style.fontSize = '11px';
+  status.style.color = '#888';
+  status.textContent = cfg.image ? 'Using uploaded image (color is the fallback)' : 'Using solid color';
 
-  Object.entries(BACKGROUND_SECTIONS).forEach(([key, name]) => {
-    const card = document.createElement('div');
-    card.className = 'stop-card';
+  const actions = document.createElement('div');
+  actions.className = 'bg-actions';
+  const uploadBtn = document.createElement('button');
+  uploadBtn.type = 'button';
+  uploadBtn.textContent = cfg.image ? '🔄 Replace image' : '📤 Upload image';
+  uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
+    cfg.image = publicId;
+    refreshSwatch();
+    uploadBtn.textContent = '🔄 Replace image';
+    status.textContent = 'Using uploaded image (color is the fallback) — remember to Save';
+  }));
+  actions.appendChild(uploadBtn);
 
-    const label = document.createElement('label');
-    label.innerHTML = `<span>${name}</span>`;
-    card.appendChild(label);
-
-    const thumbs = document.createElement('div');
-    thumbs.className = 'thumbs';
-    card.appendChild(thumbs);
-
-    const status = document.createElement('div');
-    status.className = 'stop-status';
-
-    function refreshThumb() {
-      thumbs.innerHTML = '';
-      const publicId = sectionBackgrounds[key];
-      if (!publicId) {
-        thumbs.innerHTML = '<span class="empty">No image — falls back to solid color</span>';
-      } else {
-        const img = document.createElement('img');
-        img.src = thumbUrl(publicId);
-        thumbs.appendChild(img);
-      }
-    }
-    refreshThumb();
-
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    const uploadBtn = document.createElement('button');
-    uploadBtn.textContent = sectionBackgrounds[key] ? '🔄 Replace' : '📤 Upload';
-    uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
-      sectionBackgrounds[key] = publicId;
-      refreshThumb();
-      uploadBtn.textContent = '🔄 Replace';
-      status.textContent = 'Image set — remember to Save';
-    }));
-    row.appendChild(uploadBtn);
-
+  if (cfg.image) {
     const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
     removeBtn.className = 'secondary';
-    removeBtn.textContent = '❌ Remove';
+    removeBtn.textContent = '❌ Remove image';
     removeBtn.addEventListener('click', () => {
-      delete sectionBackgrounds[key];
-      refreshThumb();
-      uploadBtn.textContent = '📤 Upload';
-      status.textContent = 'Reverted to solid color — remember to Save';
+      cfg.image = null;
+      refreshSwatch();
+      renderBgEditor(key, label);
     });
-    row.appendChild(removeBtn);
+    actions.appendChild(removeBtn);
+  }
 
-    card.appendChild(row);
-    card.appendChild(status);
-    container.appendChild(card);
-  });
+  controls.appendChild(colorRow);
+  controls.appendChild(status);
+  controls.appendChild(actions);
+
+  wrap.appendChild(swatch);
+  wrap.appendChild(controls);
+  container.appendChild(wrap);
 }
 
-async function getUploadSignature(tag) {
-  const idToken = await auth.currentUser.getIdToken();
-  const res = await fetch('/api/cloudinary-sign', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ tag })
-  });
-  if (!res.ok) throw new Error('not authorized to upload');
-  return res.json();
-}
-
-function openUploadWidget(stopKeyOrKente, onDone) {
-  getUploadSignature(`stop-${stopKeyOrKente}`).then((sig) => {
-    const widget = cloudinary.createUploadWidget({
-      cloudName: sig.cloudName,
-      apiKey: sig.apiKey,
-      uploadSignature: (callback) => callback(sig.signature),
-      uploadSignatureTimestamp: sig.timestamp,
-      folder: sig.folder,
-      tags: [sig.tag],
-      sources: ['local', 'url', 'camera'],
-      multiple: false
-    }, (error, result) => {
-      if (!error && result.event === 'success') onDone(result.info.public_id);
-    });
-    widget.open();
-  }).catch(() => showMessage('Upload blocked — you are not on the admin list.', 'error'));
-}
-
-async function generateGif(stopKey) {
-  const idToken = await auth.currentUser.getIdToken();
-  const res = await fetch('/api/generate-gif', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ tag: `stop-${stopKey}` })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'unknown error');
-  return data.url;
-}
-
+/* ---------- Hero / Welcome / Regions banner text + kente ---------- */
 function renderCopyForm() {
   document.getElementById('cp-hero-eyebrow').value = copy.hero.eyebrow;
   document.getElementById('cp-hero-title').value = copy.hero.title;
@@ -766,53 +733,6 @@ function renderCopyForm() {
   document.getElementById('cp-regions-title').addEventListener('input', (e) => { copy.regionsIntro.title = e.target.value; });
   document.getElementById('cp-regions-sub').addEventListener('input', (e) => { copy.regionsIntro.sub = e.target.value; });
 
-  const stopCopyContainer = document.getElementById('stopCopyCards');
-  stopCopyContainer.innerHTML = '';
-  STOP_KEYS.forEach(key => {
-    copy.stops[key] = copy.stops[key] || { eyebrow: '', subtitle: '', points: [] };
-    const stopCopy = copy.stops[key];
-
-    const card = document.createElement('div');
-    card.className = 'stop-copy-card';
-    card.innerHTML = `<h4>${STOP_NAMES[key]}</h4>`;
-
-    const twoCol = document.createElement('div');
-    twoCol.className = 'two-col';
-    const eyebrowWrap = document.createElement('div');
-    eyebrowWrap.className = 'input-group';
-    eyebrowWrap.innerHTML = `<label>Eyebrow label</label>`;
-    const eyebrowInput = document.createElement('input');
-    eyebrowInput.type = 'text'; eyebrowInput.value = stopCopy.eyebrow;
-    eyebrowInput.addEventListener('input', () => { stopCopy.eyebrow = eyebrowInput.value; });
-    eyebrowWrap.appendChild(eyebrowInput);
-
-    const subtitleWrap = document.createElement('div');
-    subtitleWrap.className = 'input-group';
-    subtitleWrap.innerHTML = `<label>Subtitle</label>`;
-    const subtitleInput = document.createElement('input');
-    subtitleInput.type = 'text'; subtitleInput.value = stopCopy.subtitle;
-    subtitleInput.addEventListener('input', () => { stopCopy.subtitle = subtitleInput.value; });
-    subtitleWrap.appendChild(subtitleInput);
-
-    twoCol.appendChild(eyebrowWrap);
-    twoCol.appendChild(subtitleWrap);
-    card.appendChild(twoCol);
-
-    const pointsContainer = document.createElement('div');
-    card.appendChild(pointsContainer);
-    const pointsEditor = createListEditor(pointsContainer, stopCopy.points, [
-      { key: 'title', label: 'Point title', type: 'text' },
-      { key: 'body', label: 'Point body', type: 'textarea' }
-    ]);
-    const addPointBtn = document.createElement('button');
-    addPointBtn.type = 'button'; addPointBtn.className = 'list-add-btn';
-    addPointBtn.textContent = '+ Add point';
-    addPointBtn.onclick = () => pointsEditor.addItem({ title: 'New point', body: '' });
-    card.appendChild(addPointBtn);
-
-    stopCopyContainer.appendChild(card);
-  });
-
   document.getElementById('cp-plan-title').value = copy.plan.title;
   document.getElementById('cp-plan-title').addEventListener('input', (e) => { copy.plan.title = e.target.value; });
   document.getElementById('cp-plan-closing').value = copy.plan.closing;
@@ -825,6 +745,35 @@ function renderCopyForm() {
   document.getElementById('addPlanCardBtn').onclick = () => planEditor.addItem({ title: 'New card', body: '' });
 }
 
+function renderKenteThumbs() {
+  const container = document.getElementById('kenteThumbs');
+  function refresh() {
+    container.innerHTML = '';
+    if (!content.hero_kente.length) container.innerHTML = '<span class="empty">No stripe images yet — falls back to solid colors</span>';
+    content.hero_kente.forEach((id, idx) => {
+      const wrap = document.createElement('div');
+      wrap.style.position = 'relative';
+      const img = document.createElement('img');
+      img.src = thumbUrl(id);
+      wrap.appendChild(img);
+      const rm = document.createElement('button');
+      rm.textContent = '✕';
+      rm.type = 'button';
+      rm.style.cssText = 'position:absolute;top:-6px;right:-6px;width:18px;height:18px;padding:0;font-size:10px;line-height:1;border-radius:50%;background:#b71c1c;';
+      rm.addEventListener('click', () => { content.hero_kente.splice(idx, 1); refresh(); });
+      wrap.appendChild(rm);
+      container.appendChild(wrap);
+    });
+  }
+  refresh();
+  document.getElementById('kenteUploadBtn').onclick = () => openUploadWidget('stop-_kente', (publicId) => {
+    content.hero_kente.push(publicId);
+    refresh();
+    showMessage('Stripe image added — remember to Save', 'info');
+  });
+}
+
+/* ---------- Regions & Sites (unchanged from previous version) ---------- */
 function renderRegionCards() {
   const container = document.getElementById('regionCards');
   container.innerHTML = '';
@@ -873,8 +822,7 @@ function renderRegionCards() {
     card.appendChild(blurbWrap);
 
     const mapRow = document.createElement('div');
-    mapRow.className = 'two-col';
-    mapRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+    mapRow.className = 'three-col';
     const centerLat = miniNumberField('Map center lat', region.center[0], v => { region.center[0] = v; });
     const centerLng = miniNumberField('Map center lng', region.center[1], v => { region.center[1] = v; });
     const zoom = miniNumberField('Map zoom', region.zoom, v => { region.zoom = v; });
@@ -938,6 +886,287 @@ function miniNumberField(label, value, onChange) {
   return wrap;
 }
 
+/* ---------- Stops (reorder / flip side / theme / bg / copy / images) ---------- */
+function slugify(str) {
+  return (str || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function uniqueStopKey(base) {
+  let key = slugify(base) || 'stop';
+  if (!content.stops[key]) return key;
+  let i = 2;
+  while (content.stops[`${key}_${i}`]) i++;
+  return `${key}_${i}`;
+}
+
+function renderStopsList() {
+  const container = document.getElementById('stopsList');
+  container.innerHTML = '';
+
+  content.stopOrder.forEach((key, idx) => {
+    const sd = content.stops[key];
+    const cd = copy.stops[key] || (copy.stops[key] = { heading: '', eyebrow: '', subtitle: '', points: [] });
+
+    const card = document.createElement('div');
+    card.className = 'stop-card-full';
+
+    // Header: name, move/remove
+    const head = document.createElement('div');
+    head.className = 'stop-head';
+    const title = document.createElement('h4');
+    title.textContent = `${idx + 1}. ${(cd.heading || key).split('\n')[0]}`;
+    head.appendChild(title);
+
+    const headActions = document.createElement('div');
+    headActions.className = 'stop-head-actions';
+
+    const upBtn = document.createElement('button');
+    upBtn.type = 'button'; upBtn.className = 'secondary'; upBtn.textContent = '▲';
+    upBtn.disabled = idx === 0;
+    upBtn.addEventListener('click', () => {
+      [content.stopOrder[idx - 1], content.stopOrder[idx]] = [content.stopOrder[idx], content.stopOrder[idx - 1]];
+      renderStopsList();
+    });
+
+    const downBtn = document.createElement('button');
+    downBtn.type = 'button'; downBtn.className = 'secondary'; downBtn.textContent = '▼';
+    downBtn.disabled = idx === content.stopOrder.length - 1;
+    downBtn.addEventListener('click', () => {
+      [content.stopOrder[idx + 1], content.stopOrder[idx]] = [content.stopOrder[idx], content.stopOrder[idx + 1]];
+      renderStopsList();
+    });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button'; removeBtn.className = 'danger'; removeBtn.textContent = '✕ Remove';
+    removeBtn.addEventListener('click', () => {
+      if (!confirm(`Remove "${(cd.heading || key).split('\n')[0]}"? This can't be undone once saved.`)) return;
+      content.stopOrder.splice(idx, 1);
+      delete content.stops[key];
+      delete copy.stops[key];
+      renderStopsList();
+    });
+
+    headActions.appendChild(upBtn);
+    headActions.appendChild(downBtn);
+    headActions.appendChild(removeBtn);
+    head.appendChild(headActions);
+    card.appendChild(head);
+
+    // Heading / eyebrow / subtitle
+    const twoCol = document.createElement('div');
+    twoCol.className = 'two-col';
+
+    const headingWrap = document.createElement('div');
+    headingWrap.className = 'input-group';
+    headingWrap.innerHTML = '<label>Heading (shown over the image — one line each)</label>';
+    const headingInput = document.createElement('textarea');
+    headingInput.value = cd.heading || '';
+    headingInput.rows = 2;
+    headingInput.addEventListener('input', () => {
+      cd.heading = headingInput.value;
+      title.textContent = `${idx + 1}. ${(cd.heading || key).split('\n')[0] || '(untitled)'}`;
+    });
+    headingWrap.appendChild(headingInput);
+
+    const eyebrowWrap = document.createElement('div');
+    eyebrowWrap.className = 'input-group';
+    eyebrowWrap.innerHTML = '<label>Eyebrow label</label>';
+    const eyebrowInput = document.createElement('input');
+    eyebrowInput.type = 'text'; eyebrowInput.value = cd.eyebrow || '';
+    eyebrowInput.addEventListener('input', () => { cd.eyebrow = eyebrowInput.value; });
+    eyebrowWrap.appendChild(eyebrowInput);
+
+    twoCol.appendChild(headingWrap);
+    twoCol.appendChild(eyebrowWrap);
+    card.appendChild(twoCol);
+
+    const subtitleWrap = document.createElement('div');
+    subtitleWrap.className = 'input-group';
+    subtitleWrap.innerHTML = '<label>Subtitle</label>';
+    const subtitleInput = document.createElement('input');
+    subtitleInput.type = 'text'; subtitleInput.value = cd.subtitle || '';
+    subtitleInput.addEventListener('input', () => { cd.subtitle = subtitleInput.value; });
+    subtitleWrap.appendChild(subtitleInput);
+    card.appendChild(subtitleWrap);
+
+    // Points
+    const pointsHeader = document.createElement('h5'); pointsHeader.textContent = 'Points';
+    card.appendChild(pointsHeader);
+    const pointsContainer = document.createElement('div');
+    card.appendChild(pointsContainer);
+    const pointsEditor = createListEditor(pointsContainer, cd.points, [
+      { key: 'title', label: 'Point title', type: 'text' },
+      { key: 'body', label: 'Point body', type: 'textarea' }
+    ]);
+    const addPointBtn = document.createElement('button');
+    addPointBtn.type = 'button'; addPointBtn.className = 'list-add-btn';
+    addPointBtn.textContent = '+ Add point';
+    addPointBtn.onclick = () => pointsEditor.addItem({ title: 'New point', body: '' });
+    card.appendChild(addPointBtn);
+
+    // Layout: side + theme
+    const layoutHeader = document.createElement('h5'); layoutHeader.textContent = 'Layout';
+    card.appendChild(layoutHeader);
+    const layoutRow = document.createElement('div');
+    layoutRow.className = 'two-col';
+
+    const sideWrap = document.createElement('div');
+    const sidePills = document.createElement('div');
+    sidePills.className = 'pill-select';
+    [['normal', 'Image on left'], ['reversed', 'Image on right']].forEach(([val, lbl]) => {
+      const pill = document.createElement('label');
+      const radio = document.createElement('input');
+      radio.type = 'radio'; radio.name = `side-${key}`; radio.value = val;
+      radio.checked = (sd.side || 'normal') === val;
+      radio.addEventListener('change', () => { sd.side = val; });
+      pill.appendChild(radio);
+      pill.appendChild(document.createTextNode(lbl));
+      sidePills.appendChild(pill);
+    });
+    sideWrap.innerHTML = '<label>Image side</label>';
+    sideWrap.appendChild(sidePills);
+
+    const themeWrap = document.createElement('div');
+    const themePills = document.createElement('div');
+    themePills.className = 'pill-select';
+    [['light', 'Light panel, dark text'], ['dark', 'Dark panel, light text']].forEach(([val, lbl]) => {
+      const pill = document.createElement('label');
+      const radio = document.createElement('input');
+      radio.type = 'radio'; radio.name = `theme-${key}`; radio.value = val;
+      radio.checked = (sd.theme || 'light') === val;
+      radio.addEventListener('change', () => { sd.theme = val; });
+      pill.appendChild(radio);
+      pill.appendChild(document.createTextNode(lbl));
+      themePills.appendChild(pill);
+    });
+    themeWrap.innerHTML = '<label>Text panel theme</label>';
+    themeWrap.appendChild(themePills);
+
+    layoutRow.appendChild(sideWrap);
+    layoutRow.appendChild(themeWrap);
+    card.appendChild(layoutRow);
+
+    // Colors: accent + optional custom panel background
+    const colorRow = document.createElement('div');
+    colorRow.className = 'two-col';
+
+    const accentWrap = document.createElement('div');
+    accentWrap.className = 'input-group';
+    accentWrap.innerHTML = '<label>Eyebrow accent color</label>';
+    const accentInput = document.createElement('input');
+    accentInput.type = 'color'; accentInput.value = sd.accent || '#B5471B';
+    accentInput.addEventListener('input', () => { sd.accent = accentInput.value.toUpperCase(); });
+    accentWrap.appendChild(accentInput);
+
+    const bgColorWrap = document.createElement('div');
+    bgColorWrap.className = 'input-group';
+    bgColorWrap.innerHTML = '<label>Text panel background (optional — overrides the theme default)</label>';
+    const bgColorRow = document.createElement('div');
+    bgColorRow.style.display = 'flex'; bgColorRow.style.gap = '8px'; bgColorRow.style.alignItems = 'center';
+    const bgColorInput = document.createElement('input');
+    bgColorInput.type = 'color'; bgColorInput.value = sd.bgColor || (sd.theme === 'dark' ? '#1B1812' : '#EDE6D6');
+    bgColorInput.addEventListener('input', () => { sd.bgColor = bgColorInput.value.toUpperCase(); });
+    const clearBgBtn = document.createElement('button');
+    clearBgBtn.type = 'button'; clearBgBtn.className = 'secondary';
+    clearBgBtn.textContent = 'Use theme default';
+    clearBgBtn.style.fontSize = '12px'; clearBgBtn.style.padding = '7px 10px';
+    clearBgBtn.addEventListener('click', () => { sd.bgColor = null; renderStopsList(); });
+    bgColorRow.appendChild(bgColorInput);
+    bgColorRow.appendChild(clearBgBtn);
+    bgColorWrap.appendChild(bgColorRow);
+
+    colorRow.appendChild(accentWrap);
+    colorRow.appendChild(bgColorWrap);
+    card.appendChild(colorRow);
+
+    // Images / animation
+    const imgHeader = document.createElement('h5'); imgHeader.textContent = 'Image side';
+    card.appendChild(imgHeader);
+
+    const animSelect = document.createElement('select');
+    Object.entries(ANIMATION_TYPES).forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = label;
+      if (sd.animation_type === val) opt.selected = true;
+      animSelect.appendChild(opt);
+    });
+    animSelect.addEventListener('change', () => { sd.animation_type = animSelect.value; });
+    card.appendChild(animSelect);
+
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    card.appendChild(thumbs);
+
+    const imgStatus = document.createElement('div');
+    imgStatus.className = 'stop-status';
+
+    function refreshThumbs() {
+      thumbs.innerHTML = '';
+      if (!sd.image_public_ids.length) thumbs.innerHTML = '<span class="empty">No images yet</span>';
+      sd.image_public_ids.forEach(id => {
+        const img = document.createElement('img');
+        img.src = thumbUrl(id);
+        thumbs.appendChild(img);
+      });
+    }
+    refreshThumbs();
+
+    const imgRow = document.createElement('div');
+    imgRow.className = 'button-group';
+    imgRow.style.marginTop = '10px';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.textContent = '📤 Upload';
+    uploadBtn.addEventListener('click', () => openUploadWidget(`stop-${key}`, (publicId) => {
+      sd.image_public_ids.push(publicId);
+      refreshThumbs();
+      imgStatus.textContent = 'Image added — remember to Save';
+    }));
+    imgRow.appendChild(uploadBtn);
+
+    const gifBtn = document.createElement('button');
+    gifBtn.type = 'button'; gifBtn.className = 'secondary';
+    gifBtn.textContent = '🎞️ Generate GIF';
+    gifBtn.addEventListener('click', async () => {
+      if (sd.image_public_ids.length < 2) {
+        imgStatus.textContent = 'Need at least 2 uploaded images first';
+        return;
+      }
+      gifBtn.disabled = true;
+      imgStatus.textContent = 'Generating…';
+      try {
+        const url = await generateGif(`stop-${key}`);
+        sd.gif_url = url;
+        imgStatus.textContent = 'GIF generated — remember to Save';
+      } catch (err) {
+        imgStatus.textContent = 'GIF generation failed: ' + err.message;
+      } finally {
+        gifBtn.disabled = false;
+      }
+    });
+    imgRow.appendChild(gifBtn);
+    card.appendChild(imgRow);
+    card.appendChild(imgStatus);
+
+    container.appendChild(card);
+  });
+}
+
+document.getElementById('addStopBtn').addEventListener('click', () => {
+  const key = uniqueStopKey(`stop_${Date.now()}`);
+  content.stopOrder.push(key);
+  const isDark = content.stopOrder.length % 2 === 0;
+  content.stops[key] = {
+    animation_type: 'carousel', image_public_ids: [], gif_url: null,
+    side: isDark ? 'reversed' : 'normal', theme: isDark ? 'dark' : 'light',
+    accent: isDark ? '#0E4D34' : '#B5471B', bgColor: null
+  };
+  copy.stops[key] = { heading: 'New Stop', eyebrow: '', subtitle: '', points: [] };
+  renderStopsList();
+});
+
+/* ---------- Save ---------- */
 document.getElementById('saveBtn').addEventListener('click', async () => {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
@@ -949,14 +1178,11 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
       setDoc(doc(db, 'lookbook-content', 'copy'), { ...copy, lastUpdated: now }),
       setDoc(doc(db, 'lookbook-content', 'regions'), { ...regions, lastUpdated: now })
     ];
-    
 
     if (window.currentColors) {
       saves.push(setDoc(doc(db, 'lookbook-content', 'colors'), { ...window.currentColors, lastUpdated: now }));
     }
 
-    saves.push(setDoc(doc(db, 'lookbook-content', 'section-backgrounds'), { ...sectionBackgrounds, lastUpdated: now }));
-    
     await Promise.all(saves);
     showMessage('✅ Changes saved. Live page picks this up on next load.', 'success');
     document.getElementById('lastUpdated').textContent = new Date(now).toLocaleString();
@@ -1000,7 +1226,7 @@ function renderColorsForm() {
 
     const colorInput = document.getElementById(`color-${key}`);
     const hexInput = document.getElementById(`hex-${key}`);
-    
+
     colorInput.addEventListener('change', (e) => {
       const hex = e.target.value.toUpperCase();
       hexInput.value = hex;
