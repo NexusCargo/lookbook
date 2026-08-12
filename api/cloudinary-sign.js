@@ -27,12 +27,45 @@ async function requireAdmin(req) {
     throw { status: 401, message: 'Invalid or expired token' };
   }
 
-  const allowedEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  // 🔍 DEBUG: Log what we got from the token
+  console.log('🔐 Token decoded:', {
+    uid: decoded.uid,
+    email: decoded.email,
+    email_verified: decoded.email_verified,
+    hasAdminClaim: decoded.admin || false,
+    allClaims: Object.keys(decoded)
+  });
 
-  if (!decoded.email || !allowedEmails.includes(decoded.email.toLowerCase())) {
-    throw { status: 403, message: 'Not authorized as admin' };
+  // ✅ IMPROVED: Check custom claim first, then fallback to email list
+  const allowedEmails = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  console.log('📋 Allowed admin emails from env:', allowedEmails);
+
+  // Check custom claim (preferred method)
+  if (decoded.admin === true) {
+    console.log('✅ User authorized via custom claim');
+    return;
   }
+
+  // Fallback: check email list
+  if (decoded.email) {
+    const userEmail = decoded.email.toLowerCase();
+    console.log(`📧 Checking user email: "${userEmail}" against allowed list`);
+    
+    if (allowedEmails.includes(userEmail)) {
+      console.log('✅ User email found in admin list');
+      return;
+    }
+  }
+
+  // Neither method worked
+  throw {
+    status: 403,
+    message: `Not authorized as admin. Email: ${decoded.email || 'NOT_PROVIDED'}`
+  };
 }
 
 export default async function handler(req, res) {
@@ -43,6 +76,7 @@ export default async function handler(req, res) {
   try {
     await requireAdmin(req);
   } catch (err) {
+    console.error('❌ Auth error:', err);
     return res.status(err.status || 401).json({ error: err.message || 'Unauthorized' });
   }
 
@@ -70,6 +104,7 @@ export default async function handler(req, res) {
       tag,
     });
   } catch (err) {
+    console.error('❌ Signature error:', err);
     res.status(500).json({ error: err.message || 'Failed to sign upload' });
   }
 }
