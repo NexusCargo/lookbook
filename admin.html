@@ -535,12 +535,30 @@ async function getUploadSignature(tag) {
 }
 
 function openUploadWidget(tag, onDone) {
+  // Fetch once upfront just to confirm the user is an authorized admin and
+  // to get cloudName/apiKey — the actual per-upload signature is generated
+  // fresh below, using the widget's own params_to_sign, so it always matches
+  // exactly what Cloudinary will verify (including params like `source: uw`
+  // that the widget adds automatically and we can't predict in advance).
   getUploadSignature(tag).then((sig) => {
     const widget = cloudinary.createUploadWidget({
       cloudName: sig.cloudName,
       apiKey: sig.apiKey,
-      uploadSignature: (callback) => callback(sig.signature),
-      uploadSignatureTimestamp: sig.timestamp,
+      uploadSignature: async (callback, paramsToSign) => {
+        try {
+          const idToken = await auth.currentUser.getIdToken();
+          const res = await fetch('/api/cloudinary-sign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+            body: JSON.stringify({ tag, paramsToSign })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to sign upload');
+          callback(data.signature);
+        } catch (err) {
+          showMessage('Upload signing failed: ' + err.message, 'error');
+        }
+      },
       folder: sig.folder,
       tags: [sig.tag],
       sources: ['local', 'url', 'camera'],
