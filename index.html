@@ -65,6 +65,11 @@
     display:flex;
     flex-direction:column;
   }
+  .hero-strip > div{
+    flex:1;
+    background-size:cover;
+    background-position:center;
+  }
   .hero-strip img{
     flex:1;
     object-fit:cover;
@@ -489,7 +494,6 @@
   }
   .inquiry .status.success{color:#8fd19e;}
   .inquiry .status.error{color:#e08a6b;}
-  /* honeypot — hidden from real visitors, bots tend to fill every field */
   .inquiry .hp{position:absolute; left:-9999px; opacity:0;}
 
   footer{
@@ -534,14 +538,7 @@
 <body>
 
 <header class="hero">
-  <div class="hero-strip" id="heroKente">
-    
-    <div style="background:var(--gold); flex:1"></div>
-    <div style="background:var(--terracotta); flex:1"></div>
-    <div style="background:var(--forest); flex:1"></div>
-    <div style="background:var(--gold); flex:1"></div>
-    <div style="background:var(--clay); flex:1"></div>
-  </div>
+  <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
     <h1 id="heroTitle">GHANA</h1>
@@ -691,8 +688,16 @@ const DEFAULT_STOP_META = {
 
 const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812' };
 
+const DEFAULT_HERO_STRIPE = [
+  { type: 'color', color: '#F2B705' },
+  { type: 'color', color: '#B5471B' },
+  { type: 'color', color: '#0E4D34' },
+  { type: 'color', color: '#F2B705' },
+  { type: 'color', color: '#8C3A16' }
+];
+
 const DEFAULT_CONTENT = {
-  hero_kente: [],
+  heroStripe: DEFAULT_HERO_STRIPE,
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -864,7 +869,7 @@ async function loadConfig() {
 
 function mergeContent(loaded) {
   const c = { ...DEFAULT_CONTENT, ...(loaded || {}) };
-  c.hero_kente = c.hero_kente || [];
+  c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : DEFAULT_HERO_STRIPE;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? loaded.stopOrder : [...DEFAULT_CONTENT.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -906,21 +911,25 @@ async function loadSiteData(firebaseConfig) {
   };
 }
 
-function applyHeroKente(heroKente) {
-  const kenteContainer = document.getElementById('heroKente');
-  const kenteIds = (heroKente || []).filter(Boolean);
-  if (kenteIds.length) {
-    kenteContainer.innerHTML = '';
-    kenteIds.forEach(publicId => {
-      const url = cloudinaryUrl(publicId);
-      if (!url) return;
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = 'Kente pattern';
-      img.loading = 'lazy';
-      kenteContainer.appendChild(img);
-    });
-  }
+function renderHeroStripe(segments) {
+  const container = document.getElementById('heroStrip');
+  container.innerHTML = '';
+  (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
+    if (seg.type === 'image' && seg.image) {
+      const url = cloudinaryUrl(seg.image);
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Kente pattern';
+        img.loading = 'lazy';
+        container.appendChild(img);
+        return;
+      }
+    }
+    const div = document.createElement('div');
+    div.style.background = seg.color || '#0E4D34';
+    container.appendChild(div);
+  });
 }
 
 function applySectionBg(sectionBg) {
@@ -983,7 +992,8 @@ function renderStops(content, copy) {
       img.loading = 'lazy';
       visual.insertBefore(img, visual.firstChild);
     }
-    if (sd.animation_type && BADGE_LABEL[sd.animation_type]) {
+    const isCarouselWorthy = sd.animation_type !== 'carousel' || (sd.image_public_ids && sd.image_public_ids.length > 1);
+    if (imgUrl && sd.animation_type && BADGE_LABEL[sd.animation_type] && isCarouselWorthy) {
       const badge = document.createElement('div');
       badge.className = 'animation-badge';
       badge.textContent = BADGE_LABEL[sd.animation_type];
@@ -1085,7 +1095,7 @@ function attachErrorHandling() {
 
 function preloadImages(content) {
   const ids = [
-    ...(content.hero_kente || []),
+    ...(content.heroStripe || []).filter(s => s.type === 'image').map(s => s.image),
     ...Object.values(content.stops || {}).map(s => s.gif_url || (s.image_public_ids && s.image_public_ids[0]))
   ].filter(Boolean);
   ids.forEach(id => {
@@ -1212,7 +1222,7 @@ async function init() {
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
-  applyHeroKente(data.content.hero_kente);
+  renderHeroStripe(data.content.heroStripe);
   attachErrorHandling();
   preloadImages(data.content);
 }
