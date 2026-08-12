@@ -778,8 +778,22 @@ function renderStripeSegments() {
       colorRow.className = 'color-row';
       const colorInput = document.createElement('input');
       colorInput.type = 'color'; colorInput.value = seg.color || '#0E4D34';
-      colorInput.addEventListener('input', () => { seg.color = colorInput.value.toUpperCase(); refreshSwatch(); });
+      const hexInput = document.createElement('input');
+      hexInput.type = 'text'; hexInput.value = seg.color || '#0E4D34'; hexInput.style.flex = '1';
+      colorInput.addEventListener('input', () => {
+        seg.color = colorInput.value.toUpperCase();
+        hexInput.value = seg.color;
+        refreshSwatch();
+      });
+      hexInput.addEventListener('input', () => {
+        if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+          seg.color = hexInput.value.toUpperCase();
+          colorInput.value = seg.color;
+          refreshSwatch();
+        }
+      });
       colorRow.appendChild(colorInput);
+      colorRow.appendChild(hexInput);
       controls.appendChild(colorRow);
     }
 
