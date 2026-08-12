@@ -69,13 +69,24 @@
     flex:1;
     background-size:cover;
     background-position:center;
+    animation:seaWave 5.2s ease-in-out infinite;
+    transform-origin:center;
+    will-change:transform;
   }
+  .hero-strip > div:nth-child(2n){ animation-delay:-1.3s; animation-duration:6s; }
+  .hero-strip > div:nth-child(3n){ animation-delay:-2.6s; animation-duration:4.4s; }
+  .hero-strip > div:nth-child(4n){ animation-delay:-3.9s; animation-duration:5.7s; }
+  .hero-strip > div:nth-child(5n){ animation-delay:-0.7s; animation-duration:4.9s; }
   .hero-strip img{
     flex:1;
     object-fit:cover;
     display:block;
     width:100%;
     height:100%;
+  }
+  @keyframes seaWave{
+    0%, 100%{ transform:translateX(0) scaleY(1); }
+    50%{ transform:translateX(5px) scaleY(1.025); }
   }
   .hero-stripe-overlay{
     position:absolute; inset:0;
@@ -85,6 +96,20 @@
     opacity:0.92;
   }
   .hero-stripe-overlay svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
+  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 3.4s linear infinite; }
+  .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
+  @keyframes ribbonDrift{
+    0%, 100%{ transform:translateX(-14px); }
+    50%{ transform:translateX(14px); }
+  }
+  @keyframes ribbonFlow{
+    to{ stroke-dashoffset:-144; }
+  }
+  @keyframes clothSway{
+    0%, 100%{ transform:rotate(-0.6deg); }
+    50%{ transform:rotate(0.6deg); }
+  }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
     font-size:clamp(60px,11vw,140px);
@@ -113,6 +138,7 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
+    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape{animation:none;}
   }
 
   .scroll-cue{
@@ -929,7 +955,7 @@ const STRIPE_STYLE_SVG = {
   ribbon(uid, d, colors, width, fade) {
     const n = colors.length;
     const strokes = colors.map((c, i) =>
-      `<path d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+      `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="46 26" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
     ).join('');
     return `
     <defs>
@@ -943,7 +969,7 @@ const STRIPE_STYLE_SVG = {
         <rect x="0" y="0" width="1000" height="420" fill="url(#fadegrad-${uid})"/>
       </mask>
     </defs>
-    <g mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
+    <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
   },
   build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
@@ -984,11 +1010,11 @@ const STRIPE_STYLE_SVG = {
             <stop offset="1" stop-color="${c2}"/>
           </linearGradient>
         </defs>
-        <g filter="url(#hs-foldshadow)">
+        <g class="fold-drape" filter="url(#hs-foldshadow)">
           <polygon points="1000,-20 1140,-20 500,420 260,420" fill="url(#hs-foldgrad)" opacity="0.95"/>
+          <polyline points="260,420 300,388 340,420 380,388 420,420 460,388 500,420"
+            fill="none" stroke="${IVORY}" stroke-width="4" stroke-linejoin="round" opacity="0.85"/>
         </g>
-        <polyline points="260,420 300,388 340,420 380,388 420,420 460,388 500,420"
-          fill="none" stroke="${IVORY}" stroke-width="4" stroke-linejoin="round" opacity="0.85"/>
       `;
     }
     return '';

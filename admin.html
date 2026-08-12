@@ -124,6 +124,17 @@
   .stripe-style-card .ssc-check svg { width: 11px; height: 11px; }
   .stripe-style-card .ssc-label { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0A3626; }
   .stripe-style-card .ssc-label span { display: block; font-weight: 400; font-size: 11.5px; color: #888; margin-top: 2px; }
+  .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
+  .stripe-style-card .ssc-preview .rb-drift{ animation: sscDrift 9s ease-in-out infinite; }
+  .stripe-style-card .ssc-preview .rb-flow{ animation: sscFlow 3.2s linear infinite; }
+  .stripe-style-card .ssc-preview .fold-drape{ animation: sscSway 5.5s ease-in-out infinite; transform-origin:100% 0%; }
+  @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
+  @keyframes sscDrift{ 0%,100%{transform:translateX(-10px);} 50%{transform:translateX(10px);} }
+  @keyframes sscFlow{ to{ stroke-dashoffset:-100; } }
+  @keyframes sscSway{ 0%,100%{transform:rotate(-0.6deg);} 50%{transform:rotate(0.6deg);} }
+  @media (prefers-reduced-motion: reduce){
+    .stripe-style-card .ssc-preview *{ animation: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -779,7 +790,7 @@ function stripeColors() {
 function ribbonBandSvg(uid, d, colors, width, fade) {
   const n = colors.length;
   const strokes = colors.map((c, i) =>
-    `<path d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+    `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
   ).join('');
   return `
   <defs>
@@ -793,7 +804,7 @@ function ribbonBandSvg(uid, d, colors, width, fade) {
       <rect x="0" y="0" width="1000" height="300" fill="url(#fadegrad-${uid})"/>
     </mask>
   </defs>
-  <g mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
+  <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
 }
 
 function buildStripeStyleSvg(styleId, colors) {
@@ -802,7 +813,7 @@ function buildStripeStyleSvg(styleId, colors) {
   if (styleId === 'straight') {
     const n = colors.length;
     const bandH = 300 / n;
-    return colors.map((c, i) => `<rect x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
+    return colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
   }
   if (styleId === 'serpentine') {
     return ribbonBandSvg('ss-a',
@@ -840,11 +851,11 @@ function buildStripeStyleSvg(styleId, colors) {
           <stop offset="1" stop-color="${c2}"/>
         </linearGradient>
       </defs>
-      <g filter="url(#ssc-foldshadow)">
+      <g class="fold-drape" filter="url(#ssc-foldshadow)">
         <polygon points="1000,-20 1120,-20 460,300 240,300" fill="url(#ssc-foldgrad)" opacity="0.95"/>
+        <polyline points="240,300 275,272 310,300 345,272 380,300 415,272 450,300"
+          fill="none" stroke="${IVORY}" stroke-width="3" stroke-linejoin="round" opacity="0.85"/>
       </g>
-      <polyline points="240,300 275,272 310,300 345,272 380,300 415,272 450,300"
-        fill="none" stroke="${IVORY}" stroke-width="3" stroke-linejoin="round" opacity="0.85"/>
     `;
   }
   return '';
