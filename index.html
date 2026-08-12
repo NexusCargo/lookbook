@@ -23,6 +23,11 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
+  .has-bg-image{
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+  }
   body{
     margin:0;
     background:var(--ivory);
@@ -928,7 +933,7 @@ let REGION_DATA = DEFAULT_REGIONS;
 
 function cloudinaryUrl(publicIdOrUrl) {
   if (!publicIdOrUrl) return null;
-  if (/^https?:\/\
+  if (/^https?:\/\//.test(publicIdOrUrl)) return publicIdOrUrl;
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
 }
 
@@ -941,11 +946,12 @@ async function loadConfig() {
 async function loadSiteData(firebaseConfig) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
+  const [contentSnap, copySnap, regionsSnap, colorsSnap, backgroundsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
     getDoc(doc(db, 'lookbook-content', 'regions')),
-    getDoc(doc(db, 'lookbook-content', 'colors'))
+    getDoc(doc(db, 'lookbook-content', 'colors')),
+    getDoc(doc(db, 'lookbook-content', 'section-backgrounds'))
   ]);
   
   if (colorsSnap.exists()) {
@@ -960,7 +966,8 @@ async function loadSiteData(firebaseConfig) {
   return {
     content: contentSnap.exists() ? contentSnap.data() : DEFAULT_CONTENT,
     copy: copySnap.exists() ? copySnap.data() : DEFAULT_COPY,
-    regions: regionsSnap.exists() ? regionsSnap.data() : DEFAULT_REGIONS
+    regions: regionsSnap.exists() ? regionsSnap.data() : DEFAULT_REGIONS,
+    sectionBackgrounds: backgroundsSnap.exists() ? backgroundsSnap.data() : {}
   };
 }
 
@@ -1000,6 +1007,26 @@ function applyContent(content) {
       badge.textContent = BADGE_LABEL[stop.animation_type];
       container.appendChild(badge);
     }
+  });
+}
+
+function applySectionBackgrounds(sectionBackgrounds) {
+  const bg = sectionBackgrounds || {};
+
+  function apply(el, key) {
+    if (!el) return;
+    const publicId = bg[key];
+    const url = publicId ? cloudinaryUrl(publicId) : null;
+    if (!url) return;
+    el.style.backgroundImage = `linear-gradient(rgba(10,9,7,.5), rgba(10,9,7,.5)), url("${url}")`;
+    el.classList.add('has-bg-image');
+  }
+
+  apply(document.querySelector('header.hero'), 'hero');
+  apply(document.querySelector('.intro-left'), 'intro_left');
+  apply(document.querySelector('.regions'), 'regions');
+  STOP_KEYS.forEach(key => {
+    apply(document.querySelector(`section.stop[data-stop="${key}"]`), key);
   });
 }
 
@@ -1188,7 +1215,7 @@ document.querySelectorAll('.region-row').forEach(btn => {
 });
 
 async function init() {
-  let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
+  let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS, sectionBackgrounds: {} };
   try {
     const config = await loadConfig();
     cloudinaryCloudName = config.cloudinaryCloudName;
@@ -1200,6 +1227,7 @@ async function init() {
   applyCopy(data.copy);
   applyRegionBlurbs();
   applyContent(data.content);
+  applySectionBackgrounds(data.sectionBackgrounds);
   attachErrorHandling();
   preloadImages(data.content);
 }

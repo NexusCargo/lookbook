@@ -124,6 +124,7 @@
       <button class="tab-btn active" data-tab="images">🖼️ Images & Animations</button>
       <button class="tab-btn" data-tab="copy">📝 Site Copy</button>
       <button class="tab-btn" data-tab="regions">📍 Regions & Sites</button>
+      <button class="tab-btn" data-tab="backgrounds">🖼️ Section Backgrounds</button>
       <button class="tab-btn" data-tab="colors">🎨 Colors</button>
     </div>
 
@@ -206,6 +207,16 @@
       </div>
     </div>
 
+    <div class="tab-panel" id="tab-backgrounds">
+      <div class="edit-section">
+        <h2>Section backgrounds</h2>
+        <div class="section-info">
+          Optional background image for each section below, uploaded straight (no GIF generation). If a section has no image here, it falls back to its solid theme color from the Colors tab. Note: for the 8 stops, this is a separate visual from the stop images in the Images & Animations tab — if both are set, this background image takes priority on the live site.
+        </div>
+        <div class="section-row" id="backgroundCards"></div>
+      </div>
+    </div>
+
     <div class="tab-panel" id="tab-colors">
       <div class="edit-section">
         <h2>Site Colors</h2>
@@ -246,6 +257,20 @@ const STOP_NAMES = {
 const STOP_KEYS = Object.keys(STOP_NAMES);
 const REGION_KEYS = ['accra', 'central', 'ashanti', 'volta', 'northern'];
 const REGION_COLORS = ['forest', 'terracotta', 'gold', 'clay', 'faded-gold'];
+
+const BACKGROUND_SECTIONS = {
+  hero: 'Hero (top banner)',
+  intro_left: 'Welcome / Akwaaba panel',
+  regions: 'Five Regions banner',
+  castles: 'Stop: Castles of Memory',
+  canopy: 'Stop: Walk Among Giants',
+  accra: "Stop: The Capital's Pulse",
+  kumasi: 'Stop: Seat of a Kingdom',
+  savanna: 'Stop: Into the Savanna',
+  beaches: 'Stop: Where the Coast Slows Down',
+  culture: 'Stop: Rhythm, Cloth, Symbol',
+  food: 'Stop: Eat Like a Local'
+};
 
 const ANIMATION_TYPES = {
   carousel: '📽️ Carousel',
@@ -366,6 +391,7 @@ let auth, db, cloudinaryCloudName;
 let content = { hero_kente: [], stops: {} };
 let copy = JSON.parse(JSON.stringify(DEFAULT_COPY));
 let regions = JSON.parse(JSON.stringify(DEFAULT_REGIONS));
+let sectionBackgrounds = {};
 
 async function boot() {
   const config = await (await fetch('/api/config')).json();
@@ -388,6 +414,7 @@ async function boot() {
       renderKenteThumbs();
       renderCopyForm();
       renderRegionCards();
+      renderBackgroundCards();
       renderColorsForm();
     } else {
       document.getElementById('authStatus').textContent = '🔒 Not signed in';
@@ -418,11 +445,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 async function loadAll() {
-  const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
+  const [contentSnap, copySnap, regionsSnap, colorsSnap, backgroundsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
     getDoc(doc(db, 'lookbook-content', 'regions')),
-    getDoc(doc(db, 'lookbook-content', 'colors'))
+    getDoc(doc(db, 'lookbook-content', 'colors')),
+    getDoc(doc(db, 'lookbook-content', 'section-backgrounds'))
   ]);
   content = contentSnap.exists() ? contentSnap.data() : { hero_kente: [], stops: {} };
   content.hero_kente = content.hero_kente || [];
@@ -435,7 +463,15 @@ async function loadAll() {
     window.currentColors = colorsSnap.data();
   }
 
-  const latest = [contentSnap, copySnap, regionsSnap, colorsSnap]
+  if (backgroundsSnap.exists()) {
+    const bgData = backgroundsSnap.data();
+    delete bgData.lastUpdated;
+    sectionBackgrounds = bgData;
+  } else {
+    sectionBackgrounds = {};
+  }
+
+  const latest = [contentSnap, copySnap, regionsSnap, colorsSnap, backgroundsSnap]
     .map(s => s.exists() && s.data().lastUpdated)
     .filter(Boolean).sort().reverse()[0];
   if (latest) document.getElementById('lastUpdated').textContent = new Date(latest).toLocaleString();
@@ -593,6 +629,68 @@ function renderKenteThumbs() {
     content.hero_kente.push(publicId);
     refresh();
     showMessage('Stripe image added — remember to Save', 'info');
+  });
+}
+
+function renderBackgroundCards() {
+  const container = document.getElementById('backgroundCards');
+  container.innerHTML = '';
+
+  Object.entries(BACKGROUND_SECTIONS).forEach(([key, name]) => {
+    const card = document.createElement('div');
+    card.className = 'stop-card';
+
+    const label = document.createElement('label');
+    label.innerHTML = `<span>${name}</span>`;
+    card.appendChild(label);
+
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    card.appendChild(thumbs);
+
+    const status = document.createElement('div');
+    status.className = 'stop-status';
+
+    function refreshThumb() {
+      thumbs.innerHTML = '';
+      const publicId = sectionBackgrounds[key];
+      if (!publicId) {
+        thumbs.innerHTML = '<span class="empty">No image — falls back to solid color</span>';
+      } else {
+        const img = document.createElement('img');
+        img.src = thumbUrl(publicId);
+        thumbs.appendChild(img);
+      }
+    }
+    refreshThumb();
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.textContent = sectionBackgrounds[key] ? '🔄 Replace' : '📤 Upload';
+    uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
+      sectionBackgrounds[key] = publicId;
+      refreshThumb();
+      uploadBtn.textContent = '🔄 Replace';
+      status.textContent = 'Image set — remember to Save';
+    }));
+    row.appendChild(uploadBtn);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'secondary';
+    removeBtn.textContent = '❌ Remove';
+    removeBtn.addEventListener('click', () => {
+      delete sectionBackgrounds[key];
+      refreshThumb();
+      uploadBtn.textContent = '📤 Upload';
+      status.textContent = 'Reverted to solid color — remember to Save';
+    });
+    row.appendChild(removeBtn);
+
+    card.appendChild(row);
+    card.appendChild(status);
+    container.appendChild(card);
   });
 }
 
@@ -856,6 +954,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     if (window.currentColors) {
       saves.push(setDoc(doc(db, 'lookbook-content', 'colors'), { ...window.currentColors, lastUpdated: now }));
     }
+
+    saves.push(setDoc(doc(db, 'lookbook-content', 'section-backgrounds'), { ...sectionBackgrounds, lastUpdated: now }));
     
     await Promise.all(saves);
     showMessage('✅ Changes saved. Live page picks this up on next load.', 'success');
