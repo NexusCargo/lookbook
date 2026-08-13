@@ -129,11 +129,16 @@
     0%, 100%{ transform:rotate(-0.6deg); }
     50%{ transform:rotate(0.6deg); }
   }
-  .hero-stripe-overlay .lb-sweep{ animation:lbSweep 5.5s ease-in-out infinite; will-change:transform; }
-  @keyframes lbSweep{
-    0%{ transform:translateX(-640px); }
-    50%{ transform:translateX(640px); }
-    100%{ transform:translateX(-640px); }
+  .hero-stripe-overlay .rays-spin{ animation:raysSpin 46s linear infinite; }
+  @keyframes raysSpin{ to{ transform:rotate(360deg); } }
+  .hero-stripe-overlay.spotlight{
+    background:radial-gradient(ellipse 62% 74% at 30% 46%,
+      transparent 0%, transparent 38%, rgba(8,7,5,.62) 100%);
+    animation:spotlightBreathe 7s ease-in-out infinite;
+  }
+  @keyframes spotlightBreathe{
+    0%, 100%{ opacity:0.9; }
+    50%{ opacity:1; }
   }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
@@ -161,9 +166,26 @@
     from{opacity:0; transform:translateY(16px);}
     to{opacity:1; transform:translateY(0);}
   }
+  .hero .eyebrow.typewriter, .hero h1.typewriter, .hero p.sub.typewriter, .hero .edition.typewriter{
+    display:inline-block;
+    max-width:100%;
+    overflow:hidden;
+    white-space:nowrap;
+    border-right:3px solid var(--gold);
+    width:0;
+    opacity:1;
+    transform:none;
+    animation:hero-typing var(--tw-duration, 1.6s) steps(var(--tw-steps, 20), end) var(--tw-start, 0s) forwards,
+              hero-caret .8s step-end infinite;
+  }
+  @keyframes hero-typing{ from{ width:0; } to{ width:100%; } }
+  @keyframes hero-caret{ 50%{ border-color:transparent; } }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-stripe-overlay .flag-slice, .hero-stripe-overlay .lb-sweep{animation:none;}
+    .hero .eyebrow.typewriter, .hero h1.typewriter, .hero p.sub.typewriter, .hero .edition.typewriter{
+      animation:none; width:100%; border-right:none;
+    }
+    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-stripe-overlay .flag-slice, .hero-stripe-overlay .rays-spin, .hero-stripe-overlay.spotlight{animation:none;}
   }
 
   .scroll-cue{
@@ -760,6 +782,7 @@ const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
+  heroTextAnim: { eyebrow: 'fade', title: 'fade', sub: 'fade', edition: 'fade' },
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -1000,14 +1023,13 @@ const STRIPE_STYLE_SVG = {
   flagSlices(colors) {
     const n = colors.length;
     const bandH = 420 / n;
-    const SLICES = 18;
-    const flagW = 360;
-    const sliceW = flagW / SLICES;
+    const SLICES = 40;
+    const sliceW = 1000 / SLICES;
     let out = '';
     for (let s = 0; s < SLICES; s++) {
       const x = s * sliceW;
-      const amp = (2 + s * 1.05).toFixed(1);
-      const delay = (s * 0.07).toFixed(2);
+      const amp = (2 + s * 0.55).toFixed(1);
+      const delay = (s * 0.05).toFixed(2);
       const bands = colors.map((c, bi) =>
         `<rect x="${x}" y="${bi * bandH}" width="${(sliceW + 0.7).toFixed(2)}" height="${(bandH + 0.7).toFixed(2)}" fill="${c}"/>`
       ).join('');
@@ -1015,20 +1037,41 @@ const STRIPE_STYLE_SVG = {
     }
     return out;
   },
+  zigzagPath(y0, amp, step) {
+    let pts = [];
+    let up = true;
+    for (let x = -60; x <= 1060; x += step) {
+      pts.push(`${x} ${up ? y0 - amp : y0 + amp}`);
+      up = !up;
+    }
+    return 'M ' + pts.join(' L ');
+  },
+  rays(colors) {
+    const cx = 130, cy = 460, count = 14, spread = 150;
+    let out = '';
+    for (let i = 0; i < count; i++) {
+      const angle = -75 + i * (spread / (count - 1));
+      const rad = angle * Math.PI / 180;
+      const len = 640;
+      const x2 = (cx + Math.cos(rad) * len).toFixed(1);
+      const y2 = (cy + Math.sin(rad) * len).toFixed(1);
+      const c = colors[i % colors.length];
+      const w = 2 + (i % 3);
+      out += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="0.55"/>`;
+    }
+    return `<g class="rays-spin" style="transform-origin:${cx}px ${cy}px;">${out}</g>`;
+  },
   build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
     const INK = '#171310', IVORY = '#F5EFE3';
-    if (styleId === 'trail') {
+    if (styleId === 'zigzag') {
       return `
-        ${this.ribbon('hs-c1', 'M -60 150 C 200 150 235 195 460 185 S 720 120 1060 150', [c0], 9, true)}
-        ${this.ribbon('hs-c2', 'M -60 178 C 210 178 245 222 480 212 S 730 148 1060 178', [c1], 9, true)}
-        ${this.ribbon('hs-c3', 'M -60 206 C 220 206 255 248 500 238 S 740 176 1060 206', [c2], 9, true)}
-        <g fill="${IVORY}" opacity="0.9">
-          <rect x="230" y="172" width="9" height="9" transform="rotate(45 234 176)"/>
-          <rect x="470" y="192" width="9" height="9" transform="rotate(45 474 196)"/>
-          <rect x="710" y="140" width="9" height="9" transform="rotate(45 714 144)"/>
-        </g>
+        ${this.ribbon('hs-z1', this.zigzagPath(378, 16, 44), [c0], 8, true)}
+        ${this.ribbon('hs-z2', this.zigzagPath(378, 16, 44), [c1], 8, true)}
       `;
+    }
+    if (styleId === 'rays') {
+      return this.rays(colors.length ? colors : [c0, c1, c2]);
     }
     if (styleId === 'fold') {
       return `
@@ -1052,26 +1095,13 @@ const STRIPE_STYLE_SVG = {
     if (styleId === 'flag') {
       return `<g>${this.flagSlices(colors)}</g>`;
     }
-    if (styleId === 'lightbeam') {
-      return `
-        <defs>
-          <linearGradient id="hs-lbgrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
-            <stop offset="0.5" stop-color="#FFF7DA" stop-opacity="0.95"/>
-            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <g class="lb-sweep">
-          <rect x="-320" y="-260" width="380" height="960" fill="url(#hs-lbgrad)" transform="rotate(24 -130 220)"/>
-        </g>
-      `;
-    }
     return '';
   }
 };
 
 function renderHeroStripe(segments, styleId, position) {
-  const style = styleId || 'straight';
+  let style = styleId || 'straight';
+  if (style === 'lightbeam') style = 'spotlight'; // backward-compat alias for older saved configs
   const pos = position || 'left';
   const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
@@ -1081,6 +1111,17 @@ function renderHeroStripe(segments, styleId, position) {
   heroEl.classList.add(`pos-${pos}`);
   overlayEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   overlayEl.classList.add(`pos-${pos}`);
+
+  if (style === 'spotlight') {
+    stripEl.style.display = 'none';
+    stripEl.innerHTML = '';
+    overlayEl.style.display = '';
+    overlayEl.style.mixBlendMode = 'normal';
+    overlayEl.classList.add('spotlight');
+    overlayEl.innerHTML = '';
+    return;
+  }
+  overlayEl.classList.remove('spotlight');
 
   if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
     overlayEl.style.display = 'none';
@@ -1109,7 +1150,7 @@ function renderHeroStripe(segments, styleId, position) {
   stripEl.style.display = 'none';
   stripEl.innerHTML = '';
   overlayEl.style.display = '';
-  overlayEl.style.mixBlendMode = (style === 'lightbeam') ? 'screen' : '';
+  overlayEl.style.mixBlendMode = '';
   const colors = STRIPE_STYLE_SVG.colorsOf(segments);
   overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
 }
@@ -1231,7 +1272,6 @@ function applyCopy(copy) {
   document.getElementById('heroTitle').textContent = c.hero?.title ?? DEFAULT_COPY.hero.title;
   document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
   document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
-
   document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
   document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
   document.getElementById('whyTitle').textContent = c.intro?.whyTitle ?? DEFAULT_COPY.intro.whyTitle;
@@ -1252,6 +1292,40 @@ function applyCopy(copy) {
     `<div class="plan-card"><h4>${card.title}</h4><p>${card.body}</p></div>`
   ).join('');
   document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
+}
+
+const HERO_TEXT_FIELDS = [
+  { id: 'heroEyebrow', key: 'eyebrow', fadeDelay: 0 },
+  { id: 'heroTitle', key: 'title', fadeDelay: 0.15 },
+  { id: 'heroSub', key: 'sub', fadeDelay: 0.3 },
+  { id: 'heroEdition', key: 'edition', fadeDelay: 0.45 }
+];
+
+function applyHeroTextAnimation(anim) {
+  const cfg = anim || {};
+  let cumulativeDelay = 0.1;
+  HERO_TEXT_FIELDS.forEach(field => {
+    const el = document.getElementById(field.id);
+    if (!el) return;
+    const mode = cfg[field.key] || 'fade';
+    el.classList.remove('typewriter');
+    el.style.removeProperty('--tw-steps');
+    el.style.removeProperty('--tw-duration');
+    el.style.removeProperty('--tw-start');
+    el.style.animation = '';
+    if (mode === 'typewriter') {
+      const text = el.textContent || '';
+      const dur = Math.min(2.6, Math.max(0.7, text.length * 0.07));
+      el.style.setProperty('--tw-steps', String(text.length || 1));
+      el.style.setProperty('--tw-duration', dur + 's');
+      el.style.setProperty('--tw-start', cumulativeDelay.toFixed(2) + 's');
+      el.classList.add('typewriter');
+      cumulativeDelay += dur + 0.25;
+    } else {
+      el.style.animation = `fadeUp 1s ease-out ${field.fadeDelay}s both`;
+      cumulativeDelay = Math.max(cumulativeDelay, field.fadeDelay + 1);
+    }
+  });
 }
 
 function applyRegionBlurbs() {
@@ -1401,6 +1475,7 @@ async function init() {
   }
   REGION_DATA = data.regions;
   applyCopy(data.copy);
+  applyHeroTextAnimation(data.content.heroTextAnim);
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
