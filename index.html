@@ -1612,26 +1612,32 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
   const submitBtn = document.getElementById('inquirySubmit');
   const status = document.getElementById('inquiryStatus');
 
-  const payload = {
-    name: form.name.value.trim(),
-    email: form.email.value.trim(),
-    startDate: form.startDate.value,
-    endDate: form.endDate.value,
-    message: form.message.value.trim(),
-    company: form.company.value
-  };
-
-  if (!payload.name || !payload.email) {
-    status.textContent = 'Name and email are required.';
-    status.className = 'status error';
-    return;
-  }
-
-  submitBtn.disabled = true;
-  status.textContent = 'Sending…';
-  status.className = 'status';
-
   try {
+    // Deliberately using getElementById rather than form.<fieldname> here:
+    // a field named "name" collides with HTMLFormElement's own native
+    // `.name` property (it reflects the <form name="..."> attribute, which
+    // this form doesn't set), so `form.name` silently returns "" instead of
+    // the input element — and calling .value on that throws. Same class of
+    // risk exists for other reserved names (action, method, id, submit...).
+    const payload = {
+      name: document.getElementById('inq-name').value.trim(),
+      email: document.getElementById('inq-email').value.trim(),
+      startDate: document.getElementById('inq-start').value,
+      endDate: document.getElementById('inq-end').value,
+      message: document.getElementById('inq-message').value.trim(),
+      company: document.getElementById('inq-company').value
+    };
+
+    if (!payload.name || !payload.email) {
+      status.textContent = 'Name and email are required.';
+      status.className = 'status error';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    status.textContent = 'Sending…';
+    status.className = 'status';
+
     const res = await fetch('/api/send-inquiry', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
