@@ -174,17 +174,11 @@
   .stripe-style-card .ssc-label { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0A3626; }
   .stripe-style-card .ssc-label span { display: block; font-weight: 400; font-size: 11.5px; color: #888; margin-top: 2px; }
   .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
-  .stripe-style-card .ssc-preview .searchlight-beam{ transform-origin:500px -40px; }
-  .stripe-style-card .ssc-preview .searchlight-beam.beam-a{ animation: sscBeamA 7s ease-in-out infinite; }
-  .stripe-style-card .ssc-preview .searchlight-beam.beam-b{ animation: sscBeamB 5.4s ease-in-out infinite; animation-delay:-1.2s; }
-  .stripe-style-card .ssc-preview .weave-thread{ animation: sscWeaveDrift 9s ease-in-out infinite; }
-  .stripe-style-card .ssc-preview .weave-thread:nth-child(2n){ animation-delay:-3s; animation-duration:11s; }
-  .stripe-style-card .ssc-preview .pulse-ring{ transform-origin:500px 150px; animation: sscPulseRing 3.9s ease-out infinite; opacity:0; }
+  .stripe-style-card .ssc-preview .ssc-edge-wave{ animation: sscEdgeSway 6s ease-in-out infinite; transform-origin:center; }
+  .stripe-style-card .ssc-preview .ssc-spot-glow{ animation: sscSpotBreathe 4.5s ease-in-out infinite; transform-origin:380px 150px; }
   @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
-  @keyframes sscBeamA{ 0%,100%{transform:rotate(-22deg);} 50%{transform:rotate(22deg);} }
-  @keyframes sscBeamB{ 0%,100%{transform:rotate(18deg);} 50%{transform:rotate(-18deg);} }
-  @keyframes sscWeaveDrift{ 0%,100%{transform:translateX(-6px);} 50%{transform:translateX(6px);} }
-  @keyframes sscPulseRing{ 0%{transform:scale(0.2); opacity:0.9;} 70%{opacity:0.15;} 100%{transform:scale(3.2); opacity:0;} }
+  @keyframes sscEdgeSway{ 0%,100%{transform:translateX(0);} 50%{transform:translateX(5px);} }
+  @keyframes sscSpotBreathe{ 0%,100%{opacity:.55; transform:scale(1);} 50%{opacity:1; transform:scale(1.08);} }
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
   }
@@ -250,9 +244,11 @@
         <p style="font-size:12.5px; color:#888; margin:-4px 0 14px;">Preview uses your segment colors below. Pick a treatment, then Save.</p>
         <div id="stripeStyleGrid" class="stripe-style-grid"></div>
 
-        <h3 style="margin-top:20px;">Stripe position</h3>
-        <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges.</p>
-        <div class="pill-select" id="stripePositionPicker"></div>
+        <div id="stripePositionSection">
+          <h3 style="margin-top:20px;">Stripe position</h3>
+          <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges. (Only applies to the Straight style.)</p>
+          <div class="pill-select" id="stripePositionPicker"></div>
+        </div>
 
         <h3 style="margin-top:20px;">Hero stripe colors</h3>
         <div id="stripeSegments"></div>
@@ -601,7 +597,8 @@ function mergeContent(loaded) {
   const defaults = defaultContent();
   const c = { ...defaults, ...(loaded || {}) };
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
-  c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
+  const validStripeStyles = ['straight', 'none', 'spotlight'];
+  c.heroStripeStyle = (loaded && validStripeStyles.includes(loaded.heroStripeStyle)) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
@@ -959,10 +956,9 @@ function renderCopyForm() {
 }
 
 const STRIPE_STYLES = [
-  { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
-  { id: 'searchlight', label: 'Searchlight Beam', desc: 'Two crossing light beams sweeping like a lighthouse' },
-  { id: 'weave', label: 'Kente Weave', desc: 'Interlocking woven bands in your palette colors' },
-  { id: 'pulse', label: 'Pulse Rings', desc: 'Concentric rings pulsing outward from center' }
+  { id: 'straight', label: 'Straight (Wave Blend)', desc: 'Edge-to-edge bands with a gentle wavy edge blending into the photo' },
+  { id: 'none', label: 'No Stripe', desc: 'Full-bleed background photo, no side stripe' },
+  { id: 'spotlight', label: 'Spotlight', desc: 'Highlights the headline and dims the far side with a shadow' }
 ];
 
 const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -979,54 +975,61 @@ function stripeColors() {
 }
 
 function buildStripeStyleSvg(styleId, colors) {
-  const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1, c3 = colors[3] || c0, c4 = colors[4] || c1;
+  const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
   if (styleId === 'straight') {
     const n = colors.length;
     const bandH = 300 / n;
-    return colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
-  }
-  if (styleId === 'searchlight') {
-    return `
+    const bands = colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
+    // Wavy edge blending the bands into the "photo" on the right of the preview
+    const amp = 14, waves = 3, steps = 40, baseX = 860;
+    let d = '';
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y = t * 300;
+      const x = baseX + Math.sin(t * Math.PI * 2 * waves) * amp;
+      d += (i === 0 ? `M ${x.toFixed(1)},0 ` : `L ${x.toFixed(1)},${y.toFixed(1)} `);
+    }
+    d += `L 1000,300 L 1000,0 Z`;
+    const wave = `
       <defs>
-        <linearGradient id="ssc-sl-grad-a" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="${c0}" stop-opacity="0.55"/>
-          <stop offset="1" stop-color="${c0}" stop-opacity="0"/>
-        </linearGradient>
-        <linearGradient id="ssc-sl-grad-b" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="${c1}" stop-opacity="0.45"/>
-          <stop offset="1" stop-color="${c1}" stop-opacity="0"/>
+        <linearGradient id="ssc-wave-grad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#05050a" stop-opacity="0.6"/>
+          <stop offset="1" stop-color="#05050a" stop-opacity="0"/>
         </linearGradient>
       </defs>
-      <g class="searchlight-beam beam-a">
-        <polygon points="500,-40 320,320 680,320" fill="url(#ssc-sl-grad-a)"/>
-      </g>
-      <g class="searchlight-beam beam-b">
-        <polygon points="500,-40 370,320 730,320" fill="url(#ssc-sl-grad-b)"/>
-      </g>
-      <circle cx="500" cy="-40" r="22" fill="${c0}" opacity="0.5"/>
+      <path class="ssc-edge-wave" d="${d}" fill="url(#ssc-wave-grad)"/>
+    `;
+    return bands + wave;
+  }
+  if (styleId === 'none') {
+    return `
+      <defs>
+        <linearGradient id="ssc-none-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${c0}" stop-opacity="0.3"/>
+          <stop offset="1" stop-color="#05050a" stop-opacity="0.6"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="1000" height="300" fill="#0A3626"/>
+      <rect x="0" y="0" width="1000" height="300" fill="url(#ssc-none-grad)"/>
+      <text x="500" y="160" text-anchor="middle" font-family="Verdana, sans-serif" font-size="30" fill="#fff" opacity="0.55">FULL PHOTO, NO STRIPE</text>
     `;
   }
-  if (styleId === 'weave') {
-    const cols = [c0, c1, c2, c3, c4];
-    const stripeW = 1000 / 14;
-    const warp = Array.from({ length: 14 }, (_, i) =>
-      `<rect x="${i * stripeW}" y="0" width="${stripeW + 1}" height="300" fill="${cols[i % cols.length]}" opacity="0.85"/>`
-    ).join('');
-    const weftH = 300 / 6;
-    const weft = Array.from({ length: 6 }, (_, i) => {
-      const c = cols[(i + 2) % cols.length];
-      const offset = i % 2 === 0 ? 0 : stripeW / 2;
-      return `<rect class="weave-thread" x="${-stripeW + offset}" y="${i * weftH}" width="1040" height="${weftH * 0.55}" fill="${c}" opacity="0.35"/>`;
-    }).join('');
-    return `<g class="weave-warp">${warp}</g><g class="weave-weft">${weft}</g>`;
-  }
-  if (styleId === 'pulse') {
+  if (styleId === 'spotlight') {
     return `
-      <g class="pulse-rings">
-        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c0}" stroke-width="5"/>
-        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c1}" stroke-width="5" style="animation-delay:-1.3s"/>
-        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c2}" stroke-width="5" style="animation-delay:-2.6s"/>
-      </g>
+      <defs>
+        <radialGradient id="ssc-spot-grad" cx="38%" cy="46%" r="58%">
+          <stop offset="0" stop-color="#000" stop-opacity="0"/>
+          <stop offset="55%" stop-color="#000" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0.85"/>
+        </radialGradient>
+        <radialGradient id="ssc-spot-glow" cx="38%" cy="46%" r="40%">
+          <stop offset="0" stop-color="${c0}" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="${c0}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="1000" height="300" fill="#0A3626"/>
+      <rect x="0" y="0" width="1000" height="300" fill="url(#ssc-spot-grad)"/>
+      <ellipse class="ssc-spot-glow" cx="380" cy="150" rx="220" ry="110" fill="url(#ssc-spot-glow)"/>
     `;
   }
   return '';
@@ -1048,7 +1051,7 @@ function renderStripeStyleGrid() {
   STRIPE_STYLES.forEach(style => {
     const card = document.createElement('div');
     card.className = 'stripe-style-card' + (content.heroStripeStyle === style.id ? ' selected' : '');
-    const svgTransform = style.id === 'straight' ? 'none' : previewTransform;
+    const svgTransform = style.id === 'straight' ? previewTransform : 'none';
     card.innerHTML = `
       <div class="ssc-preview">
         <span class="ssc-check"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="#0A3626" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -1059,9 +1062,17 @@ function renderStripeStyleGrid() {
     card.addEventListener('click', () => {
       content.heroStripeStyle = style.id;
       renderStripeStyleGrid();
+      updateStripePositionVisibility();
     });
     grid.appendChild(card);
   });
+  updateStripePositionVisibility();
+}
+
+function updateStripePositionVisibility() {
+  const section = document.getElementById('stripePositionSection');
+  if (!section) return;
+  section.style.display = content.heroStripeStyle === 'straight' ? '' : 'none';
 }
 
 const STRIPE_POSITIONS = [

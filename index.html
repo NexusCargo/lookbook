@@ -87,11 +87,14 @@
     justify-content:center;
     padding:6vw;
   }
+  header.hero.style-none .hero-strip{ display:none !important; }
   .hero-strip{
     width:9%;
     min-width:70px;
     display:flex;
     flex-direction:column;
+    position:relative;
+    overflow:visible;
   }
   header.hero.pos-top .hero-strip,
   header.hero.pos-bottom .hero-strip{
@@ -124,74 +127,91 @@
     0%, 100%{ transform:translateX(0) scaleY(1); }
     50%{ transform:translateX(5px) scaleY(1.025); }
   }
+
+  /* Wavy edge that blends the straight stripe into the photo behind it */
+  .hero-edge-wave{
+    position:absolute;
+    pointer-events:none;
+    z-index:1;
+    mix-blend-mode:multiply;
+    opacity:0.9;
+    animation:edgeWaveSway 6.5s ease-in-out infinite;
+    will-change:transform;
+  }
+  .hero-edge-wave svg{ display:block; width:100%; height:100%; }
+  header.hero.pos-left .hero-edge-wave{ left:100%; top:0; bottom:0; width:80px; height:100%; }
+  header.hero.pos-right .hero-edge-wave{ right:100%; top:0; bottom:0; width:80px; height:100%; animation-name:edgeWaveSwayRight; }
+  header.hero.pos-top .hero-edge-wave{ top:100%; left:0; right:0; height:80px; width:100%; animation-name:edgeWaveSwayV; }
+  header.hero.pos-bottom .hero-edge-wave{ bottom:100%; left:0; right:0; height:80px; width:100%; animation-name:edgeWaveSwayVBottom; }
+  @keyframes edgeWaveSway{
+    0%, 100%{ transform:translateX(0); }
+    50%{ transform:translateX(4px); }
+  }
+  @keyframes edgeWaveSwayRight{
+    0%, 100%{ transform:scaleX(-1) translateX(0); }
+    50%{ transform:scaleX(-1) translateX(4px); }
+  }
+  @keyframes edgeWaveSwayV{
+    0%, 100%{ transform:translateY(0); }
+    50%{ transform:translateY(4px); }
+  }
+  @keyframes edgeWaveSwayVBottom{
+    0%, 100%{ transform:scaleY(-1) translateY(0); }
+    50%{ transform:scaleY(-1) translateY(4px); }
+  }
+
+  /* Spotlight treatment: highlight the headline, dim the far side with shadow */
   .hero-stripe-overlay{
     position:absolute; inset:0;
     z-index:1;
     pointer-events:none;
-    mix-blend-mode:soft-light;
-    opacity:0.92;
-  }
-  .hero-stripe-overlay svg{ position:absolute; inset:0; width:100%; height:100%; display:block; transition:transform .3s ease; }
-  .hero-stripe-overlay.pos-right svg{ transform:scaleX(-1); }
-  .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
-  .hero-stripe-overlay.pos-bottom svg{ transform:none; }
-  .hero-stripe-overlay .searchlight-beam{ transform-origin:500px -60px; }
-  .hero-stripe-overlay .searchlight-beam.beam-a{ animation:beamSweepA 7s ease-in-out infinite; }
-  .hero-stripe-overlay .searchlight-beam.beam-b{ animation:beamSweepB 5.4s ease-in-out infinite; animation-delay:-1.2s; }
-  .hero-stripe-overlay .weave-thread{ animation:weaveDrift 9s ease-in-out infinite; will-change:transform; }
-  .hero-stripe-overlay .weave-thread:nth-child(2n){ animation-delay:-3s; animation-duration:11s; }
-  .hero-stripe-overlay .pulse-ring{ transform-origin:500px 210px; animation:pulseRing 3.9s ease-out infinite; opacity:0; }
-  @keyframes beamSweepA{
-    0%, 100%{ transform:rotate(-22deg); }
-    50%{ transform:rotate(22deg); }
-  }
-  @keyframes beamSweepB{
-    0%, 100%{ transform:rotate(18deg); }
-    50%{ transform:rotate(-18deg); }
-  }
-  @keyframes weaveDrift{
-    0%, 100%{ transform:translateX(-8px); }
-    50%{ transform:translateX(8px); }
-  }
-  @keyframes pulseRing{
-    0%{ transform:scale(0.2); opacity:0.9; }
-    70%{ opacity:0.15; }
-    100%{ transform:scale(3.2); opacity:0; }
-  }
-  .hero-light-beam{
-    position:absolute; inset:0;
-    z-index:1;
-    pointer-events:none;
     display:none;
-    background:linear-gradient(90deg,
-      transparent 0%,
-      transparent 8%,
-      rgba(255,255,255,.06) 18%,
-      rgba(255,250,225,.32) 35%,
-      rgba(255,255,255,.32) 50%,
-      rgba(255,250,225,.32) 65%,
-      rgba(255,255,255,.06) 82%,
-      transparent 92%,
-      transparent 100%);
-    background-size:100% 100%;
-    background-position:0% 0%;
+  }
+  .hero-stripe-overlay.mode-spotlight{
+    display:block;
+    background:radial-gradient(ellipse 62% 58% at 36% 46%,
+      rgba(6,6,4,0) 0%,
+      rgba(6,6,4,0) 36%,
+      rgba(6,6,4,.42) 66%,
+      rgba(6,6,4,.86) 100%);
+  }
+  .hero-stripe-overlay.mode-spotlight::after{
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 40% 38% at 36% 46%, rgba(255,236,179,.18) 0%, rgba(255,236,179,0) 72%);
     mix-blend-mode:screen;
-    opacity:0.88;
-    animation:lightBeamSweep 8.5s ease-in-out infinite;
+    animation:spotlightBreathe 6s ease-in-out infinite;
   }
-  .hero-light-beam.active{ display:block; }
-  @keyframes lightBeamSweep{
-    0%{ transform:translateX(-120%); }
-    50%{ transform:translateX(120%); }
-    100%{ transform:translateX(-120%); }
+  @keyframes spotlightBreathe{
+    0%, 100%{ opacity:.55; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.07); }
   }
+
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
     font-size:clamp(60px,11vw,140px);
     margin:0;
     line-height:0.9;
     letter-spacing:1px;
-    animation:fadeUp 1s ease-out both;
+    opacity:1;
+  }
+  .hero h1.typewriter::after{
+    content:'';
+    display:inline-block;
+    width:0.06em;
+    margin-left:6px;
+    height:0.78em;
+    background:var(--gold);
+    vertical-align:-0.08em;
+    opacity:0;
+  }
+  .hero h1.typewriter.typing::after{
+    opacity:1;
+    animation:caretBlink .9s steps(1) infinite;
+  }
+  @keyframes caretBlink{
+    0%, 49%{ opacity:1; }
+    50%, 100%{ opacity:0; }
   }
   .hero .eyebrow{color:var(--gold); margin-bottom:18px; animation:fadeUp 1s ease-out .15s both;}
   .hero p.sub{
@@ -213,9 +233,8 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero-strip > div, .hero-stripe-overlay .searchlight-beam, .hero-stripe-overlay .weave-thread, .hero-stripe-overlay .pulse-ring, .hero-light-beam{animation:none;}
-    .hero-stripe-overlay .pulse-ring{ opacity:0.5; }
-    .hero-light-beam{display:none !important;}
+    .hero-strip > div, .hero-edge-wave, .hero-stripe-overlay.mode-spotlight::after, .hero h1.typewriter.typing::after{animation:none;}
+    .hero-stripe-overlay.mode-spotlight::after{ opacity:.8; }
   }
 
   .scroll-cue{
@@ -640,7 +659,6 @@
 
 <header class="hero">
   <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
-  <div class="hero-light-beam" id="heroLightBeam"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -1039,111 +1057,125 @@ function safeHexColor(c, fallback) {
   return HEX_COLOR_RE.test(c) ? c : fallback;
 }
 
-const STRIPE_STYLE_SVG = {
-  colorsOf(segments) {
-    const cols = (segments || [])
-      .filter(s => (s.type || 'color') !== 'image' && s.color)
-      .map(s => safeHexColor(s.color, null))
-      .filter(Boolean);
-    return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
-  },
-  build(styleId, colors) {
-    const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
-    const c3 = colors[3] || c0, c4 = colors[4] || c1;
-    if (styleId === 'searchlight') {
-      return `
-        <defs>
-          <linearGradient id="sl-grad-a" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="${c0}" stop-opacity="0.55"/>
-            <stop offset="1" stop-color="${c0}" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="sl-grad-b" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="${c1}" stop-opacity="0.45"/>
-            <stop offset="1" stop-color="${c1}" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <g class="searchlight-beam beam-a">
-          <polygon points="500,-60 300,460 700,460" fill="url(#sl-grad-a)"/>
-        </g>
-        <g class="searchlight-beam beam-b">
-          <polygon points="500,-60 360,460 760,460" fill="url(#sl-grad-b)"/>
-        </g>
-        <circle cx="500" cy="-60" r="30" fill="${c0}" opacity="0.5"/>
-      `;
-    }
-    if (styleId === 'weave') {
-      const cols = [c0, c1, c2, c3, c4];
-      const stripeW = 1000 / 14;
-      const warp = Array.from({ length: 14 }, (_, i) =>
-        `<rect x="${i * stripeW}" y="0" width="${stripeW + 1}" height="420" fill="${cols[i % cols.length]}" opacity="0.85"/>`
-      ).join('');
-      const weftH = 420 / 8;
-      const weft = Array.from({ length: 8 }, (_, i) => {
-        const c = cols[(i + 2) % cols.length];
-        const offset = i % 2 === 0 ? 0 : stripeW / 2;
-        return `<rect class="weave-thread" x="${-stripeW + offset}" y="${i * weftH}" width="1040" height="${weftH * 0.55}" fill="${c}" opacity="0.35"/>`;
-      }).join('');
-      return `<g class="weave-warp">${warp}</g><g class="weave-weft">${weft}</g>`;
-    }
-    if (styleId === 'pulse') {
-      return `
-        <g class="pulse-rings">
-          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c0}" stroke-width="6"/>
-          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c1}" stroke-width="6" style="animation-delay:-1.3s"/>
-          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c2}" stroke-width="6" style="animation-delay:-2.6s"/>
-        </g>
-      `;
-    }
-    return '';
+// Types the hero headline out character-by-character with a blinking caret,
+// welcoming visitors as the page loads. Falls back to an instant set for
+// people who've asked their OS/browser to reduce motion.
+let __typewriteToken = 0;
+function typewriteText(el, text, speed) {
+  if (!el) return;
+  const str = text || '';
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.classList.add('typewriter');
+  const myToken = ++__typewriteToken;
+  if (reduced || !str) {
+    el.textContent = str;
+    el.classList.remove('typing');
+    return;
   }
-};
+  el.textContent = '';
+  el.classList.add('typing');
+  const charSpeed = speed || 65;
+  let i = 0;
+  function step() {
+    if (myToken !== __typewriteToken) return; // superseded by a newer call
+    if (i <= str.length) {
+      el.textContent = str.slice(0, i);
+      i++;
+      setTimeout(step, charSpeed + Math.random() * 40);
+    } else {
+      el.classList.remove('typing');
+    }
+  }
+  setTimeout(step, 250);
+}
+
+const VALID_STRIPE_STYLES = ['straight', 'none', 'spotlight'];
+
+// Builds a gently wavy divider path that sits at the seam between the
+// color stripe and the photo, filled with a dark-to-transparent gradient
+// so the hard edge reads as a soft blend into the image instead of a cut line.
+function buildEdgeWaveSvg(orientation) {
+  const amp = 12, waves = 4, steps = 48, length = 1000, thickness = 80, mid = 18;
+  let d = '';
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const along = t * length;
+    const off = mid + Math.sin(t * Math.PI * 2 * waves) * amp;
+    if (orientation === 'vertical') {
+      d += (i === 0 ? `M ${off.toFixed(1)},0 ` : `L ${off.toFixed(1)},${along.toFixed(1)} `);
+    } else {
+      d += (i === 0 ? `M 0,${off.toFixed(1)} ` : `L ${along.toFixed(1)},${off.toFixed(1)} `);
+    }
+  }
+  d += orientation === 'vertical'
+    ? `L ${thickness},${length} L ${thickness},0 Z`
+    : `L ${length},${thickness} L 0,${thickness} Z`;
+  const viewBox = orientation === 'vertical' ? `0 0 ${thickness} ${length}` : `0 0 ${length} ${thickness}`;
+  const gradDir = orientation === 'vertical' ? 'x1="0" y1="0" x2="1" y2="0"' : 'x1="0" y1="0" x2="0" y2="1"';
+  return `<svg viewBox="${viewBox}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="edgeWaveGrad" ${gradDir}>
+        <stop offset="0" stop-color="#05050a" stop-opacity="0.62"/>
+        <stop offset="1" stop-color="#05050a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${d}" fill="url(#edgeWaveGrad)"/>
+  </svg>`;
+}
 
 function renderHeroStripe(segments, styleId, position) {
-  const style = styleId || 'straight';
+  const style = VALID_STRIPE_STYLES.includes(styleId) ? styleId : 'straight';
   const pos = position || 'left';
   const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
-  const beam = document.getElementById('heroLightBeam');
 
-  heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
+  heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom', 'style-none');
   heroEl.classList.add(`pos-${pos}`);
-  overlayEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
-  overlayEl.classList.add(`pos-${pos}`);
 
-  if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
-    overlayEl.style.display = 'none';
-    overlayEl.innerHTML = '';
-    stripEl.style.display = '';
-    stripEl.innerHTML = '';
-    if (beam) beam.classList.remove('active');
-    (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
-      if (seg.type === 'image' && seg.image) {
-        const url = cloudinaryUrl(seg.image, 500);
-        if (url) {
-          const img = document.createElement('img');
-          img.src = url;
-          const srcset = cloudinarySrcset(seg.image, [300, 500, 800]);
-          if (srcset) { img.srcset = srcset; img.sizes = '(max-width: 700px) 100vw, 9vw'; }
-          img.alt = 'Kente pattern';
-          img.loading = 'lazy';
-          stripEl.appendChild(img);
-          return;
-        }
-      }
-      const div = document.createElement('div');
-      div.style.background = seg.color || '#0E4D34';
-      stripEl.appendChild(div);
-    });
+  overlayEl.classList.remove('mode-spotlight');
+  overlayEl.style.display = 'none';
+  overlayEl.innerHTML = '';
+  stripEl.style.display = 'none';
+  stripEl.innerHTML = '';
+
+  if (style === 'none') {
+    heroEl.classList.add('style-none');
     return;
   }
 
-  stripEl.style.display = 'none';
-  stripEl.innerHTML = '';
-  overlayEl.style.display = '';
-  const colors = STRIPE_STYLE_SVG.colorsOf(segments);
-  overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
-  if (beam) beam.classList.add('active');
+  if (style === 'spotlight') {
+    overlayEl.classList.add('mode-spotlight');
+    overlayEl.style.display = '';
+    return;
+  }
+
+  // 'straight' — colored/photo bands plus a wavy blend edge into the image
+  stripEl.style.display = '';
+  (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
+    if (seg.type === 'image' && seg.image) {
+      const url = cloudinaryUrl(seg.image, 500);
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        const srcset = cloudinarySrcset(seg.image, [300, 500, 800]);
+        if (srcset) { img.srcset = srcset; img.sizes = '(max-width: 700px) 100vw, 9vw'; }
+        img.alt = 'Kente pattern';
+        img.loading = 'lazy';
+        stripEl.appendChild(img);
+        return;
+      }
+    }
+    const div = document.createElement('div');
+    div.style.background = seg.color || '#0E4D34';
+    stripEl.appendChild(div);
+  });
+
+  const orientation = (pos === 'top' || pos === 'bottom') ? 'horizontal' : 'vertical';
+  const edgeWave = document.createElement('div');
+  edgeWave.className = 'hero-edge-wave';
+  edgeWave.innerHTML = buildEdgeWaveSvg(orientation);
+  stripEl.appendChild(edgeWave);
 }
 
 function safePercent(v, fallback) {
@@ -1295,7 +1327,7 @@ function applyCopy(copy) {
   const c = { ...DEFAULT_COPY, ...copy };
 
   document.getElementById('heroEyebrow').textContent = c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
-  document.getElementById('heroTitle').textContent = c.hero?.title ?? DEFAULT_COPY.hero.title;
+  typewriteText(document.getElementById('heroTitle'), c.hero?.title ?? DEFAULT_COPY.hero.title);
   document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
   document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
 
