@@ -123,6 +123,134 @@
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px; }
   @media (max-width: 700px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  
+  /* Hero Text Positioning Modal */
+  .hero-modal-btn { 
+    background: #F2B705; color: #0A3626; font-weight: 700; margin-top: 12px;
+  }
+  .hero-modal-btn:hover { background: #d9a600; }
+  
+  .hero-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 2000; align-items: center; justify-content: center; padding: 20px;
+  }
+  .hero-modal-overlay.open { display: flex; }
+  .hero-modal {
+    background: #fff; border-radius: 12px; max-width: 1200px; width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  }
+  @media (max-width: 900px) { .hero-modal { grid-template-columns: 1fr; } }
+  
+  .hero-modal-controls {
+    padding: 30px; border-right: 1px solid #eee; display: flex; flex-direction: column; gap: 20px;
+  }
+  @media (max-width: 900px) { 
+    .hero-modal-controls { border-right: none; border-bottom: 1px solid #eee; }
+  }
+  
+  .hero-modal-preview {
+    position: relative; background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
+    min-height: 500px; display: flex; align-items: center; justify-content: center; 
+    padding: 30px; overflow: hidden; color: #fff;
+  }
+  
+  .hero-preview-content {
+    position: absolute; width: 100%; height: 100%;
+  }
+  
+  .hero-text-element {
+    position: absolute; cursor: move; user-select: none;
+    padding: 8px 12px; background: rgba(0,0,0,0.1); border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 4px; transition: border-color 0.15s;
+  }
+  .hero-text-element:hover { border-color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.2); }
+  .hero-text-element.selected { 
+    border-color: #F2B705; background: rgba(242,183,5,0.15);
+    box-shadow: 0 0 8px rgba(242,183,5,0.4);
+  }
+  
+  .hero-text-element.text-eyebrow {
+    font-family: Verdana, sans-serif; font-size: 11px; letter-spacing: 2px; 
+    font-weight: bold; text-transform: uppercase; color: #F2B705;
+  }
+  .hero-text-element.text-h1 {
+    font-family: Georgia, serif; font-size: 48px; line-height: 0.9;
+    letter-spacing: 1px; font-weight: normal;
+  }
+  .hero-text-element.text-sub {
+    font-family: Georgia, serif; font-size: 16px; font-style: italic;
+    max-width: 400px;
+  }
+  .hero-text-element.text-edition {
+    font-family: Verdana, sans-serif; font-size: 13px; color: #D9A63A;
+  }
+  
+  .hero-modal-close {
+    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px;
+    background: rgba(255,255,255,0.9); border: none; border-radius: 50%; 
+    cursor: pointer; font-size: 18px; display: flex; align-items: center; 
+    justify-content: center; z-index: 10; transition: all 0.2s;
+  }
+  .hero-modal-close:hover { background: #fff; }
+  
+  .modal-section { display: flex; flex-direction: column; gap: 12px; }
+  .modal-section h3 { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #0A3626; }
+  
+  .draggable-text-item {
+    padding: 12px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 6px;
+    cursor: grab; user-select: none; transition: all 0.15s;
+  }
+  .draggable-text-item:hover { border-color: #0A3626; background: #e8e8e8; }
+  .draggable-text-item.active { border-color: #0A3626; background: #fff; box-shadow: 0 0 0 3px rgba(10,54,38,.15); }
+  
+  .text-item-label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .text-item-preview { font-size: 13px; color: #333; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .position-inputs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .position-inputs input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; }
+  
+  /* Animated Signout Button */
+  .signout-nav {
+    position: fixed; top: 20px; right: 20px; z-index: 1999;
+  }
+  .signout-toggle {
+    width: 48px; height: 48px; border-radius: 50%; background: #0A3626;
+    color: #fff; border: none; cursor: pointer; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+  }
+  .signout-toggle:hover { 
+    background: #082a1f; transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  }
+  
+  .signout-menu {
+    position: absolute; top: 60px; right: 0; background: #fff;
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.95);
+    pointer-events: none; transition: all 0.2s ease; min-width: 200px;
+  }
+  .signout-menu.open {
+    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+  }
+  
+  .signout-menu-item {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border: none; background: none; width: 100%; text-align: left;
+    cursor: pointer; font-size: 14px; color: #333; transition: background 0.15s;
+  }
+  .signout-menu-item:hover { background: #f5f5f5; }
+  .signout-menu-item.danger { color: #b71c1c; }
+  .signout-menu-item.danger:hover { background: #ffebee; }
+  
+  .signout-bg {
+    display: none; position: fixed; inset: 0; z-index: 1998;
+  }
+  .signout-bg.open { display: block; }
+  
   .bg-editor {
     display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
     background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px; padding: 14px;
@@ -148,6 +276,11 @@
   .stop-card-full .stop-head-actions { display: flex; gap: 6px; }
   .stop-card-full .stop-head-actions button { font-size: 12px; padding: 6px 10px; }
   .stop-card-full h5 { margin: 18px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; }
+  
+  .hero-section-title { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .hero-section-title h3 { margin: 0; }
+  .hero-tooltip { font-size: 12px; color: #666; }
+  
   .pill-select { display: flex; gap: 8px; flex-wrap: wrap; }
   .pill-select label {
     display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 13px;
@@ -185,6 +318,66 @@
 </style>
 </head>
 <body>
+
+<!-- Signout Navigation Button (Top Right) -->
+<div class="signout-nav">
+  <button class="signout-toggle" id="signoutToggle" title="Navigation menu">☰</button>
+  <div class="signout-menu" id="signoutMenu">
+    <button class="signout-menu-item" id="previewLiveBtn">
+      <span>👁️</span> Preview Live Page
+    </button>
+    <button class="signout-menu-item" id="reportIssueBtn">
+      <span>🐛</span> Report Issue
+    </button>
+    <hr style="margin: 0; border: none; border-top: 1px solid #eee;">
+    <button class="signout-menu-item danger" id="signoutBtn">
+      <span>🚪</span> Sign Out
+    </button>
+  </div>
+</div>
+<div class="signout-bg" id="signoutBg"></div>
+
+<!-- Hero Text Positioning Modal -->
+<div class="hero-modal-overlay" id="heroModalOverlay">
+  <div class="hero-modal">
+    <button class="hero-modal-close" id="heroModalClose">✕</button>
+    
+    <div class="hero-modal-controls">
+      <h2 style="margin: 0 0 12px; color: #0A3626;">Hero Text Positioning</h2>
+      <p style="margin: 0; font-size: 13px; color: #666;">Drag text elements on the preview to position them. Click to select and fine-tune with inputs below.</p>
+      
+      <div class="modal-section">
+        <h3>Text Elements</h3>
+        <div id="textItemsList"></div>
+      </div>
+      
+      <div class="modal-section" id="positionControlSection" style="display: none;">
+        <h3>Position (px)</h3>
+        <div class="position-inputs">
+          <div>
+            <label>X (Left)</label>
+            <input type="number" id="posX" min="0" step="10">
+          </div>
+          <div>
+            <label>Y (Top)</label>
+            <input type="number" id="posY" min="0" step="10">
+          </div>
+        </div>
+      </div>
+      
+      <div class="button-group" style="margin-top: auto;">
+        <button class="secondary" id="heroResetPositions">↺ Reset to Default</button>
+        <button id="heroModalSave">✓ Apply & Close</button>
+      </div>
+    </div>
+    
+    <div class="hero-modal-preview">
+      <div class="hero-preview-content" id="heroPreviewContent"></div>
+    </div>
+  </div>
+</div>
+
+</body>
 
 <header>
   <h1>Ghana Lookbook Admin</h1>
@@ -236,6 +429,9 @@
         </div>
         <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
+        
+        <button type="button" class="hero-modal-btn" id="openHeroModalBtn">📍 Position Hero Text</button>
+        <p style="font-size: 12px; color: #666; margin: 8px 0 0;">Drag text around the preview to reposition it for your background image. Changes persist only after Save.</p>
 
         <h3>Background</h3>
         <div id="bg-hero"></div>
@@ -2024,6 +2220,227 @@ function showMessage(text, type) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   setTimeout(() => el.classList.add('hidden'), 6000);
 }
+
+/* ===== ANIMATED SIGNOUT BUTTON ===== */
+const signoutToggle = document.getElementById('signoutToggle');
+const signoutMenu = document.getElementById('signoutMenu');
+const signoutBg = document.getElementById('signoutBg');
+const signoutBtn = document.getElementById('signoutBtn');
+const previewLiveBtn = document.getElementById('previewLiveBtn');
+const reportIssueBtn = document.getElementById('reportIssueBtn');
+
+signoutToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  signoutMenu.classList.toggle('open');
+  signoutBg.classList.toggle('open');
+});
+
+signoutBg.addEventListener('click', () => {
+  signoutMenu.classList.remove('open');
+  signoutBg.classList.remove('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!signoutToggle.contains(e.target) && !signoutMenu.contains(e.target)) {
+    signoutMenu.classList.remove('open');
+    signoutBg.classList.remove('open');
+  }
+});
+
+previewLiveBtn.addEventListener('click', () => {
+  window.open('/'); // Opens the main lookbook page
+  signoutMenu.classList.remove('open');
+  signoutBg.classList.remove('open');
+});
+
+reportIssueBtn.addEventListener('click', () => {
+  alert('Report an issue:\n\nEmail: admin@ghana-lookbook.com\nOr DM via Slack');
+  signoutMenu.classList.remove('open');
+  signoutBg.classList.remove('open');
+});
+
+signoutBtn.addEventListener('click', () => {
+  const confirmed = confirm('Sign out?\n\nAny unsaved changes will be lost.');
+  if (confirmed) {
+    // Redirect to sign out endpoint or auth page
+    window.location.href = '/auth/signout';
+  }
+});
+
+/* ===== HERO TEXT POSITIONING MODAL ===== */
+window.heroTextPositions = window.heroTextPositions || {};
+
+const heroModalOverlay = document.getElementById('heroModalOverlay');
+const heroModalClose = document.getElementById('heroModalClose');
+const heroResetPositions = document.getElementById('heroResetPositions');
+const heroModalSave = document.getElementById('heroModalSave');
+const textItemsList = document.getElementById('textItemsList');
+const positionControlSection = document.getElementById('positionControlSection');
+const posXInput = document.getElementById('posX');
+const posYInput = document.getElementById('posY');
+const heroPreviewContent = document.getElementById('heroPreviewContent');
+
+const textElements = [
+  { id: 'eyebrow', label: 'Eyebrow', class: 'text-eyebrow', text: 'GHANA' },
+  { id: 'h1', label: 'Heading', class: 'text-h1', text: 'A Lookbook of the Gold Coast' },
+  { id: 'sub', label: 'Subtitle', class: 'text-sub', text: 'Castles, canopy walks, kente looms, and the warmest welcome...' },
+  { id: 'edition', label: 'Edition', class: 'text-edition', text: 'Edition 2025' }
+];
+
+const defaultPositions = {
+  eyebrow: { x: 50, y: 80 },
+  h1: { x: 50, y: 150 },
+  sub: { x: 50, y: 280 },
+  edition: { x: 50, y: 360 }
+};
+
+function renderPreview() {
+  heroPreviewContent.innerHTML = '';
+  textElements.forEach(el => {
+    const pos = window.heroTextPositions[el.id] || defaultPositions[el.id];
+    const div = document.createElement('div');
+    div.className = `hero-text-element ${el.class}`;
+    div.textContent = el.text;
+    div.id = `preview-${el.id}`;
+    div.style.left = pos.x + 'px';
+    div.style.top = pos.y + 'px';
+    div.setAttribute('data-element', el.id);
+    heroPreviewContent.appendChild(div);
+    
+    // Make draggable
+    makeDraggable(div);
+  });
+}
+
+function makeDraggable(element) {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+  
+  element.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    const elId = element.getAttribute('data-element');
+    selectTextItem(elId);
+    
+    const rect = element.getBoundingClientRect();
+    const previewRect = heroPreviewContent.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    element.style.opacity = '0.8';
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const previewRect = heroPreviewContent.getBoundingClientRect();
+    const x = Math.max(0, e.clientX - previewRect.left - offsetX);
+    const y = Math.max(0, e.clientY - previewRect.top - offsetY);
+    
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
+    
+    const elId = element.getAttribute('data-element');
+    window.heroTextPositions[elId] = { x, y };
+    posXInput.value = Math.round(x);
+    posYInput.value = Math.round(y);
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    element.style.opacity = '1';
+  });
+}
+
+function selectTextItem(elId) {
+  document.querySelectorAll('.draggable-text-item').forEach(el => {
+    el.classList.remove('active');
+  });
+  document.getElementById(`item-${elId}`).classList.add('active');
+  
+  document.querySelectorAll('.hero-text-element').forEach(el => {
+    el.classList.remove('selected');
+  });
+  document.getElementById(`preview-${elId}`).classList.add('selected');
+  
+  positionControlSection.style.display = 'flex';
+  const pos = window.heroTextPositions[elId] || defaultPositions[elId];
+  posXInput.value = Math.round(pos.x);
+  posYInput.value = Math.round(pos.y);
+  posXInput.setAttribute('data-element', elId);
+  posYInput.setAttribute('data-element', elId);
+}
+
+function renderTextItems() {
+  textItemsList.innerHTML = '';
+  textElements.forEach(el => {
+    const item = document.createElement('div');
+    item.className = 'draggable-text-item';
+    item.id = `item-${el.id}`;
+    item.innerHTML = `
+      <div class="text-item-label">${el.label}</div>
+      <div class="text-item-preview">${el.text}</div>
+    `;
+    item.addEventListener('click', () => selectTextItem(el.id));
+    textItemsList.appendChild(item);
+  });
+}
+
+posXInput.addEventListener('change', (e) => {
+  const elId = posXInput.getAttribute('data-element');
+  if (!elId) return;
+  const element = document.getElementById(`preview-${elId}`);
+  const x = parseInt(e.target.value) || 0;
+  element.style.left = x + 'px';
+  window.heroTextPositions[elId] = { ...window.heroTextPositions[elId], x };
+});
+
+posYInput.addEventListener('change', (e) => {
+  const elId = posYInput.getAttribute('data-element');
+  if (!elId) return;
+  const element = document.getElementById(`preview-${elId}`);
+  const y = parseInt(e.target.value) || 0;
+  element.style.top = y + 'px';
+  window.heroTextPositions[elId] = { ...window.heroTextPositions[elId], y };
+});
+
+heroResetPositions.addEventListener('click', () => {
+  window.heroTextPositions = JSON.parse(JSON.stringify(defaultPositions));
+  renderPreview();
+  renderTextItems();
+  positionControlSection.style.display = 'none';
+});
+
+heroModalClose.addEventListener('click', () => {
+  heroModalOverlay.classList.remove('open');
+});
+
+heroModalSave.addEventListener('click', () => {
+  if (content.heroTextPositions) {
+    content.heroTextPositions = window.heroTextPositions;
+  }
+  heroModalOverlay.classList.remove('open');
+  showMessage('✅ Hero text positions updated. Remember to Save to apply changes.', 'success');
+});
+
+function openHeroModal() {
+  // Load positions from content if they exist
+  if (content.heroTextPositions) {
+    window.heroTextPositions = JSON.parse(JSON.stringify(content.heroTextPositions));
+  } else {
+    window.heroTextPositions = JSON.parse(JSON.stringify(defaultPositions));
+  }
+  renderTextItems();
+  renderPreview();
+  heroModalOverlay.classList.add('open');
+  positionControlSection.style.display = 'none';
+}
+
+// Connect button to modal
+document.addEventListener('DOMContentLoaded', () => {
+  const openHeroBtn = document.getElementById('openHeroModalBtn');
+  if (openHeroBtn) {
+    openHeroBtn.addEventListener('click', openHeroModal);
+  }
+});
 
 boot();
 </script>
