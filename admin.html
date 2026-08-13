@@ -174,17 +174,17 @@
   .stripe-style-card .ssc-label { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0A3626; }
   .stripe-style-card .ssc-label span { display: block; font-weight: 400; font-size: 11.5px; color: #888; margin-top: 2px; }
   .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
-  .stripe-style-card .ssc-preview .rb-drift{ animation: sscDrift 9s ease-in-out infinite; }
-  .stripe-style-card .ssc-preview .rb-flow{ animation: sscFlow 3.2s linear infinite; }
-  .stripe-style-card .ssc-preview .rb-flow.tight-wave{ animation: sscTightWaveFlow 2.8s linear infinite; }
-  .stripe-style-card .ssc-preview .wave-flag{ animation: sscWaveFlag 4s ease-in-out infinite; transform-origin:0% 0%; }
-  .stripe-style-card .ssc-preview .fold-drape{ animation: sscSway 5.5s ease-in-out infinite; transform-origin:100% 0%; }
+  .stripe-style-card .ssc-preview .searchlight-beam{ transform-origin:500px -40px; }
+  .stripe-style-card .ssc-preview .searchlight-beam.beam-a{ animation: sscBeamA 7s ease-in-out infinite; }
+  .stripe-style-card .ssc-preview .searchlight-beam.beam-b{ animation: sscBeamB 5.4s ease-in-out infinite; animation-delay:-1.2s; }
+  .stripe-style-card .ssc-preview .weave-thread{ animation: sscWeaveDrift 9s ease-in-out infinite; }
+  .stripe-style-card .ssc-preview .weave-thread:nth-child(2n){ animation-delay:-3s; animation-duration:11s; }
+  .stripe-style-card .ssc-preview .pulse-ring{ transform-origin:500px 150px; animation: sscPulseRing 3.9s ease-out infinite; opacity:0; }
   @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
-  @keyframes sscDrift{ 0%,100%{transform:translateX(-10px);} 50%{transform:translateX(10px);} }
-  @keyframes sscFlow{ to{ stroke-dashoffset:-100; } }
-  @keyframes sscTightWaveFlow{ to{ stroke-dashoffset:-85; } }
-  @keyframes sscWaveFlag{ 0%,100%{transform:scaleX(1) scaleY(1);} 25%{transform:scaleX(0.98) scaleY(1.06);} 50%{transform:scaleX(0.96) scaleY(1.1);} 75%{transform:scaleX(0.98) scaleY(1.06);} }
-  @keyframes sscSway{ 0%,100%{transform:rotate(-0.6deg);} 50%{transform:rotate(0.6deg);} }
+  @keyframes sscBeamA{ 0%,100%{transform:rotate(-22deg);} 50%{transform:rotate(22deg);} }
+  @keyframes sscBeamB{ 0%,100%{transform:rotate(18deg);} 50%{transform:rotate(-18deg);} }
+  @keyframes sscWeaveDrift{ 0%,100%{transform:translateX(-6px);} 50%{transform:translateX(6px);} }
+  @keyframes sscPulseRing{ 0%{transform:scale(0.2); opacity:0.9;} 70%{opacity:0.15;} 100%{transform:scale(3.2); opacity:0;} }
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
   }
@@ -523,9 +523,9 @@ function defaultContent() {
       return acc;
     }, {}),
     sectionBg: {
-      hero: { color: DEFAULT_SECTION_COLOR.hero, image: null },
-      welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null },
-      regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null }
+      hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { enabled: false, x: 50, y: 50 } },
+      welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { enabled: false, x: 50, y: 50 } },
+      regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { enabled: false, x: 50, y: 50 } }
     }
   };
 }
@@ -616,10 +616,11 @@ function mergeContent(loaded) {
       c.stops[key].media_type = c.stops[key].video_public_id ? 'video' : (c.stops[key].gif_url ? 'gif' : 'image');
     }
   });
+  const defaultVignette = { enabled: false, x: 50, y: 50 };
   c.sectionBg = {
-    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
-    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
+    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
+    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
   };
   return c;
 }
@@ -814,6 +815,71 @@ function renderBgEditor(key, label) {
   status.style.color = '#888';
   status.textContent = cfg.image ? 'Using uploaded image (color is the fallback)' : 'Using solid color';
 
+  // --- Vignette highlight: darken the image around a chosen focal point,
+  // instead of (or as well as) the flat overlay above. Only relevant when
+  // there's an image to apply it to. ---
+  let vignetteWrap = null;
+  if (cfg.image) {
+    if (!cfg.vignette) cfg.vignette = { enabled: false, x: 50, y: 50 };
+
+    vignetteWrap = document.createElement('div');
+    vignetteWrap.style.marginTop = '4px';
+
+    const vToggleRow = document.createElement('label');
+    vToggleRow.style.cssText = 'display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;';
+    const vToggle = document.createElement('input');
+    vToggle.type = 'checkbox';
+    vToggle.checked = !!cfg.vignette.enabled;
+    vToggleRow.appendChild(vToggle);
+    vToggleRow.appendChild(document.createTextNode('Vignette highlight (spotlight one area, darken the rest)'));
+    vignetteWrap.appendChild(vToggleRow);
+
+    const picker = document.createElement('div');
+    picker.style.cssText = `
+      margin-top: 8px; width: 100%; max-width: 260px; aspect-ratio: 16 / 9;
+      background-image: url(${thumbUrl(cfg.image)}); background-size: cover; background-position: center;
+      border-radius: 6px; border: 1px solid #ddd; position: relative; cursor: crosshair;
+    `;
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      position: absolute; width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(255,255,255,.9); border: 2px solid #0A3626; box-shadow: 0 0 0 2px rgba(0,0,0,.35);
+      transform: translate(-50%, -50%); pointer-events: none;
+    `;
+    const vHint = document.createElement('div');
+    vHint.style.cssText = 'font-size: 11px; color: #888; margin-top: 6px;';
+
+    function refreshVignettePreview() {
+      const on = cfg.vignette.enabled;
+      picker.style.display = on ? '' : 'none';
+      vHint.style.display = on ? '' : 'none';
+      if (!on) return;
+      dot.style.left = `${cfg.vignette.x}%`;
+      dot.style.top = `${cfg.vignette.y}%`;
+      picker.style.boxShadow = `inset 0 0 0 9999px rgba(0,0,0,0)`;
+      picker.style.backgroundImage =
+        `radial-gradient(circle at ${cfg.vignette.x}% ${cfg.vignette.y}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%), url(${thumbUrl(cfg.image)})`;
+      vHint.textContent = `Highlighted spot: ${Math.round(cfg.vignette.x)}%, ${Math.round(cfg.vignette.y)}% — click the image to move it.`;
+    }
+    picker.appendChild(dot);
+
+    vToggle.addEventListener('change', () => {
+      cfg.vignette.enabled = vToggle.checked;
+      refreshVignettePreview();
+    });
+
+    picker.addEventListener('click', (e) => {
+      const rect = picker.getBoundingClientRect();
+      cfg.vignette.x = Math.round(Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)));
+      cfg.vignette.y = Math.round(Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100)));
+      refreshVignettePreview();
+    });
+
+    refreshVignettePreview();
+    vignetteWrap.appendChild(picker);
+    vignetteWrap.appendChild(vHint);
+  }
+
   const actions = document.createElement('div');
   actions.className = 'bg-actions';
   const uploadBtn = document.createElement('button');
@@ -821,9 +887,8 @@ function renderBgEditor(key, label) {
   uploadBtn.textContent = cfg.image ? '🔄 Replace image' : '📤 Upload image';
   uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
     cfg.image = publicId;
-    refreshSwatch();
-    uploadBtn.textContent = '🔄 Replace image';
     status.textContent = 'Using uploaded image (color is the fallback) — remember to Save';
+    renderBgEditor(key, label);
   }));
   actions.appendChild(uploadBtn);
 
@@ -842,6 +907,7 @@ function renderBgEditor(key, label) {
 
   controls.appendChild(colorRow);
   controls.appendChild(status);
+  if (vignetteWrap) controls.appendChild(vignetteWrap);
   controls.appendChild(actions);
 
   wrap.appendChild(swatch);
@@ -894,9 +960,9 @@ function renderCopyForm() {
 
 const STRIPE_STYLES = [
   { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
-  { id: 'trail', label: 'Sea Wave', desc: 'Three threads undulating like ocean waves' },
-  { id: 'flag', label: 'Waving Flag', desc: 'Billowing fabric edge, living motion' },
-  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' }
+  { id: 'searchlight', label: 'Searchlight Beam', desc: 'Two crossing light beams sweeping like a lighthouse' },
+  { id: 'weave', label: 'Kente Weave', desc: 'Interlocking woven bands in your palette colors' },
+  { id: 'pulse', label: 'Pulse Rings', desc: 'Concentric rings pulsing outward from center' }
 ];
 
 const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -912,77 +978,54 @@ function stripeColors() {
   return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
 }
 
-function ribbonBandSvg(uid, d, colors, width, fade, extraClass = '') {
-  const n = colors.length;
-  const strokes = colors.map((c, i) =>
-    `<path class="rb-flow ${extraClass}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
-  ).join('');
-  return `
-  <defs>
-    <mask id="fade-${uid}">
-      <linearGradient id="fadegrad-${uid}" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
-        <stop offset="0.18" stop-color="white" stop-opacity="1"/>
-        <stop offset="0.82" stop-color="white" stop-opacity="1"/>
-        <stop offset="1" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
-      </linearGradient>
-      <rect x="0" y="0" width="1000" height="300" fill="url(#fadegrad-${uid})"/>
-    </mask>
-  </defs>
-  <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
-}
-
 function buildStripeStyleSvg(styleId, colors) {
   const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1, c3 = colors[3] || c0, c4 = colors[4] || c1;
-  const INK = '#171310', IVORY = '#F5EFE3';
   if (styleId === 'straight') {
     const n = colors.length;
     const bandH = 300 / n;
     return colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
   }
-  if (styleId === 'trail') {
-    return `
-      ${ribbonBandSvg('ss-c1', 'M -60 70 C 180 70 280 130 480 130 S 780 70 1060 85', [c0], 7, false, 'tight-wave')}
-      ${ribbonBandSvg('ss-c2', 'M -60 150 C 200 150 300 210 500 210 S 800 150 1060 165', [c1], 7, false, 'tight-wave')}
-      ${ribbonBandSvg('ss-c3', 'M -60 230 C 220 230 320 290 520 290 S 820 230 1060 245', [c2], 7, false, 'tight-wave')}
-    `;
-  }
-  if (styleId === 'flag') {
+  if (styleId === 'searchlight') {
     return `
       <defs>
-        <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${c0}" stop-opacity="0.9"/>
-          <stop offset="1" stop-color="${c1}" stop-opacity="0.9"/>
+        <linearGradient id="ssc-sl-grad-a" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${c0}" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="${c0}" stop-opacity="0"/>
         </linearGradient>
-        <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${c1}" stop-opacity="0.85"/>
-          <stop offset="1" stop-color="${c2}" stop-opacity="0.85"/>
+        <linearGradient id="ssc-sl-grad-b" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${c1}" stop-opacity="0.45"/>
+          <stop offset="1" stop-color="${c1}" stop-opacity="0"/>
         </linearGradient>
       </defs>
-      <g class="wave-flag">
-        <path d="M 0 60 Q 120 20 240 60 T 480 60 T 720 60 T 960 60 L 960 160 Q 840 200 720 160 T 480 160 T 240 160 T 0 160 Z" 
-          fill="url(#flag-grad-1)"/>
-        <path d="M 0 160 Q 120 120 240 160 T 480 160 T 720 160 T 960 160 L 960 240 Q 840 280 720 240 T 480 240 T 240 240 T 0 240 Z" 
-          fill="url(#flag-grad-2)"/>
+      <g class="searchlight-beam beam-a">
+        <polygon points="500,-40 320,320 680,320" fill="url(#ssc-sl-grad-a)"/>
       </g>
+      <g class="searchlight-beam beam-b">
+        <polygon points="500,-40 370,320 730,320" fill="url(#ssc-sl-grad-b)"/>
+      </g>
+      <circle cx="500" cy="-40" r="22" fill="${c0}" opacity="0.5"/>
     `;
   }
-  if (styleId === 'fold') {
+  if (styleId === 'weave') {
+    const cols = [c0, c1, c2, c3, c4];
+    const stripeW = 1000 / 14;
+    const warp = Array.from({ length: 14 }, (_, i) =>
+      `<rect x="${i * stripeW}" y="0" width="${stripeW + 1}" height="300" fill="${cols[i % cols.length]}" opacity="0.85"/>`
+    ).join('');
+    const weftH = 300 / 6;
+    const weft = Array.from({ length: 6 }, (_, i) => {
+      const c = cols[(i + 2) % cols.length];
+      const offset = i % 2 === 0 ? 0 : stripeW / 2;
+      return `<rect class="weave-thread" x="${-stripeW + offset}" y="${i * weftH}" width="1040" height="${weftH * 0.55}" fill="${c}" opacity="0.35"/>`;
+    }).join('');
+    return `<g class="weave-warp">${warp}</g><g class="weave-weft">${weft}</g>`;
+  }
+  if (styleId === 'pulse') {
     return `
-      <defs>
-        <filter id="ssc-foldshadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="${INK}" flood-opacity="0.45"/>
-        </filter>
-        <linearGradient id="ssc-foldgrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="${c0}"/>
-          <stop offset="0.5" stop-color="${c1}"/>
-          <stop offset="1" stop-color="${c2}"/>
-        </linearGradient>
-      </defs>
-      <g class="fold-drape" filter="url(#ssc-foldshadow)">
-        <polygon points="1000,-20 1120,-20 460,300 240,300" fill="url(#ssc-foldgrad)" opacity="0.95"/>
-        <polyline points="240,300 275,272 310,300 345,272 380,300 415,272 450,300"
-          fill="none" stroke="${IVORY}" stroke-width="3" stroke-linejoin="round" opacity="0.85"/>
+      <g class="pulse-rings">
+        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c0}" stroke-width="5"/>
+        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c1}" stroke-width="5" style="animation-delay:-1.3s"/>
+        <circle class="pulse-ring" cx="500" cy="150" r="30" fill="none" stroke="${c2}" stroke-width="5" style="animation-delay:-2.6s"/>
       </g>
     `;
   }

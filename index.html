@@ -135,30 +135,28 @@
   .hero-stripe-overlay.pos-right svg{ transform:scaleX(-1); }
   .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
   .hero-stripe-overlay.pos-bottom svg{ transform:none; }
-  .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
-  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 2.8s linear infinite; }
-  .hero-stripe-overlay .rb-flow.tight-wave{ animation:tightWaveFlow 3s linear infinite; }
-  .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
-  .hero-stripe-overlay .wave-flag{ animation:waveFlag 4s ease-in-out infinite; transform-origin:0% 0%; will-change:transform; }
-  @keyframes ribbonDrift{
-    0%, 100%{ transform:translateX(-14px); }
-    50%{ transform:translateX(14px); }
+  .hero-stripe-overlay .searchlight-beam{ transform-origin:500px -60px; }
+  .hero-stripe-overlay .searchlight-beam.beam-a{ animation:beamSweepA 7s ease-in-out infinite; }
+  .hero-stripe-overlay .searchlight-beam.beam-b{ animation:beamSweepB 5.4s ease-in-out infinite; animation-delay:-1.2s; }
+  .hero-stripe-overlay .weave-thread{ animation:weaveDrift 9s ease-in-out infinite; will-change:transform; }
+  .hero-stripe-overlay .weave-thread:nth-child(2n){ animation-delay:-3s; animation-duration:11s; }
+  .hero-stripe-overlay .pulse-ring{ transform-origin:500px 210px; animation:pulseRing 3.9s ease-out infinite; opacity:0; }
+  @keyframes beamSweepA{
+    0%, 100%{ transform:rotate(-22deg); }
+    50%{ transform:rotate(22deg); }
   }
-  @keyframes ribbonFlow{
-    to{ stroke-dashoffset:-144; }
+  @keyframes beamSweepB{
+    0%, 100%{ transform:rotate(18deg); }
+    50%{ transform:rotate(-18deg); }
   }
-  @keyframes tightWaveFlow{
-    to{ stroke-dashoffset:-102; }
+  @keyframes weaveDrift{
+    0%, 100%{ transform:translateX(-8px); }
+    50%{ transform:translateX(8px); }
   }
-  @keyframes clothSway{
-    0%, 100%{ transform:rotate(-0.6deg); }
-    50%{ transform:rotate(0.6deg); }
-  }
-  @keyframes waveFlag{
-    0%, 100%{ transform:scaleX(1) scaleY(1); }
-    25%{ transform:scaleX(0.98) scaleY(1.08); }
-    50%{ transform:scaleX(0.96) scaleY(1.12); }
-    75%{ transform:scaleX(0.98) scaleY(1.08); }
+  @keyframes pulseRing{
+    0%{ transform:scale(0.2); opacity:0.9; }
+    70%{ opacity:0.15; }
+    100%{ transform:scale(3.2); opacity:0; }
   }
   .hero-light-beam{
     position:absolute; inset:0;
@@ -215,7 +213,8 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-light-beam{animation:none;}
+    .hero-strip > div, .hero-stripe-overlay .searchlight-beam, .hero-stripe-overlay .weave-thread, .hero-stripe-overlay .pulse-ring, .hero-light-beam{animation:none;}
+    .hero-stripe-overlay .pulse-ring{ opacity:0.5; }
     .hero-light-beam{display:none !important;}
   }
 
@@ -1000,10 +999,11 @@ function mergeContent(loaded) {
       c.stops[key].media_type = c.stops[key].video_public_id ? 'video' : (c.stops[key].gif_url ? 'gif' : 'image');
     }
   });
+  const defaultVignette = { enabled: false, x: 50, y: 50 };
   c.sectionBg = {
-    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
-    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
+    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
+    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
   };
   return c;
 }
@@ -1047,72 +1047,50 @@ const STRIPE_STYLE_SVG = {
       .filter(Boolean);
     return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
   },
-  ribbon(uid, d, colors, width, fade, tightWave = false) {
-    const n = colors.length;
-    const dashArray = tightWave ? '34 20' : '46 26';
-    const strokes = colors.map((c, i) =>
-      `<path class="rb-flow${tightWave ? ' tight-wave' : ''}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="${dashArray}" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
-    ).join('');
-    return `
-    <defs>
-      <mask id="fade-${uid}">
-        <linearGradient id="fadegrad-${uid}" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
-          <stop offset="0.18" stop-color="white" stop-opacity="1"/>
-          <stop offset="0.82" stop-color="white" stop-opacity="1"/>
-          <stop offset="1" stop-color="white" stop-opacity="${fade ? 0 : 1}"/>
-        </linearGradient>
-        <rect x="0" y="0" width="1000" height="420" fill="url(#fadegrad-${uid})"/>
-      </mask>
-    </defs>
-    <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
-  },
   build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
-    const INK = '#171310', IVORY = '#F5EFE3';
-    if (styleId === 'trail') {
-      return `
-        ${this.ribbon('hs-c1', 'M -60 90 C 200 90 280 160 480 160 S 780 90 1060 110', [c0], 8, false, true)}
-        ${this.ribbon('hs-c2', 'M -60 190 C 220 190 300 260 500 260 S 800 190 1060 210', [c1], 8, false, true)}
-        ${this.ribbon('hs-c3', 'M -60 290 C 240 290 320 360 520 360 S 820 290 1060 310', [c2], 8, false, true)}
-      `;
-    }
-    if (styleId === 'flag') {
+    const c3 = colors[3] || c0, c4 = colors[4] || c1;
+    if (styleId === 'searchlight') {
       return `
         <defs>
-          <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="${c0}" stop-opacity="0.92"/>
-            <stop offset="1" stop-color="${c1}" stop-opacity="0.92"/>
+          <linearGradient id="sl-grad-a" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${c0}" stop-opacity="0.55"/>
+            <stop offset="1" stop-color="${c0}" stop-opacity="0"/>
           </linearGradient>
-          <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="${c1}" stop-opacity="0.87"/>
-            <stop offset="1" stop-color="${c2}" stop-opacity="0.87"/>
+          <linearGradient id="sl-grad-b" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${c1}" stop-opacity="0.45"/>
+            <stop offset="1" stop-color="${c1}" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <g class="wave-flag">
-          <path d="M 0 80 Q 150 30 300 80 T 600 80 T 900 80 T 1200 80 L 1200 200 Q 1050 250 900 200 T 600 200 T 300 200 T 0 200 Z" 
-            fill="url(#flag-grad-1)"/>
-          <path d="M 0 200 Q 150 150 300 200 T 600 200 T 900 200 T 1200 200 L 1200 320 Q 1050 370 900 320 T 600 320 T 300 320 T 0 320 Z" 
-            fill="url(#flag-grad-2)"/>
+        <g class="searchlight-beam beam-a">
+          <polygon points="500,-60 300,460 700,460" fill="url(#sl-grad-a)"/>
         </g>
+        <g class="searchlight-beam beam-b">
+          <polygon points="500,-60 360,460 760,460" fill="url(#sl-grad-b)"/>
+        </g>
+        <circle cx="500" cy="-60" r="30" fill="${c0}" opacity="0.5"/>
       `;
     }
-    if (styleId === 'fold') {
+    if (styleId === 'weave') {
+      const cols = [c0, c1, c2, c3, c4];
+      const stripeW = 1000 / 14;
+      const warp = Array.from({ length: 14 }, (_, i) =>
+        `<rect x="${i * stripeW}" y="0" width="${stripeW + 1}" height="420" fill="${cols[i % cols.length]}" opacity="0.85"/>`
+      ).join('');
+      const weftH = 420 / 8;
+      const weft = Array.from({ length: 8 }, (_, i) => {
+        const c = cols[(i + 2) % cols.length];
+        const offset = i % 2 === 0 ? 0 : stripeW / 2;
+        return `<rect class="weave-thread" x="${-stripeW + offset}" y="${i * weftH}" width="1040" height="${weftH * 0.55}" fill="${c}" opacity="0.35"/>`;
+      }).join('');
+      return `<g class="weave-warp">${warp}</g><g class="weave-weft">${weft}</g>`;
+    }
+    if (styleId === 'pulse') {
       return `
-        <defs>
-          <filter id="hs-foldshadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="${INK}" flood-opacity="0.45"/>
-          </filter>
-          <linearGradient id="hs-foldgrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="${c0}"/>
-            <stop offset="0.5" stop-color="${c1}"/>
-            <stop offset="1" stop-color="${c2}"/>
-          </linearGradient>
-        </defs>
-        <g class="fold-drape" filter="url(#hs-foldshadow)">
-          <polygon points="1000,-20 1140,-20 500,420 260,420" fill="url(#hs-foldgrad)" opacity="0.95"/>
-          <polyline points="260,420 300,388 340,420 380,388 420,420 460,388 500,420"
-            fill="none" stroke="${IVORY}" stroke-width="4" stroke-linejoin="round" opacity="0.85"/>
+        <g class="pulse-rings">
+          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c0}" stroke-width="6"/>
+          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c1}" stroke-width="6" style="animation-delay:-1.3s"/>
+          <circle class="pulse-ring" cx="500" cy="210" r="40" fill="none" stroke="${c2}" stroke-width="6" style="animation-delay:-2.6s"/>
         </g>
       `;
     }
@@ -1168,6 +1146,11 @@ function renderHeroStripe(segments, styleId, position) {
   if (beam) beam.classList.add('active');
 }
 
+function safePercent(v, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : fallback;
+}
+
 function applySectionBg(sectionBg) {
   const targets = {
     hero: document.querySelector('header.hero'),
@@ -1188,7 +1171,11 @@ function applySectionBg(sectionBg) {
 
     const applyImage = () => {
       if (imageUrl) {
-        el.style.backgroundImage = `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)), url("${imageUrl}")`;
+        const vg = cfg.vignette;
+        const overlay = (vg && vg.enabled)
+          ? `radial-gradient(circle at ${safePercent(vg.x, 50)}% ${safePercent(vg.y, 50)}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
+          : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
+        el.style.backgroundImage = `${overlay}, url("${imageUrl}")`;
         el.classList.add('section-bg');
       } else {
         el.style.backgroundImage = '';
