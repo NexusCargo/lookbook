@@ -43,6 +43,12 @@
   .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
   .thumbs img { width: 70px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
   .thumbs .empty { font-size: 12px; color: #999; }
+  .thumb-wrap { position: relative; display: inline-block; }
+  .thumb-remove {
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; padding: 0;
+    border-radius: 50%; background: #d32f2f; color: #fff; border: 2px solid #fff;
+    font-size: 11px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
   .stop-status { font-size: 11px; color: #888; margin-top: 8px; min-height: 14px; }
   .timestamp { font-size: 12px; color: #999; margin-top: 15px; text-align: right; }
   .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -53,6 +59,49 @@
   .tab-btn.active { background: #0A3626; color: #fff; border-color: #0A3626; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
+
+  .unread-badge {
+    display: inline-block; background: #d32f2f; color: #fff; font-size: 11px;
+    font-weight: 700; border-radius: 10px; padding: 1px 7px; margin-left: 4px;
+  }
+
+  .layout-hint { font-size: 13px; color: #666; margin: -8px 0 20px; }
+  .layout-subhead { margin: 26px 0 10px; font-size: 15px; }
+  .layout-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .layout-col { display: flex; flex-direction: column; gap: 10px; }
+
+  .layout-tile {
+    background: #fafaf7; border: 1px solid #ddd; border-radius: 8px; cursor: grab;
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    user-select: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .layout-tile:active { cursor: grabbing; }
+  .layout-tile.dragging { opacity: .4; }
+  .layout-tile.drag-over { border-color: #0A3626; box-shadow: 0 0 0 2px rgba(10,54,38,.15); }
+  .layout-tile .drag-handle { color: #999; font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .layout-tile .layout-order { font-size: 11px; font-weight: 700; color: #fff; background: #0A3626; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .layout-tile .layout-label { font-size: 13px; font-weight: 600; color: #0A3626; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .layout-row .layout-tile { flex-direction: column; width: 130px; text-align: center; }
+  .layout-row .layout-tile .layout-thumb { width: 100%; height: 70px; border-radius: 5px; background-size: cover; background-position: center; background-color: #e5e2d8; }
+  .layout-row .layout-tile .layout-label { white-space: normal; }
+
+  .layout-col .layout-tile .layout-thumb { width: 56px; height: 56px; border-radius: 6px; background-size: cover; background-position: center; background-color: #e5e2d8; flex-shrink: 0; }
+  .layout-col .layout-tile .layout-label { flex: 1; }
+
+  .inquiry-card {
+    border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+    background: #fff; cursor: pointer;
+  }
+  .inquiry-card.unread { border-left: 4px solid #d32f2f; background: #fff9f8; }
+  .inquiry-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .inquiry-card-name { font-weight: 700; font-size: 14px; color: #0A3626; }
+  .inquiry-card-date { font-size: 12px; color: #888; white-space: nowrap; }
+  .inquiry-card-preview { font-size: 13px; color: #555; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .inquiry-card-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 13.5px; color: #333; white-space: pre-wrap; }
+  .inquiry-card.expanded .inquiry-card-body { display: block; }
+  .inquiry-card-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .inquiry-card-actions button { font-size: 12px; padding: 6px 12px; }
   .list-editor-row {
     display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
     background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px;
@@ -127,19 +176,14 @@
   .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
   .stripe-style-card .ssc-preview .rb-drift{ animation: sscDrift 9s ease-in-out infinite; }
   .stripe-style-card .ssc-preview .rb-flow{ animation: sscFlow 3.2s linear infinite; }
+  .stripe-style-card .ssc-preview .rb-flow.tight-wave{ animation: sscTightWaveFlow 2.8s linear infinite; }
+  .stripe-style-card .ssc-preview .wave-flag{ animation: sscWaveFlag 4s ease-in-out infinite; transform-origin:0% 0%; }
   .stripe-style-card .ssc-preview .fold-drape{ animation: sscSway 5.5s ease-in-out infinite; transform-origin:100% 0%; }
-  .stripe-style-card .ssc-preview .flag-slice{ animation: sscFlag 2.6s ease-in-out infinite; transform-origin:left center; }
-  @keyframes sscFlag{ 0%,100%{transform:translateX(0) skewY(0deg);} 50%{transform:translateX(var(--flag-amp,4px)) skewY(2deg);} }
-  .stripe-style-card .ssc-preview .rays-spin{ animation: sscRays 30s linear infinite; }
-  @keyframes sscRays{ to{ transform:rotate(360deg); } }
-  .stripe-style-card .ssc-preview.spotlight{
-    background:radial-gradient(ellipse 62% 74% at 42% 46%, #16341f 0%, #16341f 30%, rgba(4,3,2,.72) 100%);
-    animation: sscSpotlight 7s ease-in-out infinite;
-  }
-  @keyframes sscSpotlight{ 0%,100%{opacity:0.9;} 50%{opacity:1;} }
   @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
   @keyframes sscDrift{ 0%,100%{transform:translateX(-10px);} 50%{transform:translateX(10px);} }
   @keyframes sscFlow{ to{ stroke-dashoffset:-100; } }
+  @keyframes sscTightWaveFlow{ to{ stroke-dashoffset:-85; } }
+  @keyframes sscWaveFlag{ 0%,100%{transform:scaleX(1) scaleY(1);} 25%{transform:scaleX(0.98) scaleY(1.06);} 50%{transform:scaleX(0.96) scaleY(1.1);} 75%{transform:scaleX(0.98) scaleY(1.06);} }
   @keyframes sscSway{ 0%,100%{transform:rotate(-0.6deg);} 50%{transform:rotate(0.6deg);} }
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
@@ -185,6 +229,8 @@
       <button class="tab-btn" data-tab="stops">🧭 Stops</button>
       <button class="tab-btn" data-tab="plan">🗺️ Plan Your Trip</button>
       <button class="tab-btn" data-tab="colors">🎨 Colors</button>
+      <button class="tab-btn" data-tab="layout">🧩 Layout</button>
+      <button class="tab-btn" data-tab="inquiries">📬 Inquiries <span id="inquiryUnreadBadge" class="unread-badge hidden">0</span></button>
     </div>
 
     <div class="tab-panel active" id="tab-hero">
@@ -197,23 +243,6 @@
         <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
 
-        <h3 style="margin-top:20px;">Hero text animation</h3>
-        <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Typewriter works best on short lines — eyebrow, title, edition. Long subtitles may look better as Fade.</p>
-        <div class="two-col">
-          <div class="input-group"><label>Eyebrow</label>
-            <select id="cp-hero-anim-eyebrow"><option value="fade">Fade up</option><option value="typewriter">Typewriter</option></select>
-          </div>
-          <div class="input-group"><label>Title</label>
-            <select id="cp-hero-anim-title"><option value="fade">Fade up</option><option value="typewriter">Typewriter</option></select>
-          </div>
-          <div class="input-group"><label>Subtitle</label>
-            <select id="cp-hero-anim-sub"><option value="fade">Fade up</option><option value="typewriter">Typewriter</option></select>
-          </div>
-          <div class="input-group"><label>Edition tag</label>
-            <select id="cp-hero-anim-edition"><option value="fade">Fade up</option><option value="typewriter">Typewriter</option></select>
-          </div>
-        </div>
-
         <h3>Background</h3>
         <div id="bg-hero"></div>
 
@@ -225,7 +254,7 @@
         <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges.</p>
         <div class="pill-select" id="stripePositionPicker"></div>
 
-        <h3>Hero stripe colors</h3>
+        <h3 style="margin-top:20px;">Hero stripe colors</h3>
         <div id="stripeSegments"></div>
         <button id="addStripeSegmentBtn" type="button" class="list-add-btn">+ Add segment</button>
       </div>
@@ -296,6 +325,31 @@
       </div>
     </div>
 
+    <div class="tab-panel" id="tab-layout">
+      <div class="edit-section">
+        <h2>Page Layout</h2>
+        <p class="layout-hint">Drag tiles to reorder — this matches the order things appear in on the live page, top to bottom. Reordering here updates the same content as the other tabs; hit "Save All Changes" when you're happy with it.</p>
+
+        <h3 class="layout-subhead">Hero stripe (top banner strip)</h3>
+        <div id="layoutHeroStripe" class="layout-row"></div>
+
+        <h3 class="layout-subhead">Trip stops</h3>
+        <div id="layoutStops" class="layout-col"></div>
+
+        <h3 class="layout-subhead">Plan-your-trip cards</h3>
+        <div id="layoutPlanCards" class="layout-row"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-inquiries">
+      <div class="edit-section">
+        <h2>Inquiries</h2>
+        <p class="layout-hint">Messages submitted through the site's inquiry form, newest first.</p>
+        <div id="inquiriesList"></div>
+        <div id="inquiriesEmpty" class="hidden" style="color:#888; font-size:14px; padding:20px 0;">No inquiries yet.</div>
+      </div>
+    </div>
+
     <div class="button-group" style="margin-top: 10px;">
       <button id="saveBtn" style="flex: 1;">✨ Save All Changes</button>
     </div>
@@ -310,17 +364,17 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 import {
-  getFirestore, doc, getDoc, setDoc
+  getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, onSnapshot, updateDoc, deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const STOP_KEYS = ['castles', 'canopy', 'accra', 'kumasi', 'savanna', 'beaches', 'culture', 'food'];
 const REGION_KEYS = ['accra', 'central', 'ashanti', 'volta', 'northern'];
 const REGION_COLORS = ['forest', 'terracotta', 'gold', 'clay', 'faded-gold'];
 
-const ANIMATION_TYPES = {
-  carousel: '📽️ Carousel',
-  social: '📱 Social',
-  hero_stripe: '🎬 Hero Stripe (no images needed)'
+const MEDIA_TYPES = {
+  image: '🖼️ Image',
+  gif: '🎞️ GIF',
+  video: '🎥 Video'
 };
 
 const DEFAULT_STOP_META = {
@@ -452,15 +506,20 @@ const DEFAULT_HERO_STRIPE = [
   { type: 'color', color: '#8C3A16' }
 ];
 
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
 function defaultContent() {
   return {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
     heroStripeStyle: 'straight',
     heroStripePosition: 'left',
-    heroTextAnim: { eyebrow: 'fade', title: 'fade', sub: 'fade', edition: 'fade' },
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
-      acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
+      acc[key] = { media_type: 'image', image_public_ids: [], gif_url: null, video_public_id: null, bgColor: null, ...DEFAULT_STOP_META[key] };
       return acc;
     }, {}),
     sectionBg: {
@@ -502,9 +561,12 @@ async function boot() {
       renderRegionCards();
       renderStopsList();
       renderColorsForm();
+      renderLayoutAll();
+      startInquiriesListener();
     } else {
       document.getElementById('authStatus').textContent = '🔒 Not signed in';
       document.getElementById('authStatus').style.color = '#d32f2f';
+      stopInquiriesListener();
     }
   });
 }
@@ -527,6 +589,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    // Keep whichever view the user lands on in sync, since Layout tab and
+    // the Stops/Plan tabs both read/write the same underlying arrays.
+    if (btn.dataset.tab === 'layout') renderLayoutAll();
+    if (btn.dataset.tab === 'stops') renderStopsList();
+    if (btn.dataset.tab === 'plan' && window.__planEditor) window.__planEditor.render();
   });
 });
 
@@ -536,14 +603,18 @@ function mergeContent(loaded) {
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
   c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
-  c.heroTextAnim = { ...defaults.heroTextAnim, ...((loaded && loaded.heroTextAnim) || {}) };
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
   c.stopOrder.forEach(key => {
     const meta = DEFAULT_STOP_META[key] || { side: 'normal', theme: 'light', accent: '#B5471B' };
-    c.stops[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...meta, ...(loadedStops[key] || {}) };
+    c.stops[key] = { media_type: 'image', image_public_ids: [], gif_url: null, video_public_id: null, bgColor: null, ...meta, ...(loadedStops[key] || {}) };
     c.stops[key].image_public_ids = c.stops[key].image_public_ids || [];
+    // Migrate old data: a stop with a gif_url but no explicit media_type
+    // was implicitly "gif" under the old model.
+    if (!loadedStops[key] || !loadedStops[key].media_type) {
+      c.stops[key].media_type = c.stops[key].video_public_id ? 'video' : (c.stops[key].gif_url ? 'gif' : 'image');
+    }
   });
   c.sectionBg = {
     hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
@@ -594,6 +665,15 @@ function thumbUrl(publicId) {
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_200/${publicId}`;
 }
 
+function cloudinaryVideoUrl(publicId, width) {
+  const transform = width ? `f_auto,q_auto,w_${width}` : 'f_auto,q_auto';
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/video/upload/${transform}/${publicId}`;
+}
+
+function videoThumbUrl(publicId) {
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/video/upload/so_0,f_jpg,w_200/${publicId}.jpg`;
+}
+
 async function getUploadSignature(tag) {
   const idToken = await auth.currentUser.getIdToken();
   const res = await fetch('/api/cloudinary-sign', {
@@ -605,7 +685,7 @@ async function getUploadSignature(tag) {
   return res.json();
 }
 
-function openUploadWidget(tag, onDone) {
+function openUploadWidget(tag, onDone, resourceType = 'image') {
   // Fetch once upfront just to confirm the user is an authorized admin and
   // to get cloudName/apiKey — the actual per-upload signature is generated
   // fresh below, using the widget's own params_to_sign, so it always matches
@@ -615,6 +695,7 @@ function openUploadWidget(tag, onDone) {
     const widget = cloudinary.createUploadWidget({
       cloudName: sig.cloudName,
       apiKey: sig.apiKey,
+      resourceType,
       uploadSignature: async (callback, paramsToSign) => {
         try {
           const idToken = await auth.currentUser.getIdToken();
@@ -685,7 +766,8 @@ function createListEditor(container, items, fieldDefs) {
   }
   render();
   return {
-    addItem(blank) { items.push(blank); render(); }
+    addItem(blank) { items.push(blank); render(); },
+    render
   };
 }
 function renderBgEditor(key, label) {
@@ -776,14 +858,6 @@ function renderCopyForm() {
     document.getElementById(id).addEventListener('input', (e) => { copy.hero[heroMap[id]] = e.target.value; });
   });
 
-  const heroAnimMap = { 'cp-hero-anim-eyebrow':'eyebrow', 'cp-hero-anim-title':'title', 'cp-hero-anim-sub':'sub', 'cp-hero-anim-edition':'edition' };
-  Object.keys(heroAnimMap).forEach(id => {
-    const key = heroAnimMap[id];
-    const el = document.getElementById(id);
-    el.value = content.heroTextAnim[key] || 'fade';
-    el.addEventListener('change', (e) => { content.heroTextAnim[key] = e.target.value; });
-  });
-
   document.getElementById('cp-intro-greeting').value = copy.intro.greeting;
   document.getElementById('cp-intro-tagline').value = copy.intro.tagline;
   document.getElementById('cp-intro-whytitle').value = copy.intro.whyTitle;
@@ -814,27 +888,34 @@ function renderCopyForm() {
     { key: 'title', label: 'Card title', type: 'text' },
     { key: 'body', label: 'Card body', type: 'textarea' }
   ]);
+  window.__planEditor = planEditor;
   document.getElementById('addPlanCardBtn').onclick = () => planEditor.addItem({ title: 'New card', body: '' });
 }
 
 const STRIPE_STYLES = [
   { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
-  { id: 'zigzag', label: 'Zigzag Weave', desc: 'A chevron border flows along one edge' },
-  { id: 'rays', label: 'Radiant Rays', desc: 'Kente-colored rays fan out slowly, like a sunburst' },
-  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' },
-  { id: 'flag', label: 'Waving Flag', desc: 'Full-width bands ripple like cloth in the wind' },
-  { id: 'spotlight', label: 'Spotlight', desc: 'Softly highlights the title, vignettes the rest of the photo' }
+  { id: 'trail', label: 'Sea Wave', desc: 'Three threads undulating like ocean waves' },
+  { id: 'flag', label: 'Waving Flag', desc: 'Billowing fabric edge, living motion' },
+  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' }
 ];
 
+const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+function safeHexColor(c, fallback) {
+  return HEX_COLOR_RE.test(c) ? c : fallback;
+}
+
 function stripeColors() {
-  const cols = content.heroStripe.filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
+  const cols = content.heroStripe
+    .filter(s => (s.type || 'color') !== 'image' && s.color)
+    .map(s => safeHexColor(s.color, null))
+    .filter(Boolean);
   return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
 }
 
-function ribbonBandSvg(uid, d, colors, width, fade) {
+function ribbonBandSvg(uid, d, colors, width, fade, extraClass = '') {
   const n = colors.length;
   const strokes = colors.map((c, i) =>
-    `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+    `<path class="rb-flow ${extraClass}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
   ).join('');
   return `
   <defs>
@@ -851,50 +932,6 @@ function ribbonBandSvg(uid, d, colors, width, fade) {
   <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
 }
 
-function flagSlicesSvg(colors) {
-  const n = colors.length;
-  const bandH = 300 / n;
-  const SLICES = 40;
-  const sliceW = 1000 / SLICES;
-  let out = '';
-  for (let s = 0; s < SLICES; s++) {
-    const x = s * sliceW;
-    const amp = (1.6 + s * 0.42).toFixed(1);
-    const delay = (s * 0.05).toFixed(2);
-    const bands = colors.map((c, bi) =>
-      `<rect x="${x}" y="${bi * bandH}" width="${(sliceW + 0.7).toFixed(2)}" height="${(bandH + 0.7).toFixed(2)}" fill="${c}"/>`
-    ).join('');
-    out += `<g class="flag-slice" style="animation-delay:${delay}s; --flag-amp:${amp}px;">${bands}</g>`;
-  }
-  return out;
-}
-
-function zigzagPathSvg(y0, amp, step) {
-  let pts = [];
-  let up = true;
-  for (let x = -60; x <= 1060; x += step) {
-    pts.push(`${x} ${up ? y0 - amp : y0 + amp}`);
-    up = !up;
-  }
-  return 'M ' + pts.join(' L ');
-}
-
-function raysSvg(colors) {
-  const cx = 130, cy = 330, count = 14, spread = 150;
-  let out = '';
-  for (let i = 0; i < count; i++) {
-    const angle = -75 + i * (spread / (count - 1));
-    const rad = angle * Math.PI / 180;
-    const len = 460;
-    const x2 = (cx + Math.cos(rad) * len).toFixed(1);
-    const y2 = (cy + Math.sin(rad) * len).toFixed(1);
-    const c = colors[i % colors.length];
-    const w = 2 + (i % 3);
-    out += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="0.55"/>`;
-  }
-  return `<g class="rays-spin" style="transform-origin:${cx}px ${cy}px;">${out}</g>`;
-}
-
 function buildStripeStyleSvg(styleId, colors) {
   const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1, c3 = colors[3] || c0, c4 = colors[4] || c1;
   const INK = '#171310', IVORY = '#F5EFE3';
@@ -903,14 +940,32 @@ function buildStripeStyleSvg(styleId, colors) {
     const bandH = 300 / n;
     return colors.map((c, i) => `<rect class="straight-band" x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
   }
-  if (styleId === 'zigzag') {
+  if (styleId === 'trail') {
     return `
-      ${ribbonBandSvg('ss-z1', zigzagPathSvg(268, 12, 40), [c0], 7, true)}
-      ${ribbonBandSvg('ss-z2', zigzagPathSvg(268, 12, 40), [c1], 7, true)}
+      ${ribbonBandSvg('ss-c1', 'M -60 70 C 180 70 280 130 480 130 S 780 70 1060 85', [c0], 7, false, 'tight-wave')}
+      ${ribbonBandSvg('ss-c2', 'M -60 150 C 200 150 300 210 500 210 S 800 150 1060 165', [c1], 7, false, 'tight-wave')}
+      ${ribbonBandSvg('ss-c3', 'M -60 230 C 220 230 320 290 520 290 S 820 230 1060 245', [c2], 7, false, 'tight-wave')}
     `;
   }
-  if (styleId === 'rays') {
-    return raysSvg(colors.length ? colors : [c0, c1, c2]);
+  if (styleId === 'flag') {
+    return `
+      <defs>
+        <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${c0}" stop-opacity="0.9"/>
+          <stop offset="1" stop-color="${c1}" stop-opacity="0.9"/>
+        </linearGradient>
+        <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${c1}" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="${c2}" stop-opacity="0.85"/>
+        </linearGradient>
+      </defs>
+      <g class="wave-flag">
+        <path d="M 0 60 Q 120 20 240 60 T 480 60 T 720 60 T 960 60 L 960 160 Q 840 200 720 160 T 480 160 T 240 160 T 0 160 Z" 
+          fill="url(#flag-grad-1)"/>
+        <path d="M 0 160 Q 120 120 240 160 T 480 160 T 720 160 T 960 160 L 960 240 Q 840 280 720 240 T 480 240 T 240 240 T 0 240 Z" 
+          fill="url(#flag-grad-2)"/>
+      </g>
+    `;
   }
   if (styleId === 'fold') {
     return `
@@ -930,12 +985,6 @@ function buildStripeStyleSvg(styleId, colors) {
           fill="none" stroke="${IVORY}" stroke-width="3" stroke-linejoin="round" opacity="0.85"/>
       </g>
     `;
-  }
-  if (styleId === 'flag') {
-    return `<g>${flagSlicesSvg(colors)}</g>`;
-  }
-  if (styleId === 'spotlight') {
-    return '';
   }
   return '';
 }
@@ -957,9 +1006,8 @@ function renderStripeStyleGrid() {
     const card = document.createElement('div');
     card.className = 'stripe-style-card' + (content.heroStripeStyle === style.id ? ' selected' : '');
     const svgTransform = style.id === 'straight' ? 'none' : previewTransform;
-    const previewClass = 'ssc-preview' + (style.id === 'spotlight' ? ' spotlight' : '');
     card.innerHTML = `
-      <div class="${previewClass}">
+      <div class="ssc-preview">
         <span class="ssc-check"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="#0A3626" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid slice" style="transform:${svgTransform};">${buildStripeStyleSvg(style.id, colors)}</svg>
       </div>
@@ -1122,6 +1170,7 @@ document.getElementById('addStripeSegmentBtn').addEventListener('click', () => {
   content.heroStripe.push({ type: 'color', color: '#0E4D34' });
   renderStripeSegments();
 });
+
 function renderRegionCards() {
   const container = document.getElementById('regionCards');
   container.innerHTML = '';
@@ -1131,7 +1180,7 @@ function renderRegionCards() {
 
     const card = document.createElement('div');
     card.className = 'region-copy-card';
-    card.innerHTML = `<h4>${region.name}</h4>`;
+    card.innerHTML = `<h4>${escapeHtml(region.name)}</h4>`;
 
     const twoCol = document.createElement('div');
     twoCol.className = 'two-col';
@@ -1243,6 +1292,246 @@ function uniqueStopKey(base) {
   let i = 2;
   while (content.stops[`${key}_${i}`]) i++;
   return `${key}_${i}`;
+}
+
+function attachDragReorder(container, onReorder) {
+  let dragIdx = null;
+  container.querySelectorAll('.layout-tile').forEach((tile, idx) => {
+    tile.draggable = true;
+    tile.addEventListener('dragstart', () => {
+      dragIdx = idx;
+      tile.classList.add('dragging');
+    });
+    tile.addEventListener('dragend', () => {
+      tile.classList.remove('dragging');
+      container.querySelectorAll('.layout-tile').forEach(t => t.classList.remove('drag-over'));
+    });
+    tile.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      tile.classList.add('drag-over');
+    });
+    tile.addEventListener('dragleave', () => tile.classList.remove('drag-over'));
+    tile.addEventListener('drop', (e) => {
+      e.preventDefault();
+      tile.classList.remove('drag-over');
+      if (dragIdx === null || dragIdx === idx) return;
+      onReorder(dragIdx, idx);
+    });
+  });
+}
+
+function makeLayoutTile({ order, thumbUrlValue, colorValue, label }) {
+  const tile = document.createElement('div');
+  tile.className = 'layout-tile';
+  const handle = document.createElement('div');
+  handle.className = 'drag-handle';
+  handle.textContent = '⋮⋮';
+  handle.setAttribute('aria-hidden', 'true');
+  const orderEl = document.createElement('div');
+  orderEl.className = 'layout-order';
+  orderEl.textContent = order;
+  tile.appendChild(handle);
+  tile.appendChild(orderEl);
+  if (thumbUrlValue || colorValue) {
+    const thumb = document.createElement('div');
+    thumb.className = 'layout-thumb';
+    if (thumbUrlValue) thumb.style.backgroundImage = `url(${thumbUrlValue})`;
+    else thumb.style.background = colorValue;
+    tile.appendChild(thumb);
+  }
+  const labelEl = document.createElement('div');
+  labelEl.className = 'layout-label';
+  labelEl.textContent = label;
+  tile.appendChild(labelEl);
+  return tile;
+}
+
+function renderLayoutHeroStripe() {
+  const container = document.getElementById('layoutHeroStripe');
+  container.innerHTML = '';
+  content.heroStripe.forEach((seg, idx) => {
+    const isImage = seg.type === 'image' && seg.image;
+    container.appendChild(makeLayoutTile({
+      order: idx + 1,
+      thumbUrlValue: isImage ? thumbUrl(seg.image) : null,
+      colorValue: isImage ? null : (seg.color || '#ccc'),
+      label: isImage ? 'Image' : (seg.color || 'Color')
+    }));
+  });
+  attachDragReorder(container, (from, to) => {
+    const [item] = content.heroStripe.splice(from, 1);
+    content.heroStripe.splice(to, 0, item);
+    renderLayoutHeroStripe();
+    renderStripeSegments();
+  });
+}
+
+function renderLayoutStops() {
+  const container = document.getElementById('layoutStops');
+  container.innerHTML = '';
+  content.stopOrder.forEach((key, idx) => {
+    const sd = content.stops[key] || {};
+    const cd = copy.stops[key] || {};
+    let thumb = null;
+    if (sd.media_type === 'video' && sd.video_public_id) thumb = videoThumbUrl(sd.video_public_id);
+    else if (sd.media_type === 'gif' && sd.gif_url) thumb = thumbUrl(sd.gif_url);
+    else if (sd.image_public_ids && sd.image_public_ids[0]) thumb = thumbUrl(sd.image_public_ids[0]);
+    container.appendChild(makeLayoutTile({
+      order: idx + 1,
+      thumbUrlValue: thumb,
+      colorValue: thumb ? null : '#e5e2d8',
+      label: (cd.heading || key).split('\n')[0] || key
+    }));
+  });
+  attachDragReorder(container, (from, to) => {
+    const [item] = content.stopOrder.splice(from, 1);
+    content.stopOrder.splice(to, 0, item);
+    renderLayoutStops();
+    renderStopsList();
+  });
+}
+
+function renderLayoutPlanCards() {
+  const container = document.getElementById('layoutPlanCards');
+  container.innerHTML = '';
+  copy.plan.cards.forEach((card, idx) => {
+    container.appendChild(makeLayoutTile({
+      order: idx + 1,
+      thumbUrlValue: null,
+      colorValue: null,
+      label: card.title || '(untitled)'
+    }));
+  });
+  attachDragReorder(container, (from, to) => {
+    const [item] = copy.plan.cards.splice(from, 1);
+    copy.plan.cards.splice(to, 0, item);
+    renderLayoutPlanCards();
+    if (window.__planEditor) window.__planEditor.render();
+  });
+}
+
+function renderLayoutAll() {
+  renderLayoutHeroStripe();
+  renderLayoutStops();
+  renderLayoutPlanCards();
+}
+
+let inquiriesUnsub = null;
+
+function startInquiriesListener() {
+  if (inquiriesUnsub) return;
+  // Assumes the /api/send-inquiry backend writes submissions into a top-level
+  // "inquiries" collection with fields: name, email, message, startDate,
+  // endDate, createdAt (timestamp), read (boolean). Adjust field names below
+  // if your backend's actual schema differs.
+  const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200));
+  inquiriesUnsub = onSnapshot(q, (snap) => {
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderInquiries(items);
+  }, (err) => {
+    console.error('Inquiries listener error:', err);
+    document.getElementById('inquiriesList').innerHTML =
+      `<div style="color:#d32f2f; font-size:13px;">Couldn't load inquiries: ${escapeHtml(err.message || String(err))}</div>`;
+  });
+}
+
+function stopInquiriesListener() {
+  if (inquiriesUnsub) { inquiriesUnsub(); inquiriesUnsub = null; }
+}
+
+function formatInquiryDate(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderInquiries(items) {
+  const list = document.getElementById('inquiriesList');
+  const empty = document.getElementById('inquiriesEmpty');
+  const badge = document.getElementById('inquiryUnreadBadge');
+  list.innerHTML = '';
+  empty.classList.toggle('hidden', items.length > 0);
+
+  const unreadCount = items.filter(it => !it.read).length;
+  badge.textContent = String(unreadCount);
+  badge.classList.toggle('hidden', unreadCount === 0);
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'inquiry-card' + (item.read ? '' : ' unread');
+
+    const top = document.createElement('div');
+    top.className = 'inquiry-card-top';
+    const name = document.createElement('div');
+    name.className = 'inquiry-card-name';
+    name.textContent = item.name || 'Unknown';
+    const date = document.createElement('div');
+    date.className = 'inquiry-card-date';
+    date.textContent = formatInquiryDate(item.createdAt);
+    top.appendChild(name);
+    top.appendChild(date);
+
+    const preview = document.createElement('div');
+    preview.className = 'inquiry-card-preview';
+    const travelDates = [item.startDate, item.endDate].filter(Boolean).join(' – ');
+    preview.textContent = [item.email, travelDates].filter(Boolean).join(' · ');
+
+    const body = document.createElement('div');
+    body.className = 'inquiry-card-body';
+    const msgLine = document.createElement('div');
+    msgLine.textContent = item.message || '(no message)';
+    body.appendChild(msgLine);
+
+    const actions = document.createElement('div');
+    actions.className = 'inquiry-card-actions';
+    const toggleReadBtn = document.createElement('button');
+    toggleReadBtn.type = 'button';
+    toggleReadBtn.className = 'secondary';
+    toggleReadBtn.textContent = item.read ? 'Mark unread' : 'Mark read';
+    toggleReadBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await updateDoc(doc(db, 'inquiries', item.id), { read: !item.read });
+      } catch (err) {
+        console.error('Failed to update inquiry:', err);
+      }
+    });
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'danger';
+    deleteBtn.textContent = '✕ Delete';
+    deleteBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete the inquiry from "${item.name || 'this person'}"? This can't be undone.`)) return;
+      try {
+        await deleteDoc(doc(db, 'inquiries', item.id));
+      } catch (err) {
+        console.error('Failed to delete inquiry:', err);
+      }
+    });
+    actions.appendChild(toggleReadBtn);
+    actions.appendChild(deleteBtn);
+    body.appendChild(actions);
+
+    card.appendChild(top);
+    card.appendChild(preview);
+    card.appendChild(body);
+
+    card.addEventListener('click', async () => {
+      card.classList.toggle('expanded');
+      if (!item.read) {
+        try {
+          await updateDoc(doc(db, 'inquiries', item.id), { read: true });
+        } catch (err) {
+          console.error('Failed to mark inquiry read:', err);
+        }
+      }
+    });
+
+    list.appendChild(card);
+  });
 }
 
 function renderStopsList() {
@@ -1420,35 +1709,57 @@ function renderStopsList() {
     colorRow.appendChild(bgColorWrap);
     card.appendChild(colorRow);
 
-    const imgHeader = document.createElement('h5'); imgHeader.textContent = 'Image side';
-    card.appendChild(imgHeader);
+    const mediaHeader = document.createElement('h5'); mediaHeader.textContent = 'Media';
+    card.appendChild(mediaHeader);
 
-    if (!ANIMATION_TYPES[sd.animation_type]) sd.animation_type = 'carousel';
+    if (!MEDIA_TYPES[sd.media_type]) sd.media_type = 'image';
 
-    const animSelect = document.createElement('select');
-    Object.entries(ANIMATION_TYPES).forEach(([val, label]) => {
+    const mediaSelect = document.createElement('select');
+    Object.entries(MEDIA_TYPES).forEach(([val, label]) => {
       const opt = document.createElement('option');
       opt.value = val; opt.textContent = label;
-      if (sd.animation_type === val) opt.selected = true;
-      animSelect.appendChild(opt);
+      if (sd.media_type === val) opt.selected = true;
+      mediaSelect.appendChild(opt);
     });
-    animSelect.addEventListener('change', () => { sd.animation_type = animSelect.value; });
-    card.appendChild(animSelect);
-
-    const thumbs = document.createElement('div');
-    thumbs.className = 'thumbs';
-    card.appendChild(thumbs);
+    mediaSelect.addEventListener('change', () => {
+      sd.media_type = mediaSelect.value;
+      refreshMediaVisibility();
+    });
+    card.appendChild(mediaSelect);
 
     const imgStatus = document.createElement('div');
     imgStatus.className = 'stop-status';
 
+    // --- Image upload (used directly for "Image" media type, and as the
+    // source frames for "Generate GIF") ---
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    card.appendChild(thumbs);
+
     function refreshThumbs() {
       thumbs.innerHTML = '';
-      if (!sd.image_public_ids.length) thumbs.innerHTML = '<span class="empty">No images yet</span>';
-      sd.image_public_ids.forEach(id => {
+      if (!sd.image_public_ids.length) {
+        thumbs.innerHTML = '<span class="empty">No images yet</span>';
+        return;
+      }
+      sd.image_public_ids.forEach((id, imgIdx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'thumb-wrap';
         const img = document.createElement('img');
         img.src = thumbUrl(id);
-        thumbs.appendChild(img);
+        wrap.appendChild(img);
+        const removeThumbBtn = document.createElement('button');
+        removeThumbBtn.type = 'button';
+        removeThumbBtn.className = 'thumb-remove';
+        removeThumbBtn.textContent = '✕';
+        removeThumbBtn.setAttribute('aria-label', 'Remove this image');
+        removeThumbBtn.addEventListener('click', () => {
+          sd.image_public_ids.splice(imgIdx, 1);
+          refreshThumbs();
+          imgStatus.textContent = 'Image removed — remember to Save';
+        });
+        wrap.appendChild(removeThumbBtn);
+        thumbs.appendChild(wrap);
       });
     }
     refreshThumbs();
@@ -1459,7 +1770,7 @@ function renderStopsList() {
 
     const uploadBtn = document.createElement('button');
     uploadBtn.type = 'button';
-    uploadBtn.textContent = '📤 Upload';
+    uploadBtn.textContent = '📤 Upload image';
     uploadBtn.addEventListener('click', () => openUploadWidget(`stop-${key}`, (publicId) => {
       sd.image_public_ids.push(publicId);
       refreshThumbs();
@@ -1491,6 +1802,68 @@ function renderStopsList() {
     card.appendChild(imgRow);
     card.appendChild(imgStatus);
 
+    // --- Video upload (used for "Video" media type) ---
+    const videoWrap = document.createElement('div');
+    videoWrap.style.marginTop = '10px';
+
+    const videoPreview = document.createElement('div');
+    videoPreview.className = 'thumbs';
+
+    function refreshVideoPreview() {
+      videoPreview.innerHTML = '';
+      if (!sd.video_public_id) {
+        videoPreview.innerHTML = '<span class="empty">No video yet</span>';
+        return;
+      }
+      const wrap = document.createElement('div');
+      wrap.className = 'thumb-wrap';
+      const video = document.createElement('video');
+      video.src = cloudinaryVideoUrl(sd.video_public_id);
+      video.muted = true;
+      video.setAttribute('playsinline', '');
+      video.style.width = '80px'; video.style.height = '80px'; video.style.objectFit = 'cover';
+      wrap.appendChild(video);
+      const removeVideoBtn = document.createElement('button');
+      removeVideoBtn.type = 'button';
+      removeVideoBtn.className = 'thumb-remove';
+      removeVideoBtn.textContent = '✕';
+      removeVideoBtn.setAttribute('aria-label', 'Remove this video');
+      removeVideoBtn.addEventListener('click', () => {
+        sd.video_public_id = null;
+        refreshVideoPreview();
+        videoStatus.textContent = 'Video removed — remember to Save';
+      });
+      wrap.appendChild(removeVideoBtn);
+      videoPreview.appendChild(wrap);
+    }
+    refreshVideoPreview();
+    videoWrap.appendChild(videoPreview);
+
+    const videoStatus = document.createElement('div');
+    videoStatus.className = 'stop-status';
+
+    const videoUploadBtn = document.createElement('button');
+    videoUploadBtn.type = 'button';
+    videoUploadBtn.textContent = sd.video_public_id ? '📤 Replace video' : '📤 Upload video';
+    videoUploadBtn.addEventListener('click', () => openUploadWidget(`stop-video-${key}`, (publicId) => {
+      sd.video_public_id = publicId;
+      refreshVideoPreview();
+      videoStatus.textContent = 'Video added — remember to Save';
+      videoUploadBtn.textContent = '📤 Replace video';
+    }, 'video'));
+    videoWrap.appendChild(videoUploadBtn);
+    videoWrap.appendChild(videoStatus);
+    card.appendChild(videoWrap);
+
+    function refreshMediaVisibility() {
+      const type = sd.media_type;
+      thumbs.style.display = (type === 'image' || type === 'gif') ? '' : 'none';
+      imgRow.style.display = (type === 'image' || type === 'gif') ? '' : 'none';
+      imgStatus.style.display = (type === 'image' || type === 'gif') ? '' : 'none';
+      videoWrap.style.display = (type === 'video') ? '' : 'none';
+    }
+    refreshMediaVisibility();
+
     container.appendChild(card);
   });
 }
@@ -1500,7 +1873,7 @@ document.getElementById('addStopBtn').addEventListener('click', () => {
   content.stopOrder.push(key);
   const isDark = content.stopOrder.length % 2 === 0;
   content.stops[key] = {
-    animation_type: 'carousel', image_public_ids: [], gif_url: null,
+    media_type: 'image', image_public_ids: [], gif_url: null, video_public_id: null,
     side: isDark ? 'reversed' : 'normal', theme: isDark ? 'dark' : 'light',
     accent: isDark ? '#0E4D34' : '#B5471B', bgColor: null
   };
@@ -1555,10 +1928,10 @@ function renderColorsForm() {
     const div = document.createElement('div');
     div.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <label style="font-size: 13px; text-transform: capitalize;">${key.replace('-', ' ')}</label>
+        <label style="font-size: 13px; text-transform: capitalize;">${escapeHtml(key.replace('-', ' '))}</label>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="color" id="color-${key}" value="${value}" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;">
-          <input type="text" id="hex-${key}" value="${value}" style="flex: 1; font-family: monospace; font-size: 12px;" readonly>
+          <input type="color" id="color-${escapeHtml(key)}" value="${escapeHtml(value)}" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;">
+          <input type="text" id="hex-${escapeHtml(key)}" value="${escapeHtml(value)}" style="flex: 1; font-family: monospace; font-size: 12px;" readonly>
         </div>
       </div>
     `;

@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ghana — A Lookbook of the Gold Coast</title>
+<meta name="description" content="A visual lookbook of Ghana's Gold Coast — castles, canopy walks, kente villages, and a five-region route from Accra to the northern savanna.">
+<meta name="theme-color" content="#0E4D34">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ghana — A Lookbook of the Gold Coast">
+<meta property="og:description" content="Castles, canopy walks, kente looms, and the warmest welcome in West Africa — a five-region route through Ghana.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ghana — A Lookbook of the Gold Coast">
+<meta name="twitter:description" content="Castles, canopy walks, kente looms, and the warmest welcome in West Africa — a five-region route through Ghana.">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
@@ -22,6 +31,22 @@
     --muted:#8b8471;
   }
   *{box-sizing:border-box;}
+  .skip-link{
+    position:absolute;
+    left:-9999px;
+    top:0;
+    z-index:1000;
+    background:var(--forest-dark);
+    color:var(--ivory);
+    padding:12px 20px;
+    font-family:Verdana,Geneva,sans-serif;
+    font-size:14px;
+    text-decoration:none;
+    border-radius:0 0 6px 0;
+  }
+  .skip-link:focus{
+    left:0;
+  }
   html{scroll-behavior:smooth;}
   .section-bg{
     background-size:cover;
@@ -111,13 +136,10 @@
   .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
   .hero-stripe-overlay.pos-bottom svg{ transform:none; }
   .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
-  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 3.4s linear infinite; }
+  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 2.8s linear infinite; }
+  .hero-stripe-overlay .rb-flow.tight-wave{ animation:tightWaveFlow 3s linear infinite; }
   .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
-  .hero-stripe-overlay .flag-slice{ animation:flagRipple 2.6s ease-in-out infinite; transform-origin:left center; will-change:transform; }
-  @keyframes flagRipple{
-    0%, 100%{ transform:translateX(0) skewY(0deg); }
-    50%{ transform:translateX(var(--flag-amp, 4px)) skewY(2deg); }
-  }
+  .hero-stripe-overlay .wave-flag{ animation:waveFlag 4s ease-in-out infinite; transform-origin:0% 0%; will-change:transform; }
   @keyframes ribbonDrift{
     0%, 100%{ transform:translateX(-14px); }
     50%{ transform:translateX(14px); }
@@ -125,20 +147,45 @@
   @keyframes ribbonFlow{
     to{ stroke-dashoffset:-144; }
   }
+  @keyframes tightWaveFlow{
+    to{ stroke-dashoffset:-102; }
+  }
   @keyframes clothSway{
     0%, 100%{ transform:rotate(-0.6deg); }
     50%{ transform:rotate(0.6deg); }
   }
-  .hero-stripe-overlay .rays-spin{ animation:raysSpin 46s linear infinite; }
-  @keyframes raysSpin{ to{ transform:rotate(360deg); } }
-  .hero-stripe-overlay.spotlight{
-    background:radial-gradient(ellipse 62% 74% at 30% 46%,
-      transparent 0%, transparent 38%, rgba(8,7,5,.62) 100%);
-    animation:spotlightBreathe 7s ease-in-out infinite;
+  @keyframes waveFlag{
+    0%, 100%{ transform:scaleX(1) scaleY(1); }
+    25%{ transform:scaleX(0.98) scaleY(1.08); }
+    50%{ transform:scaleX(0.96) scaleY(1.12); }
+    75%{ transform:scaleX(0.98) scaleY(1.08); }
   }
-  @keyframes spotlightBreathe{
-    0%, 100%{ opacity:0.9; }
-    50%{ opacity:1; }
+  .hero-light-beam{
+    position:absolute; inset:0;
+    z-index:1;
+    pointer-events:none;
+    display:none;
+    background:linear-gradient(90deg,
+      transparent 0%,
+      transparent 8%,
+      rgba(255,255,255,.06) 18%,
+      rgba(255,250,225,.32) 35%,
+      rgba(255,255,255,.32) 50%,
+      rgba(255,250,225,.32) 65%,
+      rgba(255,255,255,.06) 82%,
+      transparent 92%,
+      transparent 100%);
+    background-size:100% 100%;
+    background-position:0% 0%;
+    mix-blend-mode:screen;
+    opacity:0.88;
+    animation:lightBeamSweep 8.5s ease-in-out infinite;
+  }
+  .hero-light-beam.active{ display:block; }
+  @keyframes lightBeamSweep{
+    0%{ transform:translateX(-120%); }
+    50%{ transform:translateX(120%); }
+    100%{ transform:translateX(-120%); }
   }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
@@ -166,26 +213,10 @@
     from{opacity:0; transform:translateY(16px);}
     to{opacity:1; transform:translateY(0);}
   }
-  .hero .eyebrow.typewriter, .hero h1.typewriter, .hero p.sub.typewriter, .hero .edition.typewriter{
-    display:inline-block;
-    max-width:100%;
-    overflow:hidden;
-    white-space:nowrap;
-    border-right:3px solid var(--gold);
-    width:0;
-    opacity:1;
-    transform:none;
-    animation:hero-typing var(--tw-duration, 1.6s) steps(var(--tw-steps, 20), end) var(--tw-start, 0s) forwards,
-              hero-caret .8s step-end infinite;
-  }
-  @keyframes hero-typing{ from{ width:0; } to{ width:100%; } }
-  @keyframes hero-caret{ 50%{ border-color:transparent; } }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero .eyebrow.typewriter, .hero h1.typewriter, .hero p.sub.typewriter, .hero .edition.typewriter{
-      animation:none; width:100%; border-right:none;
-    }
-    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-stripe-overlay .flag-slice, .hero-stripe-overlay .rays-spin, .hero-stripe-overlay.spotlight{animation:none;}
+    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-light-beam{animation:none;}
+    .hero-light-beam{display:none !important;}
   }
 
   .scroll-cue{
@@ -260,7 +291,7 @@
     font-family:inherit;
   }
   .region-bar{width:10px; height:46px; flex-shrink:0;}
-  .region-row h4{font-size:20px; margin:0; width:230px; flex-shrink:0;}
+  .region-row h3{font-size:20px; margin:0; width:230px; flex-shrink:0;}
   .region-row p{font-family:Verdana,sans-serif; font-size:13.5px; color:#c9c2b2; margin:0; flex:1;}
   .region-toggle{
     font-family:Verdana,sans-serif;
@@ -434,7 +465,7 @@
     background:rgba(0,0,0,0.25);
     z-index:1;
   }
-  .stop-visual img{
+  .stop-visual img, .stop-visual video{
     position:absolute;
     inset:0;
     width:100%;
@@ -502,7 +533,7 @@
     border-top:3px solid var(--gold);
     padding:30px 0;
   }
-  .plan-card h4{font-size:18px; margin:15px 0 8px; font-weight:bold;}
+  .plan-card h3{font-size:18px; margin:15px 0 8px; font-weight:bold;}
   .plan-card p{font-family:Verdana,sans-serif; font-size:14px; color:#c9c2b2; margin:0;}
   .plan .closing{
     text-align:center;
@@ -595,19 +626,6 @@
 
   ::selection{background:var(--gold); color:var(--ink);}
 
-  .animation-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(242, 183, 5, 0.9);
-    color: #333;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: bold;
-    z-index: 3;
-  }
-
   @media (max-width:768px){
     .stop{flex-direction:column-reverse;}
     .stop[data-order="normal"] .stop-visual{order:0;}
@@ -619,8 +637,11 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <header class="hero">
   <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
+  <div class="hero-light-beam" id="heroLightBeam"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -630,6 +651,8 @@
   </div>
   <div class="scroll-cue">SCROLL ↓</div>
 </header>
+
+<main id="main-content">
 
 <section class="intro">
   <div class="intro-left">
@@ -655,24 +678,24 @@
   <h2 id="regionsTitle">Five regions, one route</h2>
   <div class="eyebrow-sub" id="regionsSub">Coast to savanna, roughly north–south — the classic Ghana circuit.</div>
   <div class="region-block">
-    <button class="region-row" data-region="accra" aria-expanded="false"><div class="region-bar" style="background:var(--forest)"></div><h4>Greater Accra</h4><p>Capital energy: Jamestown, Osu, art & nightlife</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra"></div><div class="region-lists" id="lists-accra"></div></div></div>
+    <button class="region-row" data-region="accra" aria-expanded="false" aria-controls="panel-accra" id="region-btn-accra"><div class="region-bar" style="background:var(--forest)"></div><h3>Greater Accra</h3><p>Capital energy: Jamestown, Osu, art & nightlife</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-accra" role="region" aria-labelledby="region-btn-accra"><div class="region-panel-inner"><div class="region-map" id="map-accra" role="group" aria-label="Map of points of interest in Greater Accra"></div><div class="region-lists" id="lists-accra"></div></div></div>
   </div>
   <div class="region-block">
-    <button class="region-row" data-region="central" aria-expanded="false"><div class="region-bar" style="background:var(--terracotta)"></div><h4>Central Region</h4><p>Cape Coast & Elmina castles, Kakum canopy walk</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-central"><div class="region-panel-inner"><div class="region-map" id="map-central"></div><div class="region-lists" id="lists-central"></div></div></div>
+    <button class="region-row" data-region="central" aria-expanded="false" aria-controls="panel-central" id="region-btn-central"><div class="region-bar" style="background:var(--terracotta)"></div><h3>Central Region</h3><p>Cape Coast & Elmina castles, Kakum canopy walk</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-central" role="region" aria-labelledby="region-btn-central"><div class="region-panel-inner"><div class="region-map" id="map-central" role="group" aria-label="Map of points of interest in Central Region"></div><div class="region-lists" id="lists-central"></div></div></div>
   </div>
   <div class="region-block">
-    <button class="region-row" data-region="ashanti" aria-expanded="false"><div class="region-bar" style="background:var(--gold)"></div><h4>Ashanti Region</h4><p>Kumasi, Manhyia Palace, kente-weaving villages</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
+    <button class="region-row" data-region="ashanti" aria-expanded="false" aria-controls="panel-ashanti" id="region-btn-ashanti"><div class="region-bar" style="background:var(--gold)"></div><h3>Ashanti Region</h3><p>Kumasi, Manhyia Palace, kente-weaving villages</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-ashanti" role="region" aria-labelledby="region-btn-ashanti"><div class="region-panel-inner"><div class="region-map" id="map-ashanti" role="group" aria-label="Map of points of interest in Ashanti Region"></div><div class="region-lists" id="lists-ashanti"></div></div></div>
   </div>
   <div class="region-block">
-    <button class="region-row" data-region="volta" aria-expanded="false"><div class="region-bar" style="background:var(--clay)"></div><h4>Volta Region</h4><p>Waterfalls, Lake Volta, mountain hikes</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta"></div><div class="region-lists" id="lists-volta"></div></div></div>
+    <button class="region-row" data-region="volta" aria-expanded="false" aria-controls="panel-volta" id="region-btn-volta"><div class="region-bar" style="background:var(--clay)"></div><h3>Volta Region</h3><p>Waterfalls, Lake Volta, mountain hikes</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-volta" role="region" aria-labelledby="region-btn-volta"><div class="region-panel-inner"><div class="region-map" id="map-volta" role="group" aria-label="Map of points of interest in Volta Region"></div><div class="region-lists" id="lists-volta"></div></div></div>
   </div>
   <div class="region-block">
-    <button class="region-row" data-region="northern" aria-expanded="false"><div class="region-bar" style="background:var(--faded-gold)"></div><h4>Northern Region</h4><p>Mole National Park safari, Larabanga Mosque</p><span class="region-toggle">MAP ▾</span></button>
-    <div class="region-panel" id="panel-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern"></div><div class="region-lists" id="lists-northern"></div></div></div>
+    <button class="region-row" data-region="northern" aria-expanded="false" aria-controls="panel-northern" id="region-btn-northern"><div class="region-bar" style="background:var(--faded-gold)"></div><h3>Northern Region</h3><p>Mole National Park safari, Larabanga Mosque</p><span class="region-toggle">MAP ▾</span></button>
+    <div class="region-panel" id="panel-northern" role="region" aria-labelledby="region-btn-northern"><div class="region-panel-inner"><div class="region-map" id="map-northern" role="group" aria-label="Map of points of interest in Northern Region"></div><div class="region-lists" id="lists-northern"></div></div></div>
   </div>
 </section>
 
@@ -681,10 +704,10 @@
 <section class="plan">
   <h2 id="planTitle">Plan your trip</h2>
   <div class="plan-grid" id="planCardsContainer">
-    <div class="plan-card"><h4>Best time to visit</h4><p>November–March: dry season, cooler nights, easiest travel between regions.</p></div>
-    <div class="plan-card"><h4>Getting around</h4><p>Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.</p></div>
-    <div class="plan-card"><h4>Entry</h4><p>Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.</p></div>
-    <div class="plan-card"><h4>Suggested route</h4><p>Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.</p></div>
+    <div class="plan-card"><h3>Best time to visit</h3><p>November–March: dry season, cooler nights, easiest travel between regions.</p></div>
+    <div class="plan-card"><h3>Getting around</h3><p>Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.</p></div>
+    <div class="plan-card"><h3>Entry</h3><p>Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.</p></div>
+    <div class="plan-card"><h3>Suggested route</h3><p>Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.</p></div>
   </div>
   <p class="closing" id="planClosing">Akwaaba — see you on the coast.</p>
 
@@ -716,20 +739,22 @@
     </div>
 
     
-    <div class="field hp">
+    <div class="field hp" aria-hidden="true">
       <label for="inq-company">Company</label>
       <input id="inq-company" name="company" type="text" tabindex="-1" autocomplete="off">
     </div>
 
     <button type="submit" id="inquirySubmit">Send inquiry</button>
-    <div class="status" id="inquiryStatus"></div>
+    <div class="status" id="inquiryStatus" role="status" aria-live="polite"></div>
   </form>
 </section>
+
+</main>
 
 <footer>GHANA · A LOOKBOOK OF THE GOLD COAST · 2026</footer>
 
 <div class="site3d-overlay" id="site3dOverlay">
-  <div class="site3d-box">
+  <div class="site3d-box" role="dialog" aria-modal="true" aria-labelledby="site3dTitle">
     <div class="site3d-header">
       <div>
         <h4 id="site3dTitle">Site name</h4>
@@ -750,12 +775,6 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10
 
 const STOP_KEYS = ['castles','canopy','accra','kumasi','savanna','beaches','culture','food'];
 const REGION_KEYS = ['accra','central','ashanti','volta','northern'];
-
-const BADGE_LABEL = {
-  carousel: '📽️ Carousel',
-  social: '📱 Social',
-  hero_stripe: '🎬 Hero'
-};
 
 const DEFAULT_STOP_META = {
   castles: { side: 'normal', theme: 'light', accent: '#B5471B' },
@@ -782,10 +801,9 @@ const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
-  heroTextAnim: { eyebrow: 'fade', title: 'fade', sub: 'fade', edition: 'fade' },
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
-    acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
+    acc[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, ...DEFAULT_STOP_META[key] };
     return acc;
   }, {}),
   sectionBg: { hero: { color: DEFAULT_SECTION_COLOR.hero, image: null }, welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null }, regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null } }
@@ -940,10 +958,27 @@ const DEFAULT_REGIONS = {
 let cloudinaryCloudName = null;
 let REGION_DATA = DEFAULT_REGIONS;
 
-function cloudinaryUrl(publicIdOrUrl) {
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function cloudinaryUrl(publicIdOrUrl, width = 1600) {
   if (!publicIdOrUrl) return null;
   if (/^https?:\/\//.test(publicIdOrUrl)) return publicIdOrUrl;
-  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_1600/${publicIdOrUrl}`;
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_${width}/${publicIdOrUrl}`;
+}
+
+function cloudinarySrcset(publicIdOrUrl, widths) {
+  if (!publicIdOrUrl || /^https?:\/\//.test(publicIdOrUrl)) return null;
+  return widths.map(w => `${cloudinaryUrl(publicIdOrUrl, w)} ${w}w`).join(', ');
+}
+
+function cloudinaryVideoUrl(publicId, width) {
+  if (!publicId) return null;
+  const transform = width ? `f_auto,q_auto,w_${width}` : 'f_auto,q_auto';
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/video/upload/${transform}/${publicId}`;
 }
 
 async function loadConfig() {
@@ -960,7 +995,10 @@ function mergeContent(loaded) {
   c.stops = {};
   c.stopOrder.forEach(key => {
     const defaults = DEFAULT_STOP_META[key] || { side: 'normal', theme: 'light', accent: '#B5471B' };
-    c.stops[key] = { animation_type: 'carousel', image_public_ids: [], bgColor: null, ...defaults, ...(loadedStops[key] || {}) };
+    c.stops[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, bgColor: null, ...defaults, ...(loadedStops[key] || {}) };
+    if (!loadedStops[key] || !loadedStops[key].media_type) {
+      c.stops[key].media_type = c.stops[key].video_public_id ? 'video' : (c.stops[key].gif_url ? 'gif' : 'image');
+    }
   });
   c.sectionBg = {
     hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
@@ -996,15 +1034,24 @@ async function loadSiteData(firebaseConfig) {
   };
 }
 
+const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+function safeHexColor(c, fallback) {
+  return HEX_COLOR_RE.test(c) ? c : fallback;
+}
+
 const STRIPE_STYLE_SVG = {
   colorsOf(segments) {
-    const cols = (segments || []).filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
+    const cols = (segments || [])
+      .filter(s => (s.type || 'color') !== 'image' && s.color)
+      .map(s => safeHexColor(s.color, null))
+      .filter(Boolean);
     return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
   },
-  ribbon(uid, d, colors, width, fade) {
+  ribbon(uid, d, colors, width, fade, tightWave = false) {
     const n = colors.length;
+    const dashArray = tightWave ? '34 20' : '46 26';
     const strokes = colors.map((c, i) =>
-      `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="46 26" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+      `<path class="rb-flow${tightWave ? ' tight-wave' : ''}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="${dashArray}" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
     ).join('');
     return `
     <defs>
@@ -1020,58 +1067,35 @@ const STRIPE_STYLE_SVG = {
     </defs>
     <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
   },
-  flagSlices(colors) {
-    const n = colors.length;
-    const bandH = 420 / n;
-    const SLICES = 40;
-    const sliceW = 1000 / SLICES;
-    let out = '';
-    for (let s = 0; s < SLICES; s++) {
-      const x = s * sliceW;
-      const amp = (2 + s * 0.55).toFixed(1);
-      const delay = (s * 0.05).toFixed(2);
-      const bands = colors.map((c, bi) =>
-        `<rect x="${x}" y="${bi * bandH}" width="${(sliceW + 0.7).toFixed(2)}" height="${(bandH + 0.7).toFixed(2)}" fill="${c}"/>`
-      ).join('');
-      out += `<g class="flag-slice" style="animation-delay:${delay}s; --flag-amp:${amp}px;">${bands}</g>`;
-    }
-    return out;
-  },
-  zigzagPath(y0, amp, step) {
-    let pts = [];
-    let up = true;
-    for (let x = -60; x <= 1060; x += step) {
-      pts.push(`${x} ${up ? y0 - amp : y0 + amp}`);
-      up = !up;
-    }
-    return 'M ' + pts.join(' L ');
-  },
-  rays(colors) {
-    const cx = 130, cy = 460, count = 14, spread = 150;
-    let out = '';
-    for (let i = 0; i < count; i++) {
-      const angle = -75 + i * (spread / (count - 1));
-      const rad = angle * Math.PI / 180;
-      const len = 640;
-      const x2 = (cx + Math.cos(rad) * len).toFixed(1);
-      const y2 = (cy + Math.sin(rad) * len).toFixed(1);
-      const c = colors[i % colors.length];
-      const w = 2 + (i % 3);
-      out += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="0.55"/>`;
-    }
-    return `<g class="rays-spin" style="transform-origin:${cx}px ${cy}px;">${out}</g>`;
-  },
   build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
     const INK = '#171310', IVORY = '#F5EFE3';
-    if (styleId === 'zigzag') {
+    if (styleId === 'trail') {
       return `
-        ${this.ribbon('hs-z1', this.zigzagPath(378, 16, 44), [c0], 8, true)}
-        ${this.ribbon('hs-z2', this.zigzagPath(378, 16, 44), [c1], 8, true)}
+        ${this.ribbon('hs-c1', 'M -60 90 C 200 90 280 160 480 160 S 780 90 1060 110', [c0], 8, false, true)}
+        ${this.ribbon('hs-c2', 'M -60 190 C 220 190 300 260 500 260 S 800 190 1060 210', [c1], 8, false, true)}
+        ${this.ribbon('hs-c3', 'M -60 290 C 240 290 320 360 520 360 S 820 290 1060 310', [c2], 8, false, true)}
       `;
     }
-    if (styleId === 'rays') {
-      return this.rays(colors.length ? colors : [c0, c1, c2]);
+    if (styleId === 'flag') {
+      return `
+        <defs>
+          <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="${c0}" stop-opacity="0.92"/>
+            <stop offset="1" stop-color="${c1}" stop-opacity="0.92"/>
+          </linearGradient>
+          <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="${c1}" stop-opacity="0.87"/>
+            <stop offset="1" stop-color="${c2}" stop-opacity="0.87"/>
+          </linearGradient>
+        </defs>
+        <g class="wave-flag">
+          <path d="M 0 80 Q 150 30 300 80 T 600 80 T 900 80 T 1200 80 L 1200 200 Q 1050 250 900 200 T 600 200 T 300 200 T 0 200 Z" 
+            fill="url(#flag-grad-1)"/>
+          <path d="M 0 200 Q 150 150 300 200 T 600 200 T 900 200 T 1200 200 L 1200 320 Q 1050 370 900 320 T 600 320 T 300 320 T 0 320 Z" 
+            fill="url(#flag-grad-2)"/>
+        </g>
+      `;
     }
     if (styleId === 'fold') {
       return `
@@ -1092,48 +1116,37 @@ const STRIPE_STYLE_SVG = {
         </g>
       `;
     }
-    if (styleId === 'flag') {
-      return `<g>${this.flagSlices(colors)}</g>`;
-    }
     return '';
   }
 };
 
 function renderHeroStripe(segments, styleId, position) {
-  let style = styleId || 'straight';
-  if (style === 'lightbeam') style = 'spotlight'; // backward-compat alias for older saved configs
+  const style = styleId || 'straight';
   const pos = position || 'left';
   const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
+  const beam = document.getElementById('heroLightBeam');
 
   heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   heroEl.classList.add(`pos-${pos}`);
   overlayEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   overlayEl.classList.add(`pos-${pos}`);
 
-  if (style === 'spotlight') {
-    stripEl.style.display = 'none';
-    stripEl.innerHTML = '';
-    overlayEl.style.display = '';
-    overlayEl.style.mixBlendMode = 'normal';
-    overlayEl.classList.add('spotlight');
-    overlayEl.innerHTML = '';
-    return;
-  }
-  overlayEl.classList.remove('spotlight');
-
   if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
     overlayEl.style.display = 'none';
     overlayEl.innerHTML = '';
     stripEl.style.display = '';
     stripEl.innerHTML = '';
+    if (beam) beam.classList.remove('active');
     (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
       if (seg.type === 'image' && seg.image) {
-        const url = cloudinaryUrl(seg.image);
+        const url = cloudinaryUrl(seg.image, 500);
         if (url) {
           const img = document.createElement('img');
           img.src = url;
+          const srcset = cloudinarySrcset(seg.image, [300, 500, 800]);
+          if (srcset) { img.srcset = srcset; img.sizes = '(max-width: 700px) 100vw, 9vw'; }
           img.alt = 'Kente pattern';
           img.loading = 'lazy';
           stripEl.appendChild(img);
@@ -1150,9 +1163,9 @@ function renderHeroStripe(segments, styleId, position) {
   stripEl.style.display = 'none';
   stripEl.innerHTML = '';
   overlayEl.style.display = '';
-  overlayEl.style.mixBlendMode = '';
   const colors = STRIPE_STYLE_SVG.colorsOf(segments);
   overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
+  if (beam) beam.classList.add('active');
 }
 
 function applySectionBg(sectionBg) {
@@ -1161,19 +1174,39 @@ function applySectionBg(sectionBg) {
     welcome: document.querySelector('.intro-left'),
     regionsBanner: document.querySelector('.regions')
   };
+  // The background color applies immediately everywhere (cheap, and avoids
+  // a flash of unstyled section). The background *image* is real weight —
+  // for the hero it's applied right away since it's always visible on
+  // load, but welcome/regionsBanner are further down the page, so their
+  // images are only fetched once the section is about to scroll into view.
   Object.entries(targets).forEach(([key, el]) => {
     if (!el) return;
     const cfg = (sectionBg && sectionBg[key]) || {};
     const color = cfg.color || DEFAULT_SECTION_COLOR[key];
     const imageUrl = cfg.image ? cloudinaryUrl(cfg.image) : null;
     el.style.backgroundColor = color;
-    if (imageUrl) {
-      el.style.backgroundImage = `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)), url("${imageUrl}")`;
-      el.classList.add('section-bg');
-    } else {
-      el.style.backgroundImage = '';
-      el.classList.remove('section-bg');
+
+    const applyImage = () => {
+      if (imageUrl) {
+        el.style.backgroundImage = `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)), url("${imageUrl}")`;
+        el.classList.add('section-bg');
+      } else {
+        el.style.backgroundImage = '';
+        el.classList.remove('section-bg');
+      }
+    };
+
+    if (key === 'hero' || !imageUrl || !('IntersectionObserver' in window)) {
+      applyImage();
+      return;
     }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) {
+        applyImage();
+        io.disconnect();
+      }
+    }, { rootMargin: '600px 0px' });
+    io.observe(el);
   });
 }
 
@@ -1206,21 +1239,27 @@ function renderStops(content, copy) {
     h3.textContent = cd.heading || '';
     visual.appendChild(h3);
 
-    const src = sd.gif_url || (sd.image_public_ids && sd.image_public_ids[0]);
-    const imgUrl = cloudinaryUrl(src);
-    if (imgUrl) {
-      const img = document.createElement('img');
-      img.src = imgUrl;
-      img.alt = cd.heading || key;
-      img.loading = 'lazy';
-      visual.insertBefore(img, visual.firstChild);
-    }
-    const isCarouselWorthy = sd.animation_type !== 'carousel' || (sd.image_public_ids && sd.image_public_ids.length > 1);
-    if (imgUrl && sd.animation_type && BADGE_LABEL[sd.animation_type] && isCarouselWorthy) {
-      const badge = document.createElement('div');
-      badge.className = 'animation-badge';
-      badge.textContent = BADGE_LABEL[sd.animation_type];
-      visual.appendChild(badge);
+    if (sd.media_type === 'video' && sd.video_public_id) {
+      const video = document.createElement('video');
+      video.src = cloudinaryVideoUrl(sd.video_public_id, 900);
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.setAttribute('aria-label', cd.heading || key);
+      visual.insertBefore(video, visual.firstChild);
+    } else {
+      const src = (sd.media_type === 'gif' && sd.gif_url) ? sd.gif_url : (sd.image_public_ids && sd.image_public_ids[0]);
+      const imgUrl = cloudinaryUrl(src, 900);
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        const srcset = cloudinarySrcset(src, [480, 900, 1400]);
+        if (srcset) { img.srcset = srcset; img.sizes = '(max-width: 700px) 100vw, 50vw'; }
+        img.alt = cd.heading || key;
+        img.loading = 'lazy';
+        visual.insertBefore(img, visual.firstChild);
+      }
     }
 
     const contentDiv = document.createElement('div');
@@ -1272,6 +1311,7 @@ function applyCopy(copy) {
   document.getElementById('heroTitle').textContent = c.hero?.title ?? DEFAULT_COPY.hero.title;
   document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
   document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
+
   document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
   document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
   document.getElementById('whyTitle').textContent = c.intro?.whyTitle ?? DEFAULT_COPY.intro.whyTitle;
@@ -1280,7 +1320,7 @@ function applyCopy(copy) {
 
   const facts = (c.intro?.facts && c.intro.facts.length) ? c.intro.facts : DEFAULT_COPY.intro.facts;
   document.getElementById('factsContainer').innerHTML = facts.map(f =>
-    `<div class="fact"><div class="k">${f.k}</div><div class="v">${f.v}</div></div>`
+    `<div class="fact"><div class="k">${escapeHtml(f.k)}</div><div class="v">${escapeHtml(f.v)}</div></div>`
   ).join('');
 
   document.getElementById('regionsTitle').textContent = c.regionsIntro?.title ?? DEFAULT_COPY.regionsIntro.title;
@@ -1289,43 +1329,9 @@ function applyCopy(copy) {
   document.getElementById('planTitle').textContent = c.plan?.title ?? DEFAULT_COPY.plan.title;
   const planCards = (c.plan?.cards && c.plan.cards.length) ? c.plan.cards : DEFAULT_COPY.plan.cards;
   document.getElementById('planCardsContainer').innerHTML = planCards.map(card =>
-    `<div class="plan-card"><h4>${card.title}</h4><p>${card.body}</p></div>`
+    `<div class="plan-card"><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.body)}</p></div>`
   ).join('');
   document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
-}
-
-const HERO_TEXT_FIELDS = [
-  { id: 'heroEyebrow', key: 'eyebrow', fadeDelay: 0 },
-  { id: 'heroTitle', key: 'title', fadeDelay: 0.15 },
-  { id: 'heroSub', key: 'sub', fadeDelay: 0.3 },
-  { id: 'heroEdition', key: 'edition', fadeDelay: 0.45 }
-];
-
-function applyHeroTextAnimation(anim) {
-  const cfg = anim || {};
-  let cumulativeDelay = 0.1;
-  HERO_TEXT_FIELDS.forEach(field => {
-    const el = document.getElementById(field.id);
-    if (!el) return;
-    const mode = cfg[field.key] || 'fade';
-    el.classList.remove('typewriter');
-    el.style.removeProperty('--tw-steps');
-    el.style.removeProperty('--tw-duration');
-    el.style.removeProperty('--tw-start');
-    el.style.animation = '';
-    if (mode === 'typewriter') {
-      const text = el.textContent || '';
-      const dur = Math.min(2.6, Math.max(0.7, text.length * 0.07));
-      el.style.setProperty('--tw-steps', String(text.length || 1));
-      el.style.setProperty('--tw-duration', dur + 's');
-      el.style.setProperty('--tw-start', cumulativeDelay.toFixed(2) + 's');
-      el.classList.add('typewriter');
-      cumulativeDelay += dur + 0.25;
-    } else {
-      el.style.animation = `fadeUp 1s ease-out ${field.fadeDelay}s both`;
-      cumulativeDelay = Math.max(cumulativeDelay, field.fadeDelay + 1);
-    }
-  });
 }
 
 function applyRegionBlurbs() {
@@ -1334,9 +1340,9 @@ function applyRegionBlurbs() {
     if (!region) return;
     const row = document.querySelector(`.region-row[data-region="${key}"]`);
     if (!row) return;
-    const h4 = row.querySelector('h4');
+    const heading = row.querySelector('h3');
     const p = row.querySelector('p');
-    if (h4) h4.textContent = region.name;
+    if (heading) heading.textContent = region.name;
     if (p) p.textContent = region.blurb;
     const bar = row.querySelector('.region-bar');
     if (bar) bar.style.background = `var(--${region.color || 'forest'})`;
@@ -1350,12 +1356,23 @@ function attachErrorHandling() {
 }
 
 function preloadImages(content) {
-  const ids = [
-    ...(content.heroStripe || []).filter(s => s.type === 'image').map(s => s.image),
-    ...Object.values(content.stops || {}).map(s => s.gif_url || (s.image_public_ids && s.image_public_ids[0]))
-  ].filter(Boolean);
-  ids.forEach(id => {
-    const url = cloudinaryUrl(id);
+  // Only preload what's actually near the top of the page (hero stripe is
+  // always visible immediately; only the *first* stop is anywhere close to
+  // the fold). Preloading every stop image defeats the loading="lazy" set
+  // on those <img> tags and forces the browser to fetch all of them
+  // up front, full-size, regardless of scroll position.
+  const heroIds = (content.heroStripe || []).filter(s => s.type === 'image').map(s => s.image);
+  const order = (content.stopOrder && content.stopOrder.length) ? content.stopOrder : STOP_KEYS;
+  const firstStop = (content.stops && content.stops[order[0]]) || {};
+  // Video stops load progressively on their own — only preload the first
+  // stop when it's an image or GIF (a video, especially with autoplay, is
+  // heavy to force-fetch this early).
+  const firstStopId = (firstStop.media_type !== 'video')
+    ? ((firstStop.media_type === 'gif' && firstStop.gif_url) ? firstStop.gif_url : (firstStop.image_public_ids && firstStop.image_public_ids[0]))
+    : null;
+
+  heroIds.filter(Boolean).forEach(id => {
+    const url = cloudinaryUrl(id, 500);
     if (!url) return;
     const link = document.createElement('link');
     link.rel = 'preload';
@@ -1363,6 +1380,17 @@ function preloadImages(content) {
     link.href = url;
     document.head.appendChild(link);
   });
+
+  if (firstStopId) {
+    const url = cloudinaryUrl(firstStopId, 900);
+    if (url) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      document.head.appendChild(link);
+    }
+  }
 }
 
 let leafletLoaded = null;
@@ -1380,15 +1408,15 @@ const mapInstances = {};
 function renderRegionLists(key, data) {
   const container = document.getElementById(`lists-${key}`);
   const sightItems = data.sights.map(s =>
-    `<li><b>${s.name}</b>${s.note}</li>`
+    `<li><b>${escapeHtml(s.name)}</b>${escapeHtml(s.note)}</li>`
   ).join('');
 
   let foodHtml;
   if (data.food.length) {
-    foodHtml = `<ul class="food">${data.food.map(f => `<li><b>${f.name}</b>${f.note}</li>`).join('')}</ul>
+    foodHtml = `<ul class="food">${data.food.map(f => `<li><b>${escapeHtml(f.name)}</b>${escapeHtml(f.note)}</li>`).join('')}</ul>
       <div class="approx-note">Pin locations for food spots are approximate.</div>`;
   } else {
-    foodHtml = `<div class="approx-note" style="font-style:normal; color:#c9c2b2;">${data.foodNote || ''}</div>`;
+    foodHtml = `<div class="approx-note" style="font-style:normal; color:#c9c2b2;">${escapeHtml(data.foodNote || '')}</div>`;
   }
 
   container.innerHTML = `
@@ -1475,7 +1503,6 @@ async function init() {
   }
   REGION_DATA = data.regions;
   applyCopy(data.copy);
-  applyHeroTextAnimation(data.content.heroTextAnim);
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
@@ -1491,6 +1518,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 let site3dMap = null;
 let lastSite3dView = null;
+let site3dLastFocused = null;
 
 function site3dStyle() {
   return {
@@ -1519,6 +1547,8 @@ function openSite3D(lat, lng, name) {
   const overlay = document.getElementById('site3dOverlay');
   document.getElementById('site3dTitle').textContent = name;
   overlay.classList.add('open');
+  site3dLastFocused = document.activeElement;
+  document.getElementById('site3dClose').focus();
 
   lastSite3dView = { center: [lng, lat], zoom: 15.2, pitch: 65, bearing: -20 };
 
@@ -1556,11 +1586,21 @@ document.addEventListener('click', (e) => {
   }
 });
 
-document.getElementById('site3dClose').addEventListener('click', () => {
+function closeSite3D() {
   document.getElementById('site3dOverlay').classList.remove('open');
-});
+  if (site3dLastFocused && document.body.contains(site3dLastFocused)) {
+    site3dLastFocused.focus();
+  }
+}
+
+document.getElementById('site3dClose').addEventListener('click', closeSite3D);
 document.getElementById('site3dReset').addEventListener('click', () => {
   if (site3dMap && lastSite3dView) site3dMap.jumpTo(lastSite3dView);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('site3dOverlay').classList.contains('open')) {
+    closeSite3D();
+  }
 });
 </script>
 
