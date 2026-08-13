@@ -2415,9 +2415,8 @@ heroModalClose.addEventListener('click', () => {
 });
 
 heroModalSave.addEventListener('click', () => {
-  if (content.heroTextPositions) {
-    content.heroTextPositions = window.heroTextPositions;
-  }
+  // Always save positions to content
+  content.heroTextPositions = JSON.parse(JSON.stringify(window.heroTextPositions));
   heroModalOverlay.classList.remove('open');
   showMessage('✅ Hero text positions updated. Remember to Save to apply changes.', 'success');
 });
