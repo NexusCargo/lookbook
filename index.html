@@ -111,10 +111,13 @@
   .hero-stripe-overlay.pos-top svg{ transform:scaleY(-1); }
   .hero-stripe-overlay.pos-bottom svg{ transform:none; }
   .hero-stripe-overlay .rb-drift{ animation:ribbonDrift 11s ease-in-out infinite; will-change:transform; }
-  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 2.8s linear infinite; }
-  .hero-stripe-overlay .rb-flow.tight-wave{ animation:tightWaveFlow 3s linear infinite; }
+  .hero-stripe-overlay .rb-flow{ animation:ribbonFlow 3.4s linear infinite; }
   .hero-stripe-overlay .fold-drape{ animation:clothSway 6.5s ease-in-out infinite; transform-origin:100% 0%; will-change:transform; }
-  .hero-stripe-overlay .wave-flag{ animation:waveFlag 4s ease-in-out infinite; transform-origin:0% 0%; will-change:transform; }
+  .hero-stripe-overlay .flag-slice{ animation:flagRipple 2.6s ease-in-out infinite; transform-origin:left center; will-change:transform; }
+  @keyframes flagRipple{
+    0%, 100%{ transform:translateX(0) skewY(0deg); }
+    50%{ transform:translateX(var(--flag-amp, 4px)) skewY(2deg); }
+  }
   @keyframes ribbonDrift{
     0%, 100%{ transform:translateX(-14px); }
     50%{ transform:translateX(14px); }
@@ -122,84 +125,16 @@
   @keyframes ribbonFlow{
     to{ stroke-dashoffset:-144; }
   }
-  @keyframes tightWaveFlow{
-    to{ stroke-dashoffset:-102; }
-  }
   @keyframes clothSway{
     0%, 100%{ transform:rotate(-0.6deg); }
     50%{ transform:rotate(0.6deg); }
   }
-  @keyframes waveFlag{
-    0%, 100%{ transform:scaleX(1) scaleY(1); }
-    25%{ transform:scaleX(0.98) scaleY(1.08); }
-    50%{ transform:scaleX(0.96) scaleY(1.12); }
-    75%{ transform:scaleX(0.98) scaleY(1.08); }
+  .hero-stripe-overlay .lb-sweep{ animation:lbSweep 5.5s ease-in-out infinite; will-change:transform; }
+  @keyframes lbSweep{
+    0%{ transform:translateX(-640px); }
+    50%{ transform:translateX(640px); }
+    100%{ transform:translateX(-640px); }
   }
-  .hero-light-beam{
-    position:absolute; inset:0;
-    z-index:1;
-    pointer-events:none;
-    display:none;
-    background:linear-gradient(90deg,
-      transparent 0%,
-      transparent 8%,
-      rgba(255,255,255,.06) 18%,
-      rgba(255,250,225,.32) 35%,
-      rgba(255,255,255,.32) 50%,
-      rgba(255,250,225,.32) 65%,
-      rgba(255,255,255,.06) 82%,
-      transparent 92%,
-      transparent 100%);
-    background-size:100% 100%;
-    background-position:0% 0%;
-    mix-blend-mode:screen;
-    opacity:0.88;
-    animation:lightBeamSweep 8.5s ease-in-out infinite;
-  }
-  .hero-light-beam.active{ display:block; }
-  @keyframes lightBeamSweep{
-    0%{ transform:translateX(-120%); }
-    50%{ transform:translateX(120%); }
-    100%{ transform:translateX(-120%); }
-  }
-  @keyframes spotlightPulse{
-    0%, 100%{ opacity:0.8; }
-    50%{ opacity:1; }
-  }
-  @keyframes radiantPulse{
-    0%, 100%{ r: 160px; }
-    50%{ r: 180px; }
-  }
-  @keyframes ribbonsSweep{
-    0%{ transform:translateX(-200%); }
-    50%{ transform:translateX(200%); }
-    100%{ transform:translateX(-200%); }
-  }
-  @keyframes auroraShimmer{
-    0%, 100%{ opacity:0.5; }
-    50%{ opacity:0.85; }
-  }
-  @keyframes prismRotate{
-    0%{ transform:rotateZ(-5deg); }
-    50%{ transform:rotateZ(5deg); }
-    100%{ transform:rotateZ(-5deg); }
-  }
-  @keyframes silkFlow{
-    0%, 100%{ opacity:0.3; }
-    50%{ opacity:0.8; }
-  }
-  @keyframes beamSweep{
-    0%{ transform:translateX(-150%); }
-    50%{ transform:translateX(150%); }
-    100%{ transform:translateX(-150%); }
-  }
-  .spotlight-beam{ animation:spotlightPulse 3s ease-in-out infinite; }
-  .radiant-pulse{ animation:radiantPulse 4s ease-in-out infinite; }
-  .ribbons-sweep{ animation:ribbonsSweep 8s ease-in-out infinite; }
-  .aurora-wave{ animation:auroraShimmer 5s ease-in-out infinite; }
-  .prism-rotate{ animation:prismRotate 6s ease-in-out infinite; transform-origin:center; }
-  .silk-flow{ animation:silkFlow 7s ease-in-out infinite; }
-  .beam-sweep{ animation:beamSweep 9s ease-in-out infinite; }
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
     font-size:clamp(60px,11vw,140px);
@@ -228,8 +163,7 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
-    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-light-beam{animation:none;}
-    .hero-light-beam{display:none !important;}
+    .hero-strip > div, .hero-stripe-overlay .rb-drift, .hero-stripe-overlay .rb-flow, .hero-stripe-overlay .fold-drape, .hero-stripe-overlay .flag-slice, .hero-stripe-overlay .lb-sweep{animation:none;}
   }
 
   .scroll-cue{
@@ -665,7 +599,6 @@
 
 <header class="hero">
   <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
-  <div class="hero-light-beam" id="heroLightBeam"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -827,7 +760,6 @@ const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
-  heroEffect: 'straight',
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { animation_type: 'carousel', image_public_ids: [], ...DEFAULT_STOP_META[key] };
@@ -1046,11 +978,10 @@ const STRIPE_STYLE_SVG = {
     const cols = (segments || []).filter(s => (s.type || 'color') !== 'image' && s.color).map(s => s.color);
     return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
   },
-  ribbon(uid, d, colors, width, fade, tightWave = false) {
+  ribbon(uid, d, colors, width, fade) {
     const n = colors.length;
-    const dashArray = tightWave ? '34 20' : '46 26';
     const strokes = colors.map((c, i) =>
-      `<path class="rb-flow${tightWave ? ' tight-wave' : ''}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="${dashArray}" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+      `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="46 26" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
     ).join('');
     return `
     <defs>
@@ -1066,199 +997,96 @@ const STRIPE_STYLE_SVG = {
     </defs>
     <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
   },
-  build(effectId, colors) {
+  flagSlices(colors) {
+    const n = colors.length;
+    const bandH = 420 / n;
+    const SLICES = 18;
+    const flagW = 360;
+    const sliceW = flagW / SLICES;
+    let out = '';
+    for (let s = 0; s < SLICES; s++) {
+      const x = s * sliceW;
+      const amp = (2 + s * 1.05).toFixed(1);
+      const delay = (s * 0.07).toFixed(2);
+      const bands = colors.map((c, bi) =>
+        `<rect x="${x}" y="${bi * bandH}" width="${(sliceW + 0.7).toFixed(2)}" height="${(bandH + 0.7).toFixed(2)}" fill="${c}"/>`
+      ).join('');
+      out += `<g class="flag-slice" style="animation-delay:${delay}s; --flag-amp:${amp}px;">${bands}</g>`;
+    }
+    return out;
+  },
+  build(styleId, colors) {
     const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
     const INK = '#171310', IVORY = '#F5EFE3';
-    
-    if (effectId === 'straight') return '';
-    
-    if (effectId === 'seawave') {
+    if (styleId === 'trail') {
       return `
-        ${this.ribbon('hs-c1', 'M -60 90 C 200 90 280 160 480 160 S 780 90 1060 110', [c0], 8, false, true)}
-        ${this.ribbon('hs-c2', 'M -60 190 C 220 190 300 260 500 260 S 800 190 1060 210', [c1], 8, false, true)}
-        ${this.ribbon('hs-c3', 'M -60 290 C 240 290 320 360 520 360 S 820 290 1060 310', [c2], 8, false, true)}
-      `;
-    }
-    
-    if (effectId === 'flag') {
-      return `
-        <defs>
-          <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="${c0}" stop-opacity="0.92"/>
-            <stop offset="1" stop-color="${c1}" stop-opacity="0.92"/>
-          </linearGradient>
-          <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="${c1}" stop-opacity="0.87"/>
-            <stop offset="1" stop-color="${c2}" stop-opacity="0.87"/>
-          </linearGradient>
-        </defs>
-        <g class="wave-flag">
-          <path d="M 0 80 Q 150 30 300 80 T 600 80 T 900 80 T 1200 80 L 1200 200 Q 1050 250 900 200 T 600 200 T 300 200 T 0 200 Z" 
-            fill="url(#flag-grad-1)"/>
-          <path d="M 0 200 Q 150 150 300 200 T 600 200 T 900 200 T 1200 200 L 1200 320 Q 1050 370 900 320 T 600 320 T 300 320 T 0 320 Z" 
-            fill="url(#flag-grad-2)"/>
+        ${this.ribbon('hs-c1', 'M -60 150 C 200 150 235 195 460 185 S 720 120 1060 150', [c0], 9, true)}
+        ${this.ribbon('hs-c2', 'M -60 178 C 210 178 245 222 480 212 S 730 148 1060 178', [c1], 9, true)}
+        ${this.ribbon('hs-c3', 'M -60 206 C 220 206 255 248 500 238 S 740 176 1060 206', [c2], 9, true)}
+        <g fill="${IVORY}" opacity="0.9">
+          <rect x="230" y="172" width="9" height="9" transform="rotate(45 234 176)"/>
+          <rect x="470" y="192" width="9" height="9" transform="rotate(45 474 196)"/>
+          <rect x="710" y="140" width="9" height="9" transform="rotate(45 714 144)"/>
         </g>
       `;
     }
-    
-    if (effectId === 'spotlight') {
+    if (styleId === 'fold') {
       return `
         <defs>
-          <radialGradient id="spotlight-main" cx="50%" cy="0%" r="80%">
-            <stop offset="0%" stop-color="rgba(255,255,255,.4)" />
-            <stop offset="50%" stop-color="rgba(255,250,225,.15)" />
-            <stop offset="100%" stop-color="rgba(0,0,0,.3)" />
-          </radialGradient>
-          <filter id="spotlight-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id="hs-foldshadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="${INK}" flood-opacity="0.45"/>
           </filter>
-          <linearGradient id="spotlight-fold" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="hs-foldgrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="${c0}"/>
             <stop offset="0.5" stop-color="${c1}"/>
             <stop offset="1" stop-color="${c2}"/>
           </linearGradient>
         </defs>
-        <g class="fold-drape" filter="url(#spotlight-shadow)">
-          <polygon points="1000,-20 1140,-20 500,420 260,420" fill="url(#spotlight-fold)" opacity="0.95"/>
+        <g class="fold-drape" filter="url(#hs-foldshadow)">
+          <polygon points="1000,-20 1140,-20 500,420 260,420" fill="url(#hs-foldgrad)" opacity="0.95"/>
+          <polyline points="260,420 300,388 340,420 380,388 420,420 460,388 500,420"
+            fill="none" stroke="${IVORY}" stroke-width="4" stroke-linejoin="round" opacity="0.85"/>
         </g>
-        <rect x="0" y="0" width="1000" height="420" fill="url(#spotlight-main)" opacity="0.9" class="spotlight-beam"/>
       `;
     }
-    
-    if (effectId === 'radiant') {
+    if (styleId === 'flag') {
+      return `<g>${this.flagSlices(colors)}</g>`;
+    }
+    if (styleId === 'lightbeam') {
       return `
         <defs>
-          <radialGradient id="radiant-1" cx="50%" cy="50%" r="40%">
-            <stop offset="0%" stop-color="${c0}" stop-opacity="0.8" />
-            <stop offset="100%" stop-color="${c0}" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="radiant-2" cx="50%" cy="50%" r="60%">
-            <stop offset="0%" stop-color="${c1}" stop-opacity="0.5" />
-            <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="radiant-3" cx="50%" cy="50%" r="80%">
-            <stop offset="0%" stop-color="${c2}" stop-opacity="0.3" />
-            <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <circle cx="500" cy="210" r="160" fill="url(#radiant-1)" class="radiant-pulse"/>
-        <circle cx="500" cy="210" r="240" fill="url(#radiant-2)" class="radiant-pulse"/>
-        <circle cx="500" cy="210" r="320" fill="url(#radiant-3)" class="radiant-pulse"/>
-      `;
-    }
-    
-    if (effectId === 'ribbons') {
-      return `
-        ${this.ribbon('hs-r1', 'M -60 140 C 200 140 250 280 460 260 S 720 120 1060 160', [c0], 14, false)}
-        ${this.ribbon('hs-r2', 'M -60 220 C 230 220 270 360 490 340 S 730 200 1060 240', [c1], 14, false)}
-        <rect x="0" y="0" width="1000" height="420" fill="url(#ribbons-beam)" opacity="0.7" class="ribbons-sweep"/>
-        <defs><linearGradient id="ribbons-beam" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-          <stop offset="25%" stop-color="rgba(255,250,225,.35)" />
-          <stop offset="50%" stop-color="rgba(255,255,255,.45)" />
-          <stop offset="75%" stop-color="rgba(255,250,225,.35)" />
-          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-        </linearGradient></defs>
-      `;
-    }
-    
-    if (effectId === 'aurora') {
-      return `
-        <defs>
-          <linearGradient id="aurora-1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="${c0}" stop-opacity="0.6" />
-            <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
-          </linearGradient>
-          <linearGradient id="aurora-2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="${c1}" stop-opacity="0.4" />
-            <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
+          <linearGradient id="hs-lbgrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+            <stop offset="0.5" stop-color="#FFF7DA" stop-opacity="0.95"/>
+            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <path d="M -100 180 Q 250 120 500 210 T 1100 200" fill="none" stroke="url(#aurora-1)" stroke-width="80" stroke-linecap="round" opacity="0.75" class="aurora-wave"/>
-        <path d="M -100 280 Q 200 240 500 310 T 1100 290" fill="none" stroke="url(#aurora-2)" stroke-width="70" stroke-linecap="round" opacity="0.7" class="aurora-wave"/>
+        <g class="lb-sweep">
+          <rect x="-320" y="-260" width="380" height="960" fill="url(#hs-lbgrad)" transform="rotate(24 -130 220)"/>
+        </g>
       `;
     }
-    
-    if (effectId === 'prism') {
-      return `
-        <defs>
-          <linearGradient id="prism-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="${c0}" />
-            <stop offset="50%" stop-color="${c1}" />
-            <stop offset="100%" stop-color="${c2}" />
-          </linearGradient>
-        </defs>
-        <polygon points="200,60 260,220 140,220" fill="url(#prism-grad)" opacity="0.85" class="prism-rotate"/>
-        <polygon points="400,60 460,220 340,220" fill="url(#prism-grad)" opacity="0.75" class="prism-rotate"/>
-        <polygon points="600,60 660,220 540,220" fill="url(#prism-grad)" opacity="0.85" class="prism-rotate"/>
-        <polygon points="800,60 860,220 740,220" fill="url(#prism-grad)" opacity="0.75" class="prism-rotate"/>
-        <line x1="0" y1="220" x2="1000" y2="220" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
-        <line x1="0" y1="280" x2="1000" y2="280" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
-      `;
-    }
-    
-    if (effectId === 'silk') {
-      return `
-        <defs>
-          <linearGradient id="silk-base" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${c0}" stop-opacity="0.95" />
-            <stop offset="100%" stop-color="${c1}" stop-opacity="0.95" />
-          </linearGradient>
-          <linearGradient id="silk-shine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-            <stop offset="25%" stop-color="rgba(255,255,255,.25)" />
-            <stop offset="50%" stop-color="rgba(255,255,255,.18)" />
-            <stop offset="75%" stop-color="rgba(255,255,255,.2)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="1000" height="420" fill="url(#silk-base)"/>
-        <path d="M 200 0 Q 250 150 200 420" fill="url(#silk-shine)" opacity="0.8" class="silk-flow"/>
-        <path d="M 500 0 Q 550 150 500 420" fill="url(#silk-shine)" opacity="0.6" class="silk-flow"/>
-        <path d="M 800 0 Q 850 150 800 420" fill="url(#silk-shine)" opacity="0.8" class="silk-flow"/>
-      `;
-    }
-    
-    if (effectId === 'beam') {
-      return `
-        <defs>
-          <linearGradient id="beam-sweep" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-            <stop offset="15%" stop-color="rgba(255,250,225,.25)" />
-            <stop offset="35%" stop-color="rgba(255,255,255,.45)" />
-            <stop offset="50%" stop-color="rgba(255,255,255,.55)" />
-            <stop offset="65%" stop-color="rgba(255,255,255,.45)" />
-            <stop offset="85%" stop-color="rgba(255,250,225,.25)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="1000" height="420" fill="url(#beam-sweep)" opacity="0.88" class="beam-sweep"/>
-      `;
-    }
-    
     return '';
   }
 };
 
-function renderHeroStripe(segments, effectId, position) {
-  const effect = effectId || 'straight';
+function renderHeroStripe(segments, styleId, position) {
+  const style = styleId || 'straight';
   const pos = position || 'left';
   const heroEl = document.querySelector('header.hero');
   const stripEl = document.getElementById('heroStrip');
   const overlayEl = document.getElementById('heroStripeOverlay');
-  const beam = document.getElementById('heroLightBeam');
 
   heroEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   heroEl.classList.add(`pos-${pos}`);
   overlayEl.classList.remove('pos-left', 'pos-right', 'pos-top', 'pos-bottom');
   overlayEl.classList.add(`pos-${pos}`);
 
-  if (effect === 'straight' || !STRIPE_STYLE_SVG.build(effect, []).trim()) {
+  if (style === 'straight' || !STRIPE_STYLE_SVG.build(style, []).trim()) {
     overlayEl.style.display = 'none';
     overlayEl.innerHTML = '';
     stripEl.style.display = '';
     stripEl.innerHTML = '';
-    if (beam) beam.classList.remove('active');
     (segments && segments.length ? segments : DEFAULT_HERO_STRIPE).forEach(seg => {
       if (seg.type === 'image' && seg.image) {
         const url = cloudinaryUrl(seg.image);
@@ -1281,9 +1109,9 @@ function renderHeroStripe(segments, effectId, position) {
   stripEl.style.display = 'none';
   stripEl.innerHTML = '';
   overlayEl.style.display = '';
+  overlayEl.style.mixBlendMode = (style === 'lightbeam') ? 'screen' : '';
   const colors = STRIPE_STYLE_SVG.colorsOf(segments);
-  overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(effect, colors)}</svg>`;
-  if (beam) beam.classList.add('active');
+  overlayEl.innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid slice">${STRIPE_STYLE_SVG.build(style, colors)}</svg>`;
 }
 
 function applySectionBg(sectionBg) {
@@ -1576,7 +1404,7 @@ async function init() {
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
   renderStops(data.content, data.copy);
-  renderHeroStripe(data.content.heroStripe, data.content.heroEffect, data.content.heroStripePosition);
+  renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
   attachErrorHandling();
   preloadImages(data.content);
 }

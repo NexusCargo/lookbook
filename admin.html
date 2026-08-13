@@ -51,22 +51,6 @@
     border-radius: 6px; font-size: 13.5px; font-weight: 600; cursor: pointer;
   }
   .tab-btn.active { background: #0A3626; color: #fff; border-color: #0A3626; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 9999; display: none; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal-content { background: #fff; border-radius: 12px; padding: 30px; max-width: 1200px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-  .modal-header { margin-bottom: 24px; }
-  .modal-header h2 { margin: 0 0 8px; font-size: 24px; color: #0A3626; }
-  .modal-header p { margin: 0; font-size: 14px; color: #888; }
-  .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
-  .effect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
-  .effect-card { border: 2px solid #e5e5e5; border-radius: 10px; overflow: hidden; cursor: pointer; background: #fff; transition: all .2s ease; }
-  .effect-card:hover { border-color: #cbbf95; transform: translateY(-2px); }
-  .effect-card.selected { border-color: #F2B705; box-shadow: 0 0 0 2px #F2B705; }
-  .effect-preview { width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #0E4D34 0%, #1B1812 100%); position: relative; overflow: hidden; }
-  .effect-preview svg { width: 100%; height: 100%; }
-  .effect-name { padding: 14px 16px; }
-  .effect-name h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #0A3626; }
-  .effect-name p { margin: 0; font-size: 12px; color: #888; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
   .list-editor-row {
@@ -143,14 +127,14 @@
   .stripe-style-card .ssc-preview .straight-band{ animation: sscWave 5s ease-in-out infinite; transform-origin:center; }
   .stripe-style-card .ssc-preview .rb-drift{ animation: sscDrift 9s ease-in-out infinite; }
   .stripe-style-card .ssc-preview .rb-flow{ animation: sscFlow 3.2s linear infinite; }
-  .stripe-style-card .ssc-preview .rb-flow.tight-wave{ animation: sscTightWaveFlow 2.8s linear infinite; }
-  .stripe-style-card .ssc-preview .wave-flag{ animation: sscWaveFlag 4s ease-in-out infinite; transform-origin:0% 0%; }
   .stripe-style-card .ssc-preview .fold-drape{ animation: sscSway 5.5s ease-in-out infinite; transform-origin:100% 0%; }
+  .stripe-style-card .ssc-preview .flag-slice{ animation: sscFlag 2.6s ease-in-out infinite; transform-origin:left center; }
+  @keyframes sscFlag{ 0%,100%{transform:translateX(0) skewY(0deg);} 50%{transform:translateX(var(--flag-amp,4px)) skewY(2deg);} }
+  .stripe-style-card .ssc-preview .lb-sweep{ animation: sscBeam 4.6s ease-in-out infinite; }
+  @keyframes sscBeam{ 0%{transform:translateX(-460px);} 50%{transform:translateX(460px);} 100%{transform:translateX(-460px);} }
   @keyframes sscWave{ 0%,100%{transform:translateX(0) scaleY(1);} 50%{transform:translateX(4px) scaleY(1.03);} }
   @keyframes sscDrift{ 0%,100%{transform:translateX(-10px);} 50%{transform:translateX(10px);} }
   @keyframes sscFlow{ to{ stroke-dashoffset:-100; } }
-  @keyframes sscTightWaveFlow{ to{ stroke-dashoffset:-85; } }
-  @keyframes sscWaveFlag{ 0%,100%{transform:scaleX(1) scaleY(1);} 25%{transform:scaleX(0.98) scaleY(1.06);} 50%{transform:scaleX(0.96) scaleY(1.1);} 75%{transform:scaleX(0.98) scaleY(1.06);} }
   @keyframes sscSway{ 0%,100%{transform:rotate(-0.6deg);} 50%{transform:rotate(0.6deg);} }
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
@@ -211,22 +195,15 @@
         <h3>Background</h3>
         <div id="bg-hero"></div>
 
-        <h3 style="margin-top:28px;">Hero Effect</h3>
-        <p style="font-size:12.5px; color:#888; margin:-4px 0 14px;">Choose an animated effect for the hero stripe. Open the gallery to see all options.</p>
-        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-          <div style="flex: 1;">
-            <div style="padding: 12px; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 13.5px; color: #555;">
-              <span id="currentEffectName">Straight</span>
-            </div>
-          </div>
-          <button type="button" id="openEffectModal" style="flex: 0 0 auto; padding: 10px 18px;">👀 View All Effects</button>
-        </div>
+        <h3>Hero stripe style</h3>
+        <p style="font-size:12.5px; color:#888; margin:-4px 0 14px;">Preview uses your segment colors below. Pick a treatment, then Save.</p>
+        <div id="stripeStyleGrid" class="stripe-style-grid"></div>
 
         <h3 style="margin-top:20px;">Stripe position</h3>
         <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges.</p>
         <div class="pill-select" id="stripePositionPicker"></div>
 
-        <h3 style="margin-top:20px;">Hero stripe colors</h3>
+        <h3>Hero stripe colors</h3>
         <div id="stripeSegments"></div>
         <button id="addStripeSegmentBtn" type="button" class="list-add-btn">+ Add segment</button>
       </div>
@@ -301,17 +278,6 @@
       <button id="saveBtn" style="flex: 1;">✨ Save All Changes</button>
     </div>
     <div class="timestamp">Last updated: <span id="lastUpdated">—</span></div>
-  </div>
-
-  <div class="modal-overlay" id="effectModal">
-    <div class="modal-content">
-      <button class="modal-close" id="closeEffectModal">&times;</button>
-      <div class="modal-header">
-        <h2>Hero Stripe Effects</h2>
-        <p>Choose an animated effect for your hero section. Each effect is fully customizable with your stripe colors.</p>
-      </div>
-      <div class="effect-grid" id="effectGrid"></div>
-    </div>
   </div>
 
 </div>
@@ -469,7 +435,6 @@ function defaultContent() {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
     heroStripeStyle: 'straight',
     heroStripePosition: 'left',
-    heroEffect: 'straight',
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
       acc[key] = { animation_type: 'carousel', image_public_ids: [], gif_url: null, bgColor: null, ...DEFAULT_STOP_META[key] };
@@ -548,7 +513,6 @@ function mergeContent(loaded) {
   c.heroStripe = (loaded && Array.isArray(loaded.heroStripe) && loaded.heroStripe.length) ? loaded.heroStripe : defaults.heroStripe;
   c.heroStripeStyle = (loaded && loaded.heroStripeStyle) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
-  c.heroEffect = (loaded && loaded.heroEffect) ? loaded.heroEffect : defaults.heroEffect;
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -823,22 +787,10 @@ function renderCopyForm() {
 
 const STRIPE_STYLES = [
   { id: 'straight', label: 'Straight', desc: 'Classic edge-to-edge bands' },
-  { id: 'trail', label: 'Sea Wave', desc: 'Three threads undulating like ocean waves' },
-  { id: 'flag', label: 'Waving Flag', desc: 'Billowing fabric edge, living motion' },
-  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' }
-];
-
-const EFFECTS = [
-  { id: 'straight', label: 'Straight', desc: 'Clean edge-to-edge colored bands, no animation' },
-  { id: 'spotlight', label: 'Spotlight Fold', desc: 'Billowing cloth with dramatic searchlight sweeping across' },
-  { id: 'seawave', label: 'Sea Wave', desc: 'Three threads undulating like ocean waves rolling endlessly' },
-  { id: 'flag', label: 'Waving Flag', desc: 'Fabric billows and breathes with wind-like motion' },
-  { id: 'radiant', label: 'Radiant Glow', desc: 'Expanding light circles pulse from the center outward' },
-  { id: 'ribbons', label: 'Cascading Ribbons', desc: 'Flowing ribbons dance with light beam highlights' },
-  { id: 'aurora', label: 'Aurora Waves', desc: 'Ethereal waves shimmer like northern lights' },
-  { id: 'prism', label: 'Prism Refraction', desc: 'Light refracts through geometric crystal patterns' },
-  { id: 'silk', label: 'Silk Shimmer', desc: 'Lustrous fabric flows with gentle light reflections' },
-  { id: 'beam', label: 'Beam Sweep', desc: 'Pure searchlight beam sweeping across with no other elements' }
+  { id: 'trail', label: 'Adinkra Trail', desc: 'Threads bundled close, moving like a sea wave' },
+  { id: 'fold', label: 'Cloth Fold', desc: 'Corner-anchored drape, frayed edge' },
+  { id: 'flag', label: 'Waving Flag', desc: 'A banner fixed at one edge, rippling free at the other' },
+  { id: 'lightbeam', label: 'Light Beam', desc: 'A soft beam of light sweeps corner to corner across the photo' }
 ];
 
 function stripeColors() {
@@ -846,10 +798,10 @@ function stripeColors() {
   return cols.length ? cols : ['#F2B705', '#B5471B', '#0A3626'];
 }
 
-function ribbonBandSvg(uid, d, colors, width, fade, extraClass = '') {
+function ribbonBandSvg(uid, d, colors, width, fade) {
   const n = colors.length;
   const strokes = colors.map((c, i) =>
-    `<path class="rb-flow ${extraClass}" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
+    `<path class="rb-flow" d="${d}" fill="none" stroke="${c}" stroke-width="${width - i}" stroke-linecap="round" stroke-dasharray="34 20" transform="translate(0 ${(i - (n - 1) / 2) * (width * 0.62)})"/>`
   ).join('');
   return `
   <defs>
@@ -866,6 +818,25 @@ function ribbonBandSvg(uid, d, colors, width, fade, extraClass = '') {
   <g class="rb-drift" mask="url(#fade-${uid})" opacity="0.95">${strokes}</g>`;
 }
 
+function flagSlicesSvg(colors) {
+  const n = colors.length;
+  const bandH = 300 / n;
+  const SLICES = 16;
+  const flagW = 300;
+  const sliceW = flagW / SLICES;
+  let out = '';
+  for (let s = 0; s < SLICES; s++) {
+    const x = s * sliceW;
+    const amp = (1.6 + s * 0.8).toFixed(1);
+    const delay = (s * 0.07).toFixed(2);
+    const bands = colors.map((c, bi) =>
+      `<rect x="${x}" y="${bi * bandH}" width="${(sliceW + 0.7).toFixed(2)}" height="${(bandH + 0.7).toFixed(2)}" fill="${c}"/>`
+    ).join('');
+    out += `<g class="flag-slice" style="animation-delay:${delay}s; --flag-amp:${amp}px;">${bands}</g>`;
+  }
+  return out;
+}
+
 function buildStripeStyleSvg(styleId, colors) {
   const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1, c3 = colors[3] || c0, c4 = colors[4] || c1;
   const INK = '#171310', IVORY = '#F5EFE3';
@@ -876,28 +847,13 @@ function buildStripeStyleSvg(styleId, colors) {
   }
   if (styleId === 'trail') {
     return `
-      ${ribbonBandSvg('ss-c1', 'M -60 70 C 180 70 280 130 480 130 S 780 70 1060 85', [c0], 7, false, 'tight-wave')}
-      ${ribbonBandSvg('ss-c2', 'M -60 150 C 200 150 300 210 500 210 S 800 150 1060 165', [c1], 7, false, 'tight-wave')}
-      ${ribbonBandSvg('ss-c3', 'M -60 230 C 220 230 320 290 520 290 S 820 230 1060 245', [c2], 7, false, 'tight-wave')}
-    `;
-  }
-  if (styleId === 'flag') {
-    return `
-      <defs>
-        <linearGradient id="flag-grad-1" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${c0}" stop-opacity="0.9"/>
-          <stop offset="1" stop-color="${c1}" stop-opacity="0.9"/>
-        </linearGradient>
-        <linearGradient id="flag-grad-2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${c1}" stop-opacity="0.85"/>
-          <stop offset="1" stop-color="${c2}" stop-opacity="0.85"/>
-        </linearGradient>
-      </defs>
-      <g class="wave-flag">
-        <path d="M 0 60 Q 120 20 240 60 T 480 60 T 720 60 T 960 60 L 960 160 Q 840 200 720 160 T 480 160 T 240 160 T 0 160 Z" 
-          fill="url(#flag-grad-1)"/>
-        <path d="M 0 160 Q 120 120 240 160 T 480 160 T 720 160 T 960 160 L 960 240 Q 840 280 720 240 T 480 240 T 240 240 T 0 240 Z" 
-          fill="url(#flag-grad-2)"/>
+      ${ribbonBandSvg('ss-c1', 'M -60 108 C 200 108 230 140 460 132 S 720 88 1060 108', [c0], 7, true)}
+      ${ribbonBandSvg('ss-c2', 'M -60 128 C 210 128 238 160 480 152 S 730 108 1060 128', [c1], 7, true)}
+      ${ribbonBandSvg('ss-c3', 'M -60 148 C 220 148 246 178 500 172 S 740 128 1060 148', [c2], 7, true)}
+      <g fill="${IVORY}" opacity="0.9">
+        <rect x="228" y="122" width="7" height="7" transform="rotate(45 231 125)"/>
+        <rect x="468" y="138" width="7" height="7" transform="rotate(45 471 141)"/>
+        <rect x="708" y="100" width="7" height="7" transform="rotate(45 711 103)"/>
       </g>
     `;
   }
@@ -920,188 +876,24 @@ function buildStripeStyleSvg(styleId, colors) {
       </g>
     `;
   }
+  if (styleId === 'flag') {
+    return `<g>${flagSlicesSvg(colors)}</g>`;
+  }
+  if (styleId === 'lightbeam') {
+    return `
+      <defs>
+        <linearGradient id="ssc-lbgrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+          <stop offset="0.5" stop-color="#FFF7DA" stop-opacity="0.95"/>
+          <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g class="lb-sweep">
+        <rect x="-260" y="-190" width="300" height="680" fill="url(#ssc-lbgrad)" transform="rotate(24 -110 150)"/>
+      </g>
+    `;
+  }
   return '';
-}
-
-function buildEffectSvg(effectId, colors) {
-  const c0 = colors[0] || '#F2B705', c1 = colors[1] || c0, c2 = colors[2] || c1;
-  const INK = '#171310', IVORY = '#F5EFE3';
-  const baseGradient = `linear-gradient(180deg, ${c0} 0%, ${c1} 50%, ${c2} 100%)`;
-  
-  if (effectId === 'straight') {
-    const n = colors.length;
-    const bandH = 300 / n;
-    return colors.map((c, i) => `<rect x="0" y="${i * bandH}" width="1000" height="${bandH + 1}" fill="${c}"/>`).join('');
-  }
-  
-  if (effectId === 'spotlight') {
-    return `
-      <defs>
-        <radialGradient id="spotlight-${Date.now()}" cx="50%" cy="0%" r="80%">
-          <stop offset="0%" stop-color="rgba(255,255,255,.4)" />
-          <stop offset="50%" stop-color="rgba(255,250,225,.15)" />
-          <stop offset="100%" stop-color="rgba(0,0,0,.3)" />
-        </radialGradient>
-        <filter id="spotlight-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="${INK}" flood-opacity="0.45"/>
-        </filter>
-      </defs>
-      <polygon points="1000,-20 1120,-20 460,300 240,300" fill="${c0}" opacity="0.9"/>
-      <rect x="0" y="0" width="1000" height="300" fill="url(#spotlight-${Date.now()})" opacity="0.8"/>
-    `;
-  }
-  
-  if (effectId === 'seawave') {
-    return `
-      <path d="M -60 80 C 180 80 280 140 480 140 S 780 80 1060 100" fill="none" stroke="${c0}" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
-      <path d="M -60 160 C 200 160 300 220 500 220 S 800 160 1060 180" fill="none" stroke="${c1}" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
-      <path d="M -60 240 C 220 240 320 300 520 300 S 820 240 1060 260" fill="none" stroke="${c2}" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
-    `;
-  }
-  
-  if (effectId === 'flag') {
-    return `
-      <path d="M 0 60 Q 120 20 240 60 T 480 60 T 720 60 T 960 60 L 960 160 Q 840 200 720 160 T 480 160 T 240 160 T 0 160 Z" fill="${c0}" opacity="0.9"/>
-      <path d="M 0 160 Q 120 120 240 160 T 480 160 T 720 160 T 960 160 L 960 240 Q 840 280 720 240 T 480 240 T 240 240 T 0 240 Z" fill="${c1}" opacity="0.9"/>
-    `;
-  }
-  
-  if (effectId === 'radiant') {
-    return `
-      <defs>
-        <radialGradient id="radiant-1" cx="50%" cy="50%" r="40%">
-          <stop offset="0%" stop-color="${c0}" stop-opacity="0.8" />
-          <stop offset="100%" stop-color="${c0}" stop-opacity="0" />
-        </radialGradient>
-        <radialGradient id="radiant-2" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stop-color="${c1}" stop-opacity="0.5" />
-          <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
-        </radialGradient>
-        <radialGradient id="radiant-3" cx="50%" cy="50%" r="80%">
-          <stop offset="0%" stop-color="${c2}" stop-opacity="0.3" />
-          <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx="500" cy="150" r="120" fill="url(#radiant-1)"/>
-      <circle cx="500" cy="150" r="180" fill="url(#radiant-2)"/>
-      <circle cx="500" cy="150" r="240" fill="url(#radiant-3)"/>
-    `;
-  }
-  
-  if (effectId === 'ribbons') {
-    return `
-      <path d="M -60 100 C 200 100 250 200 460 180 S 720 80 1060 120" fill="none" stroke="${c0}" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
-      <path d="M -60 180 C 230 180 270 280 490 260 S 730 160 1060 200" fill="none" stroke="${c1}" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
-      <rect x="0" y="0" width="1000" height="300" fill="url(#beam-grad)" opacity="0.6"/>
-      <defs><linearGradient id="beam-grad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-        <stop offset="35%" stop-color="rgba(255,250,225,.4)" />
-        <stop offset="50%" stop-color="rgba(255,255,255,.5)" />
-        <stop offset="65%" stop-color="rgba(255,250,225,.4)" />
-        <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-      </linearGradient></defs>
-    `;
-  }
-  
-  if (effectId === 'aurora') {
-    return `
-      <defs>
-        <linearGradient id="aurora-1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${c0}" stop-opacity="0.6" />
-          <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
-        </linearGradient>
-        <linearGradient id="aurora-2" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stop-color="${c1}" stop-opacity="0.4" />
-          <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      <path d="M -100 120 Q 250 80 500 150 T 1100 140" fill="none" stroke="url(#aurora-1)" stroke-width="60" stroke-linecap="round" opacity="0.7"/>
-      <path d="M -100 200 Q 200 180 500 220 T 1100 200" fill="none" stroke="url(#aurora-2)" stroke-width="50" stroke-linecap="round" opacity="0.7"/>
-    `;
-  }
-  
-  if (effectId === 'prism') {
-    return `
-      <defs>
-        <linearGradient id="prism-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${c0}" />
-          <stop offset="50%" stop-color="${c1}" />
-          <stop offset="100%" stop-color="${c2}" />
-        </linearGradient>
-      </defs>
-      <polygon points="200,50 250,150 150,150" fill="url(#prism-grad)" opacity="0.8"/>
-      <polygon points="400,50 450,150 350,150" fill="url(#prism-grad)" opacity="0.7"/>
-      <polygon points="600,50 650,150 550,150" fill="url(#prism-grad)" opacity="0.8"/>
-      <polygon points="800,50 850,150 750,150" fill="url(#prism-grad)" opacity="0.7"/>
-      <line x1="0" y1="150" x2="1000" y2="150" stroke="rgba(255,255,255,.2)" stroke-width="2"/>
-      <line x1="0" y1="200" x2="1000" y2="200" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
-    `;
-  }
-  
-  if (effectId === 'silk') {
-    return `
-      <defs>
-        <linearGradient id="silk-1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${c0}" stop-opacity="0.9" />
-          <stop offset="100%" stop-color="${c1}" stop-opacity="0.9" />
-        </linearGradient>
-        <linearGradient id="silk-2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-          <stop offset="30%" stop-color="rgba(255,255,255,.2)" />
-          <stop offset="70%" stop-color="rgba(255,255,255,.15)" />
-          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="1000" height="300" fill="url(#silk-1)"/>
-      <path d="M 200 0 Q 250 100 200 300" fill="url(#silk-2)" opacity="0.8"/>
-      <path d="M 500 0 Q 550 100 500 300" fill="url(#silk-2)" opacity="0.6"/>
-      <path d="M 800 0 Q 850 100 800 300" fill="url(#silk-2)" opacity="0.8"/>
-    `;
-  }
-  
-  if (effectId === 'beam') {
-    return `
-      <defs>
-        <linearGradient id="beam-only" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-          <stop offset="20%" stop-color="rgba(255,250,225,.3)" />
-          <stop offset="50%" stop-color="rgba(255,255,255,.5)" />
-          <stop offset="80%" stop-color="rgba(255,250,225,.3)" />
-          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="1000" height="300" fill="url(#beam-only)" opacity="0.85"/>
-    `;
-  }
-  
-  return '';
-}
-
-function renderEffectGrid() {
-  const grid = document.getElementById('effectGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  const colors = stripeColors();
-  
-  EFFECTS.forEach(effect => {
-    const card = document.createElement('div');
-    card.className = 'effect-card' + (content.heroEffect === effect.id ? ' selected' : '');
-    card.innerHTML = `
-      <div class="effect-preview">
-        <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid slice">${buildEffectSvg(effect.id, colors)}</svg>
-      </div>
-      <div class="effect-name">
-        <h4>${effect.label}</h4>
-        <p>${effect.desc}</p>
-      </div>
-    `;
-    card.addEventListener('click', () => {
-      content.heroEffect = effect.id;
-      renderEffectGrid();
-      document.getElementById('currentEffectName').textContent = effect.label;
-    });
-    grid.appendChild(card);
-  });
 }
 
 function stripePreviewTransform() {
@@ -1285,7 +1077,6 @@ document.getElementById('addStripeSegmentBtn').addEventListener('click', () => {
   content.heroStripe.push({ type: 'color', color: '#0E4D34' });
   renderStripeSegments();
 });
-
 function renderRegionCards() {
   const container = document.getElementById('regionCards');
   container.innerHTML = '';
@@ -1671,22 +1462,6 @@ document.getElementById('addStopBtn').addEventListener('click', () => {
   copy.stops[key] = { heading: 'New Stop', eyebrow: '', subtitle: '', points: [] };
   renderStopsList();
 });
-
-document.getElementById('openEffectModal').addEventListener('click', () => {
-  renderEffectGrid();
-  document.getElementById('effectModal').classList.add('open');
-});
-
-document.getElementById('closeEffectModal').addEventListener('click', () => {
-  document.getElementById('effectModal').classList.remove('open');
-});
-
-document.getElementById('effectModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('effectModal')) {
-    document.getElementById('effectModal').classList.remove('open');
-  }
-});
-
 document.getElementById('saveBtn').addEventListener('click', async () => {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
