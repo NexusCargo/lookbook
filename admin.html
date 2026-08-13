@@ -1420,11 +1420,10 @@ let inquiriesUnsub = null;
 
 function startInquiriesListener() {
   if (inquiriesUnsub) return;
-  // Assumes the /api/send-inquiry backend writes submissions into a top-level
-  // "inquiries" collection with fields: name, email, message, startDate,
-  // endDate, createdAt (timestamp), read (boolean). Adjust field names below
-  // if your backend's actual schema differs.
-  const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200));
+  // Matches the schema written by /api/send-inquiry (inquiry-submit.js):
+  // top-level "inquiries" collection, fields name, email, message, startDate,
+  // endDate, timestamp (Firestore server timestamp), read (boolean), ip.
+  const q = query(collection(db, 'inquiries'), orderBy('timestamp', 'desc'), limit(200));
   inquiriesUnsub = onSnapshot(q, (snap) => {
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderInquiries(items);
@@ -1469,7 +1468,7 @@ function renderInquiries(items) {
     name.textContent = item.name || 'Unknown';
     const date = document.createElement('div');
     date.className = 'inquiry-card-date';
-    date.textContent = formatInquiryDate(item.createdAt);
+    date.textContent = formatInquiryDate(item.timestamp);
     top.appendChild(name);
     top.appendChild(date);
 
