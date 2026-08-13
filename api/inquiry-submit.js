@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 const app = initializeApp();
 const db = getFirestore(app);
@@ -13,95 +13,120 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Only these fields are ever read from the request body. Anything else the
+// client sends (including the honeypot field, handled separately below) is
+// ignored rather than stored or emailed.
+const FIELD_LIMITS = {
+  name: 200,
+  email: 320,
+  startDate: 20,
+  endDate: 20,
+  message: 5000
+};
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function getClientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) return xff.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function cleanField(value, maxLen) {
+  if (typeof value !== 'string') return '';
+  return value.trim().slice(0, maxLen);
+}
+
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  try {
-    // Extract form data — can be either nested or flat
-    const formData = req.body.data || req.body;
+  const body = req.body || {};
 
-    // Validate required fields
-    if (!formData.name || !formData.email || !formData.message) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: name, email, message' 
-      });
+  // Honeypot: real visitors never fill this hidden field. Bots that submit
+  // every field they find often do. Report success without writing
+  // anything, so the bot has no signal to adapt on.
+  if (body.company) {
+    return res.status(200).json({ success: true });
+  }
+
+  const name = cleanField(body.name, FIELD_LIMITS.name);
+  const email = cleanField(body.email, FIELD_LIMITS.email);
+  const startDate = cleanField(body.startDate, FIELD_LIMITS.startDate);
+  const endDate = cleanField(body.endDate, FIELD_LIMITS.endDate);
+  const message = cleanField(body.message, FIELD_LIMITS.message);
+
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required.' });
+  }
+  if (!EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'That email address doesn\'t look right.' });
+  }
+  if (startDate && !DATE_RE.test(startDate)) {
+    return res.status(400).json({ error: 'Invalid start date.' });
+  }
+  if (endDate && !DATE_RE.test(endDate)) {
+    return res.status(400).json({ error: 'Invalid end date.' });
+  }
+
+  const ip = getClientIp(req);
+
+  try {
+    // Lightweight, serverless-friendly rate limit: reject a second
+    // submission from the same IP within 60 seconds. Requires a composite
+    // Firestore index on (ip ASC, timestamp ASC) — see README note.
+    const oneMinuteAgo = Timestamp.fromMillis(Date.now() - 60 * 1000);
+    const recent = await db.collection('inquiries')
+      .where('ip', '==', ip)
+      .where('timestamp', '>', oneMinuteAgo)
+      .limit(1)
+      .get();
+    if (!recent.empty) {
+      return res.status(429).json({ error: 'Please wait a moment before submitting again.' });
     }
 
-    // Build the submission document — matches admin dashboard structure
     const submission = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      message: formData.message.trim(),
-      startDate: formData.startDate || '',
-      endDate: formData.endDate || '',
-      company: formData.company || '',
-      createdAt: new Date(), // Firestore timestamp
-      read: false,           // Admin dashboard marks as read/unread
-      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+      name,
+      email,
+      startDate,
+      endDate,
+      message,
+      timestamp: FieldValue.serverTimestamp(),
+      read: false,
+      ip
     };
 
-    // Write to Firestore
     const docRef = await db.collection('inquiries').add(submission);
 
-    // Send email notification (optional — can be disabled if email not configured)
-    if (process.env.EMAIL_USER && process.env.ADMIN_EMAIL) {
-      try {
-        const emailBody = `
-New Inquiry Submission
-${'-'.repeat(50)}
+    // Firestore write is the source of truth for the admin panel — it has
+    // already succeeded at this point. Email is a best-effort notification
+    // on top of that, so a mail failure shouldn't make the submission look
+    // like it failed to the visitor.
+    try {
+      const emailBody = [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        startDate ? `Earliest travel date: ${startDate}` : null,
+        endDate ? `Latest travel date: ${endDate}` : null,
+        '',
+        message || '(no message)'
+      ].filter(line => line !== null).join('\n');
 
-Name: ${submission.name}
-Email: ${submission.email}
-Company: ${submission.company || '(not provided)'}
-
-Travel Dates: ${submission.startDate || '(not provided)'} to ${submission.endDate || '(not provided)'}
-
-Message:
-${submission.message}
-
-${'-'.repeat(50)}
-Submitted at: ${new Date().toISOString()}
-Inquiry ID: ${docRef.id}
-        `.trim();
-
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: process.env.ADMIN_EMAIL,
-          subject: `New Ghana Lookbook Inquiry: ${submission.name}`,
-          text: emailBody
-        });
-      } catch (emailError) {
-        // Log email error but don't fail the submission
-        console.warn('Email sending failed (non-critical):', emailError.message);
-      }
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.ADMIN_EMAIL,
+        subject: `New inquiry from ${name}`,
+        text: emailBody
+      });
+    } catch (mailError) {
+      console.error('Inquiry saved but notification email failed:', mailError);
     }
 
-    res.status(200).json({ 
-      success: true, 
-      id: docRef.id,
-      message: 'Inquiry submitted successfully. We\'ll follow up within 24 hours.'
-    });
-
+    res.status(200).json({ success: true, id: docRef.id });
   } catch (error) {
     console.error('Submission error:', error);
-    
-    // Return more detailed error for debugging
-    res.status(500).json({ 
-      error: 'Submission failed. Please try again in a moment.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ error: 'Submission failed' });
   }
 }
