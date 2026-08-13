@@ -1905,6 +1905,19 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   }
 });
 
+const COLOR_DESCRIPTIONS = {
+  forest: 'Hero banner\'s background color, and the Greater Accra region\'s marker bar in the regions list.',
+  'forest-dark': 'Background for the hero banner, footer, inquiry form panel, and the "site name" panel on stop cards. The single most-used dark color on the page.',
+  gold: 'Primary accent — hero eyebrow text, section headings\' gold accents, dividers/borders, and the Ashanti region\'s marker bar.',
+  'faded-gold': 'Secondary accent — "Akwaaba." welcome subheading and similar muted text, plus the Northern region\'s marker bar.',
+  terracotta: 'Fact-card labels, the "Food" list heading/bullets in region panels, and the Central region\'s marker bar. Also the default accent color for stop cards in "light" theme.',
+  clay: 'Only used for the Volta region\'s marker bar in the regions list — the narrowest-scoped color here.',
+  ink: 'Main body text color across the page, plus background for a few dark overlay elements.',
+  ivory: 'Page background color, and text color on dark sections (hero, footer, inquiry form).',
+  cream: 'Background of the small "fact" cards (e.g. currency, language info near the top of the page).',
+  muted: 'Defined but not currently referenced anywhere on the live page — safe to ignore unless you add something new that uses it.'
+};
+
 function renderColorsForm() {
   const defaultColors = {
     forest: '#0E4D34',
@@ -1925,9 +1938,11 @@ function renderColorsForm() {
 
   Object.entries(colors).forEach(([key, value]) => {
     const div = document.createElement('div');
+    const description = COLOR_DESCRIPTIONS[key] || 'Custom color — not mapped to a known area of the page yet.';
     div.innerHTML = `
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <label style="font-size: 13px; text-transform: capitalize;">${escapeHtml(key.replace('-', ' '))}</label>
+      <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #eee; border-radius: 8px; padding: 12px;">
+        <label style="font-size: 13px; text-transform: capitalize; font-weight: 600;">${escapeHtml(key.replace('-', ' '))}</label>
+        <p style="font-size: 12px; color: #777; margin: 0 0 4px; line-height: 1.4;">${escapeHtml(description)}</p>
         <div style="display: flex; gap: 8px; align-items: center;">
           <input type="color" id="color-${escapeHtml(key)}" value="${escapeHtml(value)}" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;">
           <input type="text" id="hex-${escapeHtml(key)}" value="${escapeHtml(value)}" style="flex: 1; font-family: monospace; font-size: 12px;" readonly>
