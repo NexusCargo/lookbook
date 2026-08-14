@@ -305,9 +305,17 @@
     background:var(--cream);
     padding:14px 18px;
     min-width:120px;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .fact:hover{
+    transform:translateY(-4px);
+    box-shadow:0 14px 28px rgba(0,0,0,.22);
   }
   .fact .k{font-family:Verdana,sans-serif; font-size:9.5px; letter-spacing:1.5px; color:var(--terracotta); font-weight:bold;}
   .fact .v{font-family:Verdana,sans-serif; font-weight:bold; font-size:14px; margin-top:6px;}
+  /* Light text variant: used automatically when a box's custom background (solid or gradient) is dark */
+  .fact.fact-light .k{color:#F2E9C9;}
+  .fact.fact-light .v{color:#fff;}
 
   .regions{
     background:var(--ink);
@@ -1564,9 +1572,7 @@ function applyCopy(copy) {
   document.getElementById('introExtra').textContent = c.intro?.extra ?? DEFAULT_COPY.intro.extra;
 
   const facts = (c.intro?.facts && c.intro.facts.length) ? c.intro.facts : DEFAULT_COPY.intro.facts;
-  document.getElementById('factsContainer').innerHTML = facts.map(f =>
-    `<div class="fact"><div class="k">${escapeHtml(f.k)}</div><div class="v">${escapeHtml(f.v)}</div></div>`
-  ).join('');
+  document.getElementById('factsContainer').innerHTML = facts.map(f => renderFactCard(f)).join('');
 
   document.getElementById('regionsTitle').textContent = c.regionsIntro?.title ?? DEFAULT_COPY.regionsIntro.title;
   document.getElementById('regionsSub').textContent = c.regionsIntro?.sub ?? DEFAULT_COPY.regionsIntro.sub;
@@ -1585,6 +1591,23 @@ function applyCopy(copy) {
 // wording still works, but a renamed/new card just falls back to plain display.
 const SEASON_MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 const SEASON_BEST = new Set([0,1,2,10,11]); // Jan, Feb, Mar, Nov, Dec (dry season)
+
+function renderFactCard(f) {
+  const st = f.style;
+  let styleAttr = '';
+  let cls = 'fact';
+  if (st && st.type) {
+    if (st.type === 'gradient') {
+      const c1 = st.c1 || '#0E4D34', c2 = st.c2 || '#F2B705', angle = st.angle ?? 135;
+      styleAttr = `background:linear-gradient(${angle}deg, ${c1}, ${c2}); border-color:${c1};`;
+    } else {
+      const c1 = st.c1 || '#F1EBDD';
+      styleAttr = `background:${c1}; border-color:${c1};`;
+    }
+    if (st.text === 'light') cls += ' fact-light';
+  }
+  return `<div class="${cls}" style="${styleAttr}"><div class="k">${escapeHtml(f.k)}</div><div class="v">${escapeHtml(f.v)}</div></div>`;
+}
 
 function renderPlanCard(card) {
   const key = (card.title || '').trim().toLowerCase();

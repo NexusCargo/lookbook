@@ -196,6 +196,25 @@
   .list-remove-btn:hover { background: #ffecec; }
   .list-add-btn { font-size: 12px; padding: 8px 14px; margin-top: 4px; }
 
+  /* Fact-card style editor (per-box solid/gradient background) */
+  .fact-editor-row {
+    background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .fact-editor-top { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .fact-editor-style {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd;
+  }
+  .fact-swatch {
+    width: 72px; height: 52px; border-radius: 6px; border: 1px solid #ccc; flex: 0 0 auto;
+  }
+  .fact-editor-style label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #888; display: block; margin-bottom: 4px; }
+  .fact-style-group { display: flex; gap: 6px; align-items: center; }
+  .fact-editor-style select { padding: 6px 8px; font-size: 12.5px; }
+  .fact-editor-style input[type="color"] { width: 40px; height: 32px; padding: 2px; cursor: pointer; }
+  .fact-editor-style input[type="range"] { width: 100px; vertical-align: middle; }
+
   .region-copy-card {
     border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 22px; background: #fafafa;
   }
@@ -1025,6 +1044,147 @@ function createListEditor(container, items, fieldDefs) {
     render
   };
 }
+function renderFactsEditor(container, facts) {
+  function swatchStyle(st) {
+    if (st.type === 'gradient') {
+      return `background:linear-gradient(${st.angle ?? 135}deg, ${st.c1 || '#0E4D34'}, ${st.c2 || '#F2B705'});`;
+    }
+    return `background:${st.c1 || '#F1EBDD'};`;
+  }
+
+  function render() {
+    container.innerHTML = '';
+    facts.forEach((item, idx) => {
+      if (!item.style) item.style = { type: 'solid', c1: '#F1EBDD', c2: '#D9A63A', angle: 135, text: 'dark' };
+      const st = item.style;
+
+      const row = document.createElement('div');
+      row.className = 'fact-editor-row';
+
+      // --- Label / Value / Remove ---
+      const top = document.createElement('div');
+      top.className = 'fact-editor-top';
+
+      const mk = (labelText, val, onInput) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'field-mini';
+        const label = document.createElement('label');
+        label.textContent = labelText;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = val ?? '';
+        input.addEventListener('input', () => onInput(input.value));
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        return wrap;
+      };
+      top.appendChild(mk('Label', item.k, v => { item.k = v; }));
+      top.appendChild(mk('Value', item.v, v => { item.v = v; }));
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'list-remove-btn';
+      removeBtn.textContent = '✕ Remove';
+      removeBtn.addEventListener('click', () => { facts.splice(idx, 1); render(); });
+      top.appendChild(removeBtn);
+      row.appendChild(top);
+
+      // --- Style controls: solid / gradient background for this box ---
+      const styleRow = document.createElement('div');
+      styleRow.className = 'fact-editor-style';
+
+      const swatch = document.createElement('div');
+      swatch.className = 'fact-swatch';
+      swatch.style.cssText = swatchStyle(st);
+
+      const typeWrap = document.createElement('div');
+      const typeLabel = document.createElement('label');
+      typeLabel.textContent = 'Background';
+      const typeSelect = document.createElement('select');
+      [['solid', 'Solid color'], ['gradient', 'Gradient']].forEach(([val, txt]) => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = txt;
+        if (st.type === val) opt.selected = true;
+        typeSelect.appendChild(opt);
+      });
+      typeWrap.appendChild(typeLabel);
+      typeWrap.appendChild(typeSelect);
+
+      const c1Wrap = document.createElement('div');
+      const c1Label = document.createElement('label');
+      c1Label.textContent = 'Color 1';
+      const c1Input = document.createElement('input');
+      c1Input.type = 'color'; c1Input.value = st.c1 || '#F1EBDD';
+      c1Wrap.appendChild(c1Label);
+      c1Wrap.appendChild(c1Input);
+
+      const c2Wrap = document.createElement('div');
+      const c2Label = document.createElement('label');
+      c2Label.textContent = 'Color 2';
+      const c2Input = document.createElement('input');
+      c2Input.type = 'color'; c2Input.value = st.c2 || '#D9A63A';
+      c2Wrap.appendChild(c2Label);
+      c2Wrap.appendChild(c2Input);
+
+      const angleWrap = document.createElement('div');
+      const angleLabel = document.createElement('label');
+      angleLabel.textContent = 'Angle';
+      const angleInput = document.createElement('input');
+      angleInput.type = 'range'; angleInput.min = 0; angleInput.max = 360; angleInput.value = st.angle ?? 135;
+      angleWrap.appendChild(angleLabel);
+      angleWrap.appendChild(angleInput);
+
+      const textWrap = document.createElement('div');
+      const textLabel = document.createElement('label');
+      textLabel.textContent = 'Text';
+      const textSelect = document.createElement('select');
+      [['dark', 'Dark text'], ['light', 'Light text']].forEach(([val, txt]) => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = txt;
+        if ((st.text || 'dark') === val) opt.selected = true;
+        textSelect.appendChild(opt);
+      });
+      textWrap.appendChild(textLabel);
+      textWrap.appendChild(textSelect);
+
+      function updateVisibility() {
+        c2Wrap.style.display = st.type === 'gradient' ? '' : 'none';
+        angleWrap.style.display = st.type === 'gradient' ? '' : 'none';
+      }
+      function refresh() { swatch.style.cssText = swatchStyle(st); }
+
+      typeSelect.addEventListener('change', () => { st.type = typeSelect.value; updateVisibility(); refresh(); });
+      c1Input.addEventListener('input', () => { st.c1 = c1Input.value.toUpperCase(); refresh(); });
+      c2Input.addEventListener('input', () => { st.c2 = c2Input.value.toUpperCase(); refresh(); });
+      angleInput.addEventListener('input', () => { st.angle = parseInt(angleInput.value, 10); refresh(); });
+      textSelect.addEventListener('change', () => { st.text = textSelect.value; });
+
+      const resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.className = 'secondary';
+      resetBtn.style.cssText = 'font-size:11px; padding:6px 10px; align-self:flex-end;';
+      resetBtn.textContent = 'Reset to default';
+      resetBtn.addEventListener('click', () => {
+        item.style = { type: 'solid', c1: '#F1EBDD', c2: '#D9A63A', angle: 135, text: 'dark' };
+        render();
+      });
+
+      updateVisibility();
+      styleRow.appendChild(swatch);
+      styleRow.appendChild(typeWrap);
+      styleRow.appendChild(c1Wrap);
+      styleRow.appendChild(c2Wrap);
+      styleRow.appendChild(angleWrap);
+      styleRow.appendChild(textWrap);
+      styleRow.appendChild(resetBtn);
+      row.appendChild(styleRow);
+
+      container.appendChild(row);
+    });
+  }
+  render();
+}
+
 function renderBgEditor(key, label) {
   const container = document.getElementById(`bg-${key}`);
   container.innerHTML = '';
@@ -1240,11 +1400,11 @@ function renderCopyForm() {
     document.getElementById(id).addEventListener('input', (e) => { copy.intro[introMap[id]] = e.target.value; });
   });
 
-  const factsEditor = createListEditor(document.getElementById('factsList'), copy.intro.facts, [
-    { key: 'k', label: 'Label', type: 'text' },
-    { key: 'v', label: 'Value', type: 'text' }
-  ]);
-  document.getElementById('addFactBtn').onclick = () => factsEditor.addItem({ k: 'NEW FACT', v: '' });
+  renderFactsEditor(document.getElementById('factsList'), copy.intro.facts);
+  document.getElementById('addFactBtn').onclick = () => {
+    copy.intro.facts.push({ k: 'NEW FACT', v: '', style: { type: 'solid', c1: '#F1EBDD', c2: '#D9A63A', angle: 135, text: 'dark' } });
+    renderFactsEditor(document.getElementById('factsList'), copy.intro.facts);
+  };
 
   document.getElementById('cp-regions-title').value = copy.regionsIntro.title;
   document.getElementById('cp-regions-sub').value = copy.regionsIntro.sub;
