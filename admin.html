@@ -538,6 +538,12 @@
       <div class="edit-section">
         <h2>Inquiries</h2>
         <p class="layout-hint">Messages submitted through the site's inquiry form, newest first.</p>
+        <div style="background:#e8f5e9; border-left:4px solid #4caf50; padding:12px; border-radius:4px; margin-bottom:16px; font-size:13px; color:#2e7d32;">
+          <strong>📋 Firestore Rules Required:</strong> For inquiries to appear, your Firestore security rules must allow authenticated users to read the "inquiries" collection. Example rule:
+          <code style="display:block; background:#fff; padding:8px; margin-top:8px; border-radius:3px; overflow-x:auto; font-size:12px;">
+            allow read: if request.auth != null;
+          </code>
+        </div>
         <div id="inquiriesList"></div>
         <div id="inquiriesEmpty" class="hidden" style="color:#888; font-size:14px; padding:20px 0;">No inquiries yet.</div>
       </div>
@@ -1680,8 +1686,17 @@ function startInquiriesListener() {
     renderInquiries(items);
   }, (err) => {
     console.error('Inquiries listener error:', err);
+    let errorMsg = err.message || String(err);
+    
+    // Check for permission errors
+    if (err.code === 'permission-denied' || errorMsg.includes('permission')) {
+      errorMsg = '❌ Permission denied. Check your Firestore rules. The authenticated user needs read access to the "inquiries" collection.';
+    } else if (errorMsg.includes('not found')) {
+      errorMsg = '⚠️ "inquiries" collection doesn\'t exist yet. No inquiries have been submitted.';
+    }
+    
     document.getElementById('inquiriesList').innerHTML =
-      `<div style="color:#d32f2f; font-size:13px;">Couldn't load inquiries: ${escapeHtml(err.message || String(err))}</div>`;
+      `<div style="color:#d32f2f; font-size:13px; padding:12px; background:#ffebee; border-radius:4px; border-left:3px solid #d32f2f;">${escapeHtml(errorMsg)}</div>`;
   });
 }
 
