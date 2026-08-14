@@ -586,6 +586,104 @@
   }
   .plan-card h3{font-size:18px; margin:15px 0 8px; font-weight:bold;}
   .plan-card p{font-family:Verdana,sans-serif; font-size:14px; color:#c9c2b2; margin:0;}
+  .plan-card.clickable{
+    cursor:pointer;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .plan-card.clickable:hover, .plan-card.clickable:focus-visible{
+    transform:translateY(-4px);
+    border-top-color:var(--ivory);
+    outline:none;
+  }
+  .plan-card .cta{
+    display:inline-block;
+    margin-top:12px;
+    font-family:Verdana,sans-serif;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1px;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+  .plan-card .cta::after{content:'→'; margin-left:6px; display:inline-block; transition:transform .2s ease;}
+  .plan-card.clickable:hover .cta::after{transform:translateX(4px);}
+
+  /* Best-time-to-visit inline seasonal chart */
+  .season-chart{
+    display:grid;
+    grid-template-columns:repeat(12, 1fr);
+    gap:4px;
+    align-items:end;
+    height:0;
+    opacity:0;
+    overflow:hidden;
+    margin-top:0;
+    transition:height .35s ease, opacity .3s ease, margin-top .35s ease;
+  }
+  .plan-card.expanded .season-chart{ height:64px; opacity:1; margin-top:16px; }
+  .season-bar{
+    height:14px;
+    background:#3a3226;
+    border-radius:2px 2px 0 0;
+    transition:height .45s cubic-bezier(.2,.8,.3,1);
+  }
+  .plan-card.expanded .season-bar.best{ height:52px; background:var(--gold); }
+  .plan-card.expanded .season-bar:not(.best){ height:22px; }
+  .season-labels{
+    display:grid;
+    grid-template-columns:repeat(12, 1fr);
+    gap:4px;
+    margin-top:4px;
+    font-family:Verdana,sans-serif;
+    font-size:8.5px;
+    color:#8b8471;
+    text-align:center;
+  }
+
+  /* Quick-info modal (Getting around) */
+  .quick-modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,10,8,.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:600;
+    padding:20px;
+  }
+  .quick-modal-overlay.open{display:flex;}
+  .quick-modal-box{
+    background:var(--forest-dark);
+    border:1px solid #234438;
+    border-radius:8px;
+    max-width:420px;
+    width:100%;
+    padding:32px 34px;
+    color:var(--ivory);
+    position:relative;
+  }
+  .quick-modal-box h4{font-size:20px; margin:0 0 10px;}
+  .quick-modal-box p{font-family:Verdana,sans-serif; font-size:13.5px; color:#c9c2b2; line-height:1.5; margin:0 0 22px;}
+  .quick-modal-close{
+    position:absolute; top:16px; right:16px;
+    background:none; border:none; color:var(--ivory);
+    font-size:15px; cursor:pointer; opacity:.7;
+  }
+  .quick-modal-close:hover{opacity:1;}
+  .quick-modal-cta{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%;
+    font-family:Verdana,sans-serif;
+    font-size:13.5px;
+    font-weight:bold;
+    letter-spacing:.5px;
+    background:#25D366;
+    color:#0A3626;
+    border:none;
+    border-radius:4px;
+    padding:13px 20px;
+    text-decoration:none;
+  }
+  .quick-modal-cta:hover{filter:brightness(1.06);}
   .plan .closing{
     text-align:left;
     font-style:italic;
@@ -805,6 +903,15 @@
 </main>
 
 <footer>GHANA · A LOOKBOOK OF THE GOLD COAST · 2026</footer>
+
+<div class="quick-modal-overlay" id="quickModalOverlay">
+  <div class="quick-modal-box" role="dialog" aria-modal="true" aria-labelledby="quickModalTitle">
+    <button class="quick-modal-close" id="quickModalClose" aria-label="Close">✕ Close</button>
+    <h4 id="quickModalTitle">Getting around</h4>
+    <p id="quickModalBody">Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.</p>
+    <a class="quick-modal-cta" id="quickModalCta" href="#" target="_blank" rel="noopener">Message us on WhatsApp</a>
+  </div>
+</div>
 
 <div class="site3d-overlay" id="site3dOverlay">
   <div class="site3d-box" role="dialog" aria-modal="true" aria-labelledby="site3dTitle">
@@ -1386,11 +1493,96 @@ function applyCopy(copy) {
 
   document.getElementById('planTitle').textContent = c.plan?.title ?? DEFAULT_COPY.plan.title;
   const planCards = (c.plan?.cards && c.plan.cards.length) ? c.plan.cards : DEFAULT_COPY.plan.cards;
-  document.getElementById('planCardsContainer').innerHTML = planCards.map(card =>
-    `<div class="plan-card"><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.body)}</p></div>`
-  ).join('');
+  document.getElementById('planCardsContainer').innerHTML = planCards.map(card => renderPlanCard(card)).join('');
   document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
+  wirePlanCards();
 }
+
+// Matches known plan-card titles (case/whitespace-insensitive) so admin-edited
+// wording still works, but a renamed/new card just falls back to plain display.
+const SEASON_MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+const SEASON_BEST = new Set([0,1,2,10,11]); // Jan, Feb, Mar, Nov, Dec (dry season)
+
+function renderPlanCard(card) {
+  const key = (card.title || '').trim().toLowerCase();
+  const title = escapeHtml(card.title);
+  const body = `<p>${escapeHtml(card.body)}</p>`;
+
+  if (key === 'best time to visit') {
+    const bars = SEASON_MONTHS.map((m, i) => `<div class="season-bar${SEASON_BEST.has(i) ? ' best' : ''}" title="${m}"></div>`).join('');
+    const labels = SEASON_MONTHS.map(m => `<div>${m}</div>`).join('');
+    return `<div class="plan-card clickable" data-plan-key="best-time" tabindex="0" role="button" aria-expanded="false">
+      <h3>${title}</h3>${body}
+      <span class="cta">See the seasons</span>
+      <div class="season-chart">${bars}</div>
+      <div class="season-labels" style="display:none">${labels}</div>
+    </div>`;
+  }
+  if (key === 'getting around') {
+    return `<div class="plan-card clickable" data-plan-key="getting-around" tabindex="0" role="button">
+      <h3>${title}</h3>${body}
+      <span class="cta">Book a ride</span>
+    </div>`;
+  }
+  if (key === 'entry') {
+    return `<div class="plan-card clickable" data-plan-key="entry" tabindex="0" role="button">
+      <h3>${title}</h3>${body}
+      <span class="cta">Apply for e-visa</span>
+    </div>`;
+  }
+  return `<div class="plan-card"><h3>${title}</h3>${body}</div>`;
+}
+
+// TODO: replace with your real WhatsApp Business number (country code, no + or spaces), e.g. '233241234567'
+const WHATSAPP_NUMBER = '233000000000';
+
+function wirePlanCards() {
+  const container = document.getElementById('planCardsContainer');
+  container.querySelectorAll('.plan-card.clickable').forEach(cardEl => {
+    const activate = () => {
+      const key = cardEl.dataset.planKey;
+      if (key === 'best-time') {
+        const expanded = cardEl.classList.toggle('expanded');
+        cardEl.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      } else if (key === 'getting-around') {
+        openQuickModal({
+          title: 'Getting around',
+          body: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
+          ctaLabel: 'Message us on WhatsApp',
+          ctaHref: `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I\'m planning a trip to Ghana and would like help with transport.')}`
+        });
+      } else if (key === 'entry') {
+        window.open('https://evisa.immigration.gov.gh', '_blank', 'noopener');
+      }
+    };
+    cardEl.addEventListener('click', activate);
+    cardEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+    });
+  });
+}
+
+function openQuickModal({ title, body, ctaLabel, ctaHref }) {
+  document.getElementById('quickModalTitle').textContent = title;
+  document.getElementById('quickModalBody').textContent = body;
+  const cta = document.getElementById('quickModalCta');
+  cta.textContent = ctaLabel;
+  cta.href = ctaHref;
+  document.getElementById('quickModalOverlay').classList.add('open');
+  document.getElementById('quickModalClose').focus();
+}
+function closeQuickModal() {
+  document.getElementById('quickModalOverlay').classList.remove('open');
+}
+document.getElementById('quickModalClose').addEventListener('click', closeQuickModal);
+document.getElementById('quickModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'quickModalOverlay') closeQuickModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('quickModalOverlay').classList.contains('open')) {
+    closeQuickModal();
+  }
+});
 
 function applyRegionBlurbs() {
   REGION_KEYS.forEach(key => {
@@ -1746,6 +1938,7 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
       throw firebaseErr;
     }
   } catch (err) {
+    console.error('Inquiry submit failed:', err.code || err.name, err.message, err);
     status.textContent = "Couldn't send that — please try again in a moment.";
     status.className = 'status error';
   } finally {
