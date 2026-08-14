@@ -862,8 +862,8 @@
     </div>
 
     <form class="inquiry" id="inquiryForm" novalidate>
-      <h3>Plan this trip with us</h3>
-      <p class="lede">Send your dates and we'll follow up with a route and pricing.</p>
+      <h3 id="planFormTitle">Plan this trip with us</h3>
+      <p class="lede" id="planFormLede">Send your dates and we'll follow up with a route and pricing.</p>
 
       <div class="field">
         <label for="inq-name">Name</label>
@@ -894,7 +894,7 @@
         <input id="inq-company" name="company" type="text" tabindex="-1" autocomplete="off">
       </div>
 
-      <button type="submit" id="inquirySubmit">Send inquiry</button>
+      <button type="submit" id="inquirySubmit"><span id="inquirySubmitLabel">Send inquiry</span></button>
       <div class="status" id="inquiryStatus" role="status" aria-live="polite"></div>
     </form>
   </div>
@@ -932,6 +932,13 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getFirestore, doc, getDoc, addDoc, collection } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+// Expose to the plain (non-module) <script> below that handles the inquiry
+// form submit — inline `type="module"` scripts have their own top-level
+// scope, so `addDoc`/`collection`/`db` aren't visible there unless we put
+// them on window explicitly.
+window.addDoc = addDoc;
+window.collection = collection;
 
 // Global Firestore reference (set during init)
 let db = null;
@@ -1046,7 +1053,10 @@ const DEFAULT_COPY = {
       { title: 'Entry', body: 'Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.' },
       { title: 'Suggested route', body: 'Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.' }
     ],
-    closing: 'Akwaaba — see you on the coast.'
+    closing: 'Akwaaba — see you on the coast.',
+    formTitle: 'Plan this trip with us',
+    formLede: "Send your dates and we'll follow up with a route and pricing.",
+    submitLabel: 'Send inquiry'
   }
 };
 
@@ -1175,6 +1185,7 @@ function mergeContent(loaded) {
 async function loadSiteData(firebaseConfig) {
   const app = initializeApp(firebaseConfig);
   db = getFirestore(app);  // Set global db
+  window.db = db;          // Expose to the plain <script> that submits inquiries
   const [contentSnap, copySnap, regionsSnap, colorsSnap] = await Promise.all([
     getDoc(doc(db, 'lookbook-content', 'content')),
     getDoc(doc(db, 'lookbook-content', 'copy')),
@@ -1495,6 +1506,9 @@ function applyCopy(copy) {
   const planCards = (c.plan?.cards && c.plan.cards.length) ? c.plan.cards : DEFAULT_COPY.plan.cards;
   document.getElementById('planCardsContainer').innerHTML = planCards.map(card => renderPlanCard(card)).join('');
   document.getElementById('planClosing').textContent = c.plan?.closing ?? DEFAULT_COPY.plan.closing;
+  document.getElementById('planFormTitle').textContent = c.plan?.formTitle ?? DEFAULT_COPY.plan.formTitle;
+  document.getElementById('planFormLede').textContent = c.plan?.formLede ?? DEFAULT_COPY.plan.formLede;
+  document.getElementById('inquirySubmitLabel').textContent = c.plan?.submitLabel ?? DEFAULT_COPY.plan.submitLabel;
   wirePlanCards();
 }
 

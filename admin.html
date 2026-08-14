@@ -508,6 +508,11 @@
         <div id="planCardsList"></div>
         <button class="list-add-btn" id="addPlanCardBtn" type="button">+ Add card</button>
         <div class="input-group" style="margin-top:16px;"><label>Closing line</label><input type="text" id="cp-plan-closing"></div>
+
+        <h3 style="margin-top:24px;">Inquiry form (right-hand box)</h3>
+        <div class="input-group"><label>Form heading</label><input type="text" id="cp-plan-formtitle"></div>
+        <div class="input-group"><label>Form subtext</label><input type="text" id="cp-plan-formlede"></div>
+        <div class="input-group"><label>Submit button label</label><input type="text" id="cp-plan-submitlabel"></div>
       </div>
     </div>
 
@@ -642,7 +647,10 @@ const DEFAULT_COPY = {
       { title: 'Getting around', body: 'Domestic flights Accra–Kumasi–Tamale save time; road trips reveal the most.' },
       { title: 'Entry', body: 'Most visitors need a visa or e-visa in advance — apply at least a few weeks ahead.' },
       { title: 'Suggested route', body: 'Accra → Cape Coast → Kakum → Kumasi → Mole, 10–14 days end to end.' }
-    ]
+    ],
+    formTitle: 'Plan this trip with us',
+    formLede: "Send your dates and we'll follow up with a route and pricing.",
+    submitLabel: 'Send inquiry'
   }
 };
 
@@ -1142,6 +1150,13 @@ function renderCopyForm() {
   document.getElementById('cp-plan-title').addEventListener('input', (e) => { copy.plan.title = e.target.value; });
   document.getElementById('cp-plan-closing').value = copy.plan.closing;
   document.getElementById('cp-plan-closing').addEventListener('input', (e) => { copy.plan.closing = e.target.value; });
+
+  document.getElementById('cp-plan-formtitle').value = copy.plan.formTitle;
+  document.getElementById('cp-plan-formtitle').addEventListener('input', (e) => { copy.plan.formTitle = e.target.value; });
+  document.getElementById('cp-plan-formlede').value = copy.plan.formLede;
+  document.getElementById('cp-plan-formlede').addEventListener('input', (e) => { copy.plan.formLede = e.target.value; });
+  document.getElementById('cp-plan-submitlabel').value = copy.plan.submitLabel;
+  document.getElementById('cp-plan-submitlabel').addEventListener('input', (e) => { copy.plan.submitLabel = e.target.value; });
 
   const planEditor = createListEditor(document.getElementById('planCardsList'), copy.plan.cards, [
     { key: 'title', label: 'Card title', type: 'text' },
