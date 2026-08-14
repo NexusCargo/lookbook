@@ -540,7 +540,19 @@
     margin:10px 0 30px;
   }
   .stop .subtitle.ivory{color:var(--ivory);}
+  /* Accent marker system — controls the small decorative mark next to
+     Stops points and above Plan-Your-Trip cards. Style is switched via a
+     body class (accent-style-line / -dot / -icon / -none) and color/size
+     via --accent-color / --accent-size / --accent-icon, all set from admin
+     content at render time. Defaults keep the original gold line look. */
+  :root{
+    --accent-color:var(--gold);
+    --accent-size:3px;
+    --accent-icon:'✦';
+  }
+
   .point{
+    position:relative;
     margin-bottom:22px;
   }
   .point b{color:var(--ink);}
@@ -554,6 +566,28 @@
   }
   .point.light b{color:var(--ivory);}
   .point.light span{color:#c9c2b2;}
+
+  body.accent-style-line .point{
+    border-left:var(--accent-size) solid var(--accent-color);
+    padding-left:20px;
+  }
+  body.accent-style-dot .point{ padding-left:20px; }
+  body.accent-style-dot .point::before{
+    content:'';
+    position:absolute; left:0; top:7px;
+    width:var(--accent-size); height:var(--accent-size);
+    border-radius:50%;
+    background:var(--accent-color);
+  }
+  body.accent-style-icon .point{ padding-left:26px; }
+  body.accent-style-icon .point::before{
+    content:var(--accent-icon);
+    position:absolute; left:0; top:-1px;
+    color:var(--accent-color);
+    font-size:calc(var(--accent-size) * 4.5);
+    line-height:1;
+  }
+  body.accent-style-none .point{ padding-left:0; }
 
   .plan{
     background:var(--ink);
@@ -578,7 +612,7 @@
     margin-bottom:40px;
   }
   .plan-card{
-    border-top:3px solid var(--gold);
+    position:relative;
     padding:30px 0;
   }
   .plan-card h3{font-size:18px; margin:15px 0 8px; font-weight:bold;}
@@ -589,9 +623,30 @@
   }
   .plan-card.clickable:hover, .plan-card.clickable:focus-visible{
     transform:translateY(-4px);
-    border-top-color:var(--ivory);
     outline:none;
   }
+
+  body.accent-style-line .plan-card{ border-top:var(--accent-size) solid var(--accent-color); }
+  body.accent-style-line .plan-card.clickable:hover,
+  body.accent-style-line .plan-card.clickable:focus-visible{ border-top-color:var(--ivory); }
+
+  body.accent-style-dot .plan-card::before{
+    content:'';
+    position:absolute; top:0; left:0;
+    width:var(--accent-size); height:var(--accent-size);
+    border-radius:50%;
+    background:var(--accent-color);
+  }
+
+  body.accent-style-icon .plan-card::before{
+    content:var(--accent-icon);
+    position:absolute; top:-4px; left:0;
+    color:var(--accent-color);
+    font-size:calc(var(--accent-size) * 4.5);
+    line-height:1;
+  }
+
+  body.accent-style-none .plan-card{ border-top:none; }
   .plan-card .cta{
     display:inline-block;
     margin-top:12px;
@@ -964,10 +1019,13 @@ const DEFAULT_HERO_STRIPE = [
   { type: 'color', color: '#8C3A16' }
 ];
 
+const DEFAULT_MARKER_STYLE = { type: 'line', color: '#F2B705', size: 3, icon: '✦' };
+
 const DEFAULT_CONTENT = {
   heroStripe: DEFAULT_HERO_STRIPE,
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
+  markerStyle: DEFAULT_MARKER_STYLE,
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, ...DEFAULT_STOP_META[key] };
@@ -1176,7 +1234,21 @@ function mergeContent(loaded) {
     welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
     regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
   };
+  c.markerStyle = { ...DEFAULT_MARKER_STYLE, ...((loaded && loaded.markerStyle) || {}) };
   return c;
+}
+
+// Applies the Stops/Plan-Your-Trip accent marker (line, dot, icon, or none)
+// from admin content. Sets the body's accent-style-* class plus the CSS
+// variables the .point / .plan-card rules read from.
+function applyMarkerStyle(markerStyle) {
+  const m = { ...DEFAULT_MARKER_STYLE, ...(markerStyle || {}) };
+  document.body.classList.remove('accent-style-line', 'accent-style-dot', 'accent-style-icon', 'accent-style-none');
+  const type = ['line', 'dot', 'icon', 'none'].includes(m.type) ? m.type : 'line';
+  document.body.classList.add('accent-style-' + type);
+  document.documentElement.style.setProperty('--accent-color', m.color || DEFAULT_MARKER_STYLE.color);
+  document.documentElement.style.setProperty('--accent-size', (parseFloat(m.size) || DEFAULT_MARKER_STYLE.size) + 'px');
+  document.documentElement.style.setProperty('--accent-icon', `'${(m.icon || DEFAULT_MARKER_STYLE.icon).replace(/'/g, "\\'")}'`);
 }
 
 async function loadSiteData(firebaseConfig) {
@@ -1787,6 +1859,7 @@ async function init() {
   applyCopy(data.copy);
   applyRegionBlurbs();
   applySectionBg(data.content.sectionBg);
+  applyMarkerStyle(data.content.markerStyle);
   renderStops(data.content, data.copy);
   renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
   // Apply hero text positions if they exist

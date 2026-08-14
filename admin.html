@@ -63,30 +63,49 @@
   }
   .hero-live-preview-header {
     background: #0A3626; color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 600;
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
   }
-  .hero-live-preview-header::before {
-    content: '🔴'; animation: blink 1.5s infinite;
+  .hero-live-preview-header .hlp-label::before {
+    content: '🔴'; animation: blink 1.5s infinite; margin-right: 8px;
   }
   @keyframes blink {
     0%, 49%, 100% { opacity: 1; }
     50%, 99% { opacity: 0.3; }
   }
+  .hero-reset-btn {
+    background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35);
+    padding: 5px 10px; font-size: 11.5px; font-weight: 600; border-radius: 4px; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .hero-reset-btn:hover { background: rgba(255,255,255,.22); }
   .hero-live-preview-box {
     background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
-    background-size: cover; background-position: center;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
     min-height: 300px; position: relative; overflow: hidden; display: flex;
     align-items: center; justify-content: center; color: #fff; padding: 20px;
   }
   .hero-live-preview-box::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)); pointer-events: none;
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45));
+  }
+  .hero-live-preview-box.has-image::before {
+    background: var(--hero-preview-overlay, linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)));
   }
   .hero-preview-content {
     position: absolute; width: 100%; height: 100%;
   }
   .hero-preview-text {
-    position: absolute; pointer-events: none; z-index: 10;
+    position: absolute; z-index: 10; cursor: move; user-select: none;
+    padding: 6px 10px; margin: -6px -10px;
+    border: 2px dashed transparent; border-radius: 4px;
+    transition: border-color .15s, background .15s;
+  }
+  .hero-preview-text:hover {
+    border-color: rgba(255,255,255,.55); background: rgba(0,0,0,.18);
+  }
+  .hero-preview-text.dragging {
+    border-color: #F2B705; background: rgba(242,183,5,.15);
+    box-shadow: 0 0 8px rgba(242,183,5,.4); opacity: .9;
   }
   .hero-preview-text.text-eyebrow {
     font-family: Verdana, sans-serif; letter-spacing: 2px;
@@ -184,102 +203,6 @@
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px; }
   @media (max-width: 700px) { .two-col, .three-col { grid-template-columns: 1fr; } }
-  
-  /* Hero Text Positioning Modal */
-  .hero-modal-btn { 
-    background: #F2B705; color: #0A3626; font-weight: 700; margin-top: 12px;
-  }
-  .hero-modal-btn:hover { background: #d9a600; }
-  
-  .hero-modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    z-index: 2000; align-items: center; justify-content: center; padding: 20px;
-  }
-  .hero-modal-overlay.open { display: flex; }
-  .hero-modal {
-    background: #fff; border-radius: 12px; max-width: 1200px; width: 100%;
-    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-  }
-  @media (max-width: 900px) { .hero-modal { grid-template-columns: 1fr; } }
-  
-  .hero-modal-controls {
-    padding: 30px; border-right: 1px solid #eee; display: flex; flex-direction: column; gap: 20px;
-  }
-  @media (max-width: 900px) { 
-    .hero-modal-controls { border-right: none; border-bottom: 1px solid #eee; }
-  }
-  
-  .hero-modal-preview {
-    position: relative; background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
-    background-size: cover; background-position: center; background-repeat: no-repeat;
-    min-height: 500px; display: flex; align-items: center; justify-content: center; 
-    padding: 30px; overflow: hidden; color: #fff;
-  }
-  .hero-modal-preview::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45));
-  }
-  .hero-modal-preview.has-image::before {
-    background: var(--hero-preview-overlay, linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)));
-  }
-  
-  .hero-preview-content {
-    position: absolute; width: 100%; height: 100%;
-  }
-  
-  .hero-text-element {
-    position: absolute; cursor: move; user-select: none;
-    padding: 8px 12px; background: rgba(0,0,0,0.1); border: 2px dashed rgba(255,255,255,0.3);
-    border-radius: 4px; transition: border-color 0.15s;
-  }
-  .hero-text-element:hover { border-color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.2); }
-  .hero-text-element.selected { 
-    border-color: #F2B705; background: rgba(242,183,5,0.15);
-    box-shadow: 0 0 8px rgba(242,183,5,0.4);
-  }
-  
-  .hero-text-element.text-eyebrow {
-    font-family: Verdana, sans-serif; font-size: 11px; letter-spacing: 2px; 
-    font-weight: bold; text-transform: uppercase; color: #F2B705;
-  }
-  .hero-text-element.text-h1 {
-    font-family: Georgia, serif; font-size: 48px; line-height: 0.9;
-    letter-spacing: 1px; font-weight: normal;
-  }
-  .hero-text-element.text-sub {
-    font-family: Georgia, serif; font-size: 16px; font-style: italic;
-    max-width: 400px;
-  }
-  .hero-text-element.text-edition {
-    font-family: Verdana, sans-serif; font-size: 13px; color: #D9A63A;
-  }
-  
-  .hero-modal-close {
-    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px;
-    background: rgba(255,255,255,0.9); border: none; border-radius: 50%; 
-    cursor: pointer; font-size: 18px; display: flex; align-items: center; 
-    justify-content: center; z-index: 10; transition: all 0.2s;
-  }
-  .hero-modal-close:hover { background: #fff; }
-  
-  .modal-section { display: flex; flex-direction: column; gap: 12px; }
-  .modal-section h3 { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #0A3626; }
-  
-  .draggable-text-item {
-    padding: 12px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 6px;
-    cursor: grab; user-select: none; transition: all 0.15s;
-  }
-  .draggable-text-item:hover { border-color: #0A3626; background: #e8e8e8; }
-  .draggable-text-item.active { border-color: #0A3626; background: #fff; box-shadow: 0 0 0 3px rgba(10,54,38,.15); }
-  
-  .text-item-label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-  .text-item-preview { font-size: 13px; color: #333; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  
-  .position-inputs {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  }
-  .position-inputs input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; }
   
   /* Animated Signout Button */
   .signout-nav {
@@ -384,6 +307,25 @@
   @media (prefers-reduced-motion: reduce){
     .stripe-style-card .ssc-preview *{ animation: none !important; }
   }
+
+  /* Point & card accent (marker) editor */
+  .marker-editor { display: flex; flex-direction: column; gap: 18px; }
+  .marker-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+  .marker-type-card {
+    border: 2px solid #e5e5e5; border-radius: 8px; padding: 14px 10px; text-align: center;
+    cursor: pointer; background: #fff; transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .marker-type-card:hover { border-color: #cbbf95; }
+  .marker-type-card.selected { border-color: #F2B705; box-shadow: 0 0 0 1px #F2B705; }
+  .marker-type-card .mtc-sample { height: 34px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .marker-type-card .mtc-label { font-size: 12.5px; font-weight: 600; color: #0A3626; }
+  .marker-controls-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .marker-controls-row .field-mini { flex: 1 1 160px; min-width: 140px; }
+  .marker-live-preview {
+    background: #fafafa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .marker-live-preview .mlp-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #888; }
 </style>
 </head>
 <body>
@@ -405,47 +347,6 @@
   </div>
 </div>
 <div class="signout-bg" id="signoutBg"></div>
-
-<!-- Hero Text Positioning Modal -->
-<div class="hero-modal-overlay" id="heroModalOverlay">
-  <div class="hero-modal">
-    <button class="hero-modal-close" id="heroModalClose">✕</button>
-    
-    <div class="hero-modal-controls">
-      <h2 style="margin: 0 0 12px; color: #0A3626;">Hero Text Positioning</h2>
-      <p style="margin: 0; font-size: 13px; color: #666;">Drag text elements on the preview to position them. Click to select and fine-tune with inputs below.</p>
-      <p id="heroPreviewSourceHint" style="margin: 4px 0 0; font-size: 12px; color: #888;"></p>
-      
-      <div class="modal-section">
-        <h3>Text Elements</h3>
-        <div id="textItemsList"></div>
-      </div>
-      
-      <div class="modal-section" id="positionControlSection" style="display: none;">
-        <h3>Position (px)</h3>
-        <div class="position-inputs">
-          <div>
-            <label>X (Left)</label>
-            <input type="number" id="posX" min="0" step="10">
-          </div>
-          <div>
-            <label>Y (Top)</label>
-            <input type="number" id="posY" min="0" step="10">
-          </div>
-        </div>
-      </div>
-      
-      <div class="button-group" style="margin-top: auto;">
-        <button class="secondary" id="heroResetPositions">↺ Reset to Default</button>
-        <button id="heroModalSave">✓ Apply & Close</button>
-      </div>
-    </div>
-    
-    <div class="hero-modal-preview">
-      <div class="hero-preview-content" id="heroPreviewContent"></div>
-    </div>
-  </div>
-</div>
 
 </body>
 
@@ -529,14 +430,16 @@
 
         <!-- Live Preview -->
         <div class="hero-live-preview-container">
-          <div class="hero-live-preview-header">Live Preview — Updates as you edit</div>
+          <div class="hero-live-preview-header">
+            <span class="hlp-label">Live Preview — drag text to reposition</span>
+            <button type="button" class="hero-reset-btn" id="heroResetPositions">↺ Reset positions</button>
+          </div>
           <div class="hero-live-preview-box" id="heroLivePreviewBox">
             <div class="hero-preview-content" id="heroLivePreviewContent"></div>
           </div>
         </div>
-        
-        <button type="button" class="hero-modal-btn" id="openHeroModalBtn">📍 Position Hero Text</button>
-        <p style="font-size: 12px; color: #666; margin: 8px 0 0;">Drag text around the positioning modal to reposition it for your background image. Changes persist only after Save.</p>
+        <p id="heroPreviewSourceHint" style="font-size: 12px; color: #888; margin: 8px 0 0;"></p>
+        <p style="font-size: 12px; color: #666; margin: 4px 0 0;">Drag the eyebrow, title, subtitle, or edition text above to reposition it over your real background. Wherever you leave it is what shows on the live page once you Save.</p>
 
         <h3>Background</h3>
         <div id="bg-hero"></div>
@@ -641,6 +544,12 @@
         <h2>Site Colors</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;" id="colorsGrid"></div>
       </div>
+
+      <div class="edit-section">
+        <h2>Point &amp; card accents</h2>
+        <p style="font-size: 12.5px; color: #888; margin: -6px 0 16px;">Controls the small marker next to each Stops point (e.g. "Adinkra symbols") and above each Plan Your Trip card. Applies from the Stops sections all the way down.</p>
+        <div id="markerStyleEditor"></div>
+      </div>
     </div>
 
     <div class="tab-panel" id="tab-layout">
@@ -707,6 +616,9 @@ const DEFAULT_STOP_META = {
 };
 
 const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812', plan: '#1B1812' };
+
+// Accent marker shown next to Stops points and above Plan-Your-Trip cards.
+const DEFAULT_MARKER_STYLE = { type: 'line', color: '#F2B705', size: 3, icon: '✦' };
 
 const DEFAULT_COPY = {
   hero: { eyebrow: 'A LOOKBOOK OF THE GOLD COAST', title: 'GHANA', sub: 'Castles, canopy walks, kente looms, and the warmest welcome in West Africa.', edition: '2026 EDITION' },
@@ -851,6 +763,7 @@ function defaultContent() {
       acc[key] = { media_type: 'image', image_public_ids: [], gif_url: null, video_public_id: null, bgColor: null, ...DEFAULT_STOP_META[key] };
       return acc;
     }, {}),
+    markerStyle: { ...DEFAULT_MARKER_STYLE },
     sectionBg: {
       hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } },
       welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } },
@@ -883,6 +796,8 @@ async function boot() {
       document.getElementById('authStatus').style.color = '#388e3c';
       await loadAll();
       renderCopyForm();
+      if (typeof updateLivePreview === 'function') updateLivePreview();
+      if (typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
       renderStripeSegments();
       renderStripePositionPicker();
       renderBgEditor('hero', 'Hero background');
@@ -892,6 +807,7 @@ async function boot() {
       renderRegionCards();
       renderStopsList();
       renderColorsForm();
+      renderMarkerStyleEditor();
       renderLayoutAll();
       startInquiriesListener();
     } else {
@@ -955,6 +871,7 @@ function mergeContent(loaded) {
     regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
     plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
   };
+  c.markerStyle = { ...DEFAULT_MARKER_STYLE, ...((loaded && loaded.markerStyle) || {}) };
   return c;
 }
 
@@ -1131,6 +1048,7 @@ function renderBgEditor(key, label) {
       swatch.style.backgroundImage = '';
       swatch.style.backgroundColor = cfg.color;
     }
+    if (key === 'hero' && typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
   }
   refreshSwatch();
 
@@ -1228,6 +1146,7 @@ function renderBgEditor(key, label) {
     vToggle.addEventListener('change', () => {
       cfg.vignette.enabled = vToggle.checked;
       refreshVignettePreview();
+      if (key === 'hero' && typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
     });
 
     picker.addEventListener('click', (e) => {
@@ -1235,6 +1154,7 @@ function renderBgEditor(key, label) {
       cfg.vignette.x = Math.round(Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)));
       cfg.vignette.y = Math.round(Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100)));
       refreshVignettePreview();
+      if (key === 'hero' && typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
     });
 
     refreshVignettePreview();
@@ -2448,6 +2368,127 @@ function renderColorsForm() {
   });
 }
 
+const MARKER_TYPES = [
+  { id: 'line', label: 'Line' },
+  { id: 'dot', label: 'Dot' },
+  { id: 'icon', label: 'Icon' },
+  { id: 'none', label: 'None' }
+];
+
+function markerSampleHtml(type, color, size, icon) {
+  if (type === 'line') {
+    return `<div style="width:3px;height:28px;background:${escapeHtml(color)};border-radius:2px;"></div>`;
+  }
+  if (type === 'dot') {
+    const d = Math.max(4, Math.min(size * 2, 20));
+    return `<div style="width:${d}px;height:${d}px;border-radius:50%;background:${escapeHtml(color)};"></div>`;
+  }
+  if (type === 'icon') {
+    return `<div style="font-size:${Math.max(12, size * 4)}px;line-height:1;color:${escapeHtml(color)};">${escapeHtml(icon || DEFAULT_MARKER_STYLE.icon)}</div>`;
+  }
+  return `<div style="font-size:11px;color:#bbb;">—</div>`;
+}
+
+function renderMarkerStyleEditor() {
+  const wrap = document.getElementById('markerStyleEditor');
+  if (!wrap) return;
+  const m = { ...DEFAULT_MARKER_STYLE, ...(content.markerStyle || {}) };
+  content.markerStyle = m;
+
+  wrap.innerHTML = `
+    <div class="marker-editor">
+      <div class="marker-type-grid" id="markerTypeGrid"></div>
+
+      <div class="marker-controls-row">
+        <div class="field-mini">
+          <label>Color</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="color" id="markerColor" value="${escapeHtml(m.color)}" style="width:48px;height:38px;cursor:pointer;border:1px solid #ddd;border-radius:4px;">
+            <input type="text" id="markerColorHex" value="${escapeHtml(m.color)}" style="flex:1; font-family:monospace; font-size:12px;" readonly>
+          </div>
+        </div>
+        <div class="field-mini">
+          <label id="markerSizeLabel">Size (${m.size}px)</label>
+          <input type="range" id="markerSize" min="1" max="10" step="1" value="${m.size}" style="width:100%;">
+        </div>
+        <div class="field-mini" id="markerIconField" style="display:${m.type === 'icon' ? '' : 'none'};">
+          <label>Icon / symbol</label>
+          <input type="text" id="markerIcon" maxlength="4" value="${escapeHtml(m.icon)}" placeholder="✦">
+        </div>
+      </div>
+
+      <div class="marker-live-preview">
+        <div class="mlp-label">Live preview</div>
+        <div id="markerPreviewPoint" style="display:flex; gap:14px; align-items:flex-start;">
+          <div id="markerPreviewPointMark"></div>
+          <div>
+            <b style="color:#1B1812;">Adinkra symbols</b>
+            <div style="font-family:Verdana,sans-serif; font-size:13px; color:#6b6556; margin-top:2px;">Visual proverbs — stamped onto cloth — that encode Akan philosophy in a single mark.</div>
+          </div>
+        </div>
+        <div id="markerPreviewCard" style="display:flex; gap:14px; align-items:flex-start; padding-top:14px; border-top:1px dashed #ddd;">
+          <div id="markerPreviewCardMark"></div>
+          <div>
+            <b style="color:#1B1812;">Getting around</b>
+            <div style="font-family:Verdana,sans-serif; font-size:13px; color:#6b6556; margin-top:2px;">Domestic flights Accra–Kumasi–Tamale save time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  function refreshPreview() {
+    const type = content.markerStyle.type;
+    const color = content.markerStyle.color;
+    const size = content.markerStyle.size;
+    const icon = content.markerStyle.icon;
+    document.getElementById('markerPreviewPointMark').innerHTML = markerSampleHtml(type, color, size, icon);
+    document.getElementById('markerPreviewCardMark').innerHTML = markerSampleHtml(type, color, size, icon);
+    document.querySelectorAll('#markerTypeGrid .marker-type-card').forEach(card => {
+      card.classList.toggle('selected', card.dataset.type === type);
+    });
+    document.getElementById('markerIconField').style.display = type === 'icon' ? '' : 'none';
+  }
+
+  const grid = document.getElementById('markerTypeGrid');
+  grid.innerHTML = '';
+  MARKER_TYPES.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'marker-type-card' + (m.type === t.id ? ' selected' : '');
+    card.dataset.type = t.id;
+    card.innerHTML = `
+      <div class="mtc-sample">${markerSampleHtml(t.id, m.color, m.size, m.icon)}</div>
+      <div class="mtc-label">${escapeHtml(t.label)}</div>
+    `;
+    card.addEventListener('click', () => {
+      content.markerStyle.type = t.id;
+      refreshPreview();
+    });
+    grid.appendChild(card);
+  });
+
+  document.getElementById('markerColor').addEventListener('change', (e) => {
+    const hex = e.target.value.toUpperCase();
+    document.getElementById('markerColorHex').value = hex;
+    content.markerStyle.color = hex;
+    refreshPreview();
+  });
+
+  document.getElementById('markerSize').addEventListener('input', (e) => {
+    const size = parseInt(e.target.value, 10) || DEFAULT_MARKER_STYLE.size;
+    content.markerStyle.size = size;
+    document.getElementById('markerSizeLabel').textContent = `Size (${size}px)`;
+    refreshPreview();
+  });
+
+  document.getElementById('markerIcon').addEventListener('input', (e) => {
+    content.markerStyle.icon = e.target.value || DEFAULT_MARKER_STYLE.icon;
+    refreshPreview();
+  });
+
+  refreshPreview();
+}
+
 function showMessage(text, type) {
   const el = document.getElementById('message');
   el.textContent = text;
@@ -2502,181 +2543,78 @@ signoutBtn.addEventListener('click', () => {
   }
 });
 
-/* ===== HERO TEXT POSITIONING MODAL ===== */
-window.heroTextPositions = window.heroTextPositions || {};
-
-const heroModalOverlay = document.getElementById('heroModalOverlay');
-const heroModalClose = document.getElementById('heroModalClose');
-const heroResetPositions = document.getElementById('heroResetPositions');
-const heroModalSave = document.getElementById('heroModalSave');
-const textItemsList = document.getElementById('textItemsList');
-const positionControlSection = document.getElementById('positionControlSection');
-const posXInput = document.getElementById('posX');
-const posYInput = document.getElementById('posY');
-const heroPreviewContent = document.getElementById('heroPreviewContent');
-
-const textElements = [
-  { id: 'eyebrow', label: 'Eyebrow', class: 'text-eyebrow', text: 'GHANA', inputId: 'cp-hero-eyebrow' },
-  { id: 'h1', label: 'Heading', class: 'text-h1', text: 'A Lookbook of the Gold Coast', inputId: 'cp-hero-title' },
-  { id: 'sub', label: 'Subtitle', class: 'text-sub', text: 'Castles, canopy walks, kente looms, and the warmest welcome...', inputId: 'cp-hero-sub' },
-  { id: 'edition', label: 'Edition', class: 'text-edition', text: 'Edition 2025', inputId: 'cp-hero-edition' }
+/* ===== HERO TEXT — DRAG DIRECTLY ON THE LIVE PREVIEW ===== */
+const HERO_TEXT_ELEMENTS = [
+  { id: 'eyebrow', class: 'text-eyebrow', inputId: 'cp-hero-eyebrow', fallback: 'GHANA' },
+  { id: 'h1', class: 'text-h1', inputId: 'cp-hero-title', fallback: 'A Lookbook of the Gold Coast' },
+  { id: 'sub', class: 'text-sub', inputId: 'cp-hero-sub', fallback: 'Castles, canopy walks, kente looms, and the warmest welcome...' },
+  { id: 'edition', class: 'text-edition', inputId: 'cp-hero-edition', fallback: 'Edition 2025' }
 ];
 
-const defaultPositions = {
+const DEFAULT_HERO_FONT_SIZE = { eyebrow: 11, h1: 48, sub: 16, edition: 13 };
+
+const DEFAULT_HERO_TEXT_POSITIONS = {
   eyebrow: { x: 50, y: 80 },
   h1: { x: 50, y: 150 },
   sub: { x: 50, y: 280 },
   edition: { x: 50, y: 360 }
 };
 
-function renderPreview() {
-  heroPreviewContent.innerHTML = '';
-  textElements.forEach(el => {
-    const pos = window.heroTextPositions[el.id] || defaultPositions[el.id];
-    const div = document.createElement('div');
-    div.className = `hero-text-element ${el.class}`;
-    // Reflect the actual copy currently typed into the Hero tab's inputs,
-    // so positioning is judged against real text, not a placeholder.
-    const liveInput = el.inputId && document.getElementById(el.inputId);
-    div.textContent = (liveInput && liveInput.value.trim()) ? liveInput.value : el.text;
-    div.id = `preview-${el.id}`;
-    div.style.left = pos.x + 'px';
-    div.style.top = pos.y + 'px';
-    div.setAttribute('data-element', el.id);
-    heroPreviewContent.appendChild(div);
-    
-    // Make draggable
-    makeDraggable(div);
-  });
-}
-
-function makeDraggable(element) {
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-  
-  element.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    const elId = element.getAttribute('data-element');
-    selectTextItem(elId);
-    
-    const rect = element.getBoundingClientRect();
-    const previewRect = heroPreviewContent.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    element.style.opacity = '0.8';
-  });
-  
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const previewRect = heroPreviewContent.getBoundingClientRect();
-    const x = Math.max(0, e.clientX - previewRect.left - offsetX);
-    const y = Math.max(0, e.clientY - previewRect.top - offsetY);
-    
-    element.style.left = x + 'px';
-    element.style.top = y + 'px';
-    
-    const elId = element.getAttribute('data-element');
-    window.heroTextPositions[elId] = { x, y };
-    posXInput.value = Math.round(x);
-    posYInput.value = Math.round(y);
-  });
-  
-  document.addEventListener('mouseup', () => {
-    isDragging = false;
-    element.style.opacity = '1';
-  });
-}
-
-function selectTextItem(elId) {
-  document.querySelectorAll('.draggable-text-item').forEach(el => {
-    el.classList.remove('active');
-  });
-  document.getElementById(`item-${elId}`).classList.add('active');
-  
-  document.querySelectorAll('.hero-text-element').forEach(el => {
-    el.classList.remove('selected');
-  });
-  document.getElementById(`preview-${elId}`).classList.add('selected');
-  
-  positionControlSection.style.display = 'flex';
-  const pos = window.heroTextPositions[elId] || defaultPositions[elId];
-  posXInput.value = Math.round(pos.x);
-  posYInput.value = Math.round(pos.y);
-  posXInput.setAttribute('data-element', elId);
-  posYInput.setAttribute('data-element', elId);
-}
-
-function renderTextItems() {
-  textItemsList.innerHTML = '';
-  textElements.forEach(el => {
-    const item = document.createElement('div');
-    item.className = 'draggable-text-item';
-    item.id = `item-${el.id}`;
-    item.innerHTML = `
-      <div class="text-item-label">${el.label}</div>
-      <div class="text-item-preview">${el.text}</div>
-    `;
-    item.addEventListener('click', () => selectTextItem(el.id));
-    textItemsList.appendChild(item);
-  });
-}
-
-posXInput.addEventListener('change', (e) => {
-  const elId = posXInput.getAttribute('data-element');
-  if (!elId) return;
-  const element = document.getElementById(`preview-${elId}`);
-  const x = parseInt(e.target.value) || 0;
-  element.style.left = x + 'px';
-  window.heroTextPositions[elId] = { ...window.heroTextPositions[elId], x };
-});
-
-posYInput.addEventListener('change', (e) => {
-  const elId = posYInput.getAttribute('data-element');
-  if (!elId) return;
-  const element = document.getElementById(`preview-${elId}`);
-  const y = parseInt(e.target.value) || 0;
-  element.style.top = y + 'px';
-  window.heroTextPositions[elId] = { ...window.heroTextPositions[elId], y };
-});
-
-heroResetPositions.addEventListener('click', () => {
-  window.heroTextPositions = JSON.parse(JSON.stringify(defaultPositions));
-  renderPreview();
-  renderTextItems();
-  positionControlSection.style.display = 'none';
-});
-
-heroModalClose.addEventListener('click', () => {
-  heroModalOverlay.classList.remove('open');
-});
-
-heroModalSave.addEventListener('click', () => {
-  // Always save positions to content
-  content.heroTextPositions = JSON.parse(JSON.stringify(window.heroTextPositions));
-  heroModalOverlay.classList.remove('open');
-  showMessage('✅ Hero text positions updated. Remember to Save to apply changes.', 'success');
-});
-
-function openHeroModal() {
-  // Load positions from content if they exist
-  if (content.heroTextPositions) {
-    window.heroTextPositions = JSON.parse(JSON.stringify(content.heroTextPositions));
-  } else {
-    window.heroTextPositions = JSON.parse(JSON.stringify(defaultPositions));
+// Wherever a piece of hero text is dragged and Save is hit, that's what
+// shows on the live page — positions live directly on `content`, the same
+// object the "Save All Changes" button persists.
+function heroPositions() {
+  if (!content.heroTextPositions) {
+    content.heroTextPositions = JSON.parse(JSON.stringify(DEFAULT_HERO_TEXT_POSITIONS));
   }
-  applyHeroPreviewBackground();
-  renderTextItems();
-  renderPreview();
-  heroModalOverlay.classList.add('open');
-  positionControlSection.style.display = 'none';
+  return content.heroTextPositions;
+}
+
+let heroDrag = null; // { elId, offsetX, offsetY }
+
+function makeHeroTextDraggable(el, elId) {
+  el.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const rect = el.getBoundingClientRect();
+    heroDrag = { elId, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+    el.classList.add('dragging');
+  });
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!heroDrag) return;
+  const previewContent = document.getElementById('heroLivePreviewContent');
+  const el = previewContent && document.getElementById(`heroPreviewText-${heroDrag.elId}`);
+  if (!previewContent || !el) return;
+  const previewRect = previewContent.getBoundingClientRect();
+  const x = Math.max(0, e.clientX - previewRect.left - heroDrag.offsetX);
+  const y = Math.max(0, e.clientY - previewRect.top - heroDrag.offsetY);
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  heroPositions()[heroDrag.elId] = { x, y };
+});
+
+document.addEventListener('mouseup', () => {
+  if (!heroDrag) return;
+  const el = document.getElementById(`heroPreviewText-${heroDrag.elId}`);
+  if (el) el.classList.remove('dragging');
+  heroDrag = null;
+});
+
+const heroResetPositionsBtn = document.getElementById('heroResetPositions');
+if (heroResetPositionsBtn) {
+  heroResetPositionsBtn.addEventListener('click', () => {
+    content.heroTextPositions = JSON.parse(JSON.stringify(DEFAULT_HERO_TEXT_POSITIONS));
+    updateLivePreview();
+    showMessage('Positions reset. Remember to Save to apply changes.', 'info');
+  });
 }
 
 // Shows the real hero background (image + color + vignette) behind the
 // draggable text so placement can be judged against the actual banner
 // instead of a flat placeholder color.
 function applyHeroPreviewBackground() {
-  const previewEl = document.querySelector('.hero-modal-preview');
+  const previewEl = document.getElementById('heroLivePreviewBox');
   if (!previewEl) return;
   const cfg = (content.sectionBg && content.sectionBg.hero) || {};
   const color = cfg.color || DEFAULT_SECTION_COLOR.hero;
@@ -2686,7 +2624,7 @@ function applyHeroPreviewBackground() {
   if (hint) {
     hint.textContent = isVideo
       ? 'Showing a still frame from your hero video — the real hero plays it in motion.'
-      : (cfg.image ? '' : 'No hero background image/video set yet — upload one in the Hero tab for a true preview.');
+      : (cfg.image ? '' : 'No hero background image/video set yet — upload one below for a true preview.');
   }
   if (stillFrame) {
     previewEl.style.backgroundColor = color;
@@ -2705,35 +2643,25 @@ function applyHeroPreviewBackground() {
   }
 }
 
-// Connect button to modal
 document.addEventListener('DOMContentLoaded', () => {
-  const openHeroBtn = document.getElementById('openHeroModalBtn');
-  if (openHeroBtn) {
-    openHeroBtn.addEventListener('click', openHeroModal);
-  }
-  
-  // Initialize real-time preview
   initializeLivePreview();
 });
 
 /* ===== REAL-TIME LIVE PREVIEW ===== */
 function initializeLivePreview() {
   const fontSizeElements = ['eyebrow', 'h1', 'sub', 'edition'];
-  
+
   fontSizeElements.forEach(el => {
     const slider = document.getElementById(`heroFontSize-${el}`);
     const numInput = document.getElementById(`heroFontSizeNum-${el}`);
     const display = document.getElementById(`heroFontSizeDisplay-${el}`);
-    
+
     if (slider && numInput) {
-      // Slider changes number input
       slider.addEventListener('input', (e) => {
         numInput.value = e.target.value;
         display.textContent = e.target.value + 'px';
         updateLivePreview();
       });
-      
-      // Number input changes slider
       numInput.addEventListener('input', (e) => {
         slider.value = e.target.value;
         display.textContent = e.target.value + 'px';
@@ -2741,8 +2669,7 @@ function initializeLivePreview() {
       });
     }
   });
-  
-  // Listen to text input changes
+
   const textInputs = ['cp-hero-eyebrow', 'cp-hero-title', 'cp-hero-sub', 'cp-hero-edition'];
   textInputs.forEach(inputId => {
     const input = document.getElementById(inputId);
@@ -2751,59 +2678,33 @@ function initializeLivePreview() {
       input.addEventListener('change', updateLivePreview);
     }
   });
-  
-  // Initial render
+
   updateLivePreview();
 }
 
 function updateLivePreview() {
   const previewContent = document.getElementById('heroLivePreviewContent');
   if (!previewContent) return;
-  
+
   previewContent.innerHTML = '';
-  
-  const textMap = {
-    eyebrow: 'cp-hero-eyebrow',
-    h1: 'cp-hero-title',
-    sub: 'cp-hero-sub',
-    edition: 'cp-hero-edition'
-  };
-  
-  const classMap = {
-    eyebrow: 'text-eyebrow',
-    h1: 'text-h1',
-    sub: 'text-sub',
-    edition: 'text-edition'
-  };
-  
-  const defaultPositions = {
-    eyebrow: { x: 50, y: 80 },
-    h1: { x: 50, y: 150 },
-    sub: { x: 50, y: 280 },
-    edition: { x: 50, y: 360 }
-  };
-  
-  // Check if we have positions from the modal
-  const savedPositions = window.heroTextPositions || {};
-  
-  Object.keys(textMap).forEach(key => {
-    const inputId = textMap[key];
-    const input = document.getElementById(inputId);
-    const text = input ? input.value : '';
-    
-    const sizeInput = document.getElementById(`heroFontSizeNum-${key}`);
-    const fontSize = sizeInput ? sizeInput.value : (key === 'h1' ? 48 : (key === 'sub' ? 16 : (key === 'edition' ? 13 : 11)));
-    
-    const pos = savedPositions[key] || defaultPositions[key];
-    
+  const positions = heroPositions();
+
+  HERO_TEXT_ELEMENTS.forEach(spec => {
+    const input = document.getElementById(spec.inputId);
+    const text = (input && input.value.trim()) ? input.value : spec.fallback;
+    const sizeInput = document.getElementById(`heroFontSizeNum-${spec.id}`);
+    const fontSize = sizeInput ? sizeInput.value : DEFAULT_HERO_FONT_SIZE[spec.id];
+    const pos = positions[spec.id] || DEFAULT_HERO_TEXT_POSITIONS[spec.id];
+
     const div = document.createElement('div');
-    div.className = `hero-preview-text ${classMap[key]}`;
-    div.textContent = text || `[${key}]`;
+    div.id = `heroPreviewText-${spec.id}`;
+    div.className = `hero-preview-text ${spec.class}`;
+    div.textContent = text;
     div.style.fontSize = fontSize + 'px';
     div.style.left = pos.x + 'px';
     div.style.top = pos.y + 'px';
-    
     previewContent.appendChild(div);
+    makeHeroTextDraggable(div, spec.id);
   });
 }
 
