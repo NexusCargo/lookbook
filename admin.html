@@ -152,8 +152,16 @@
   
   .hero-modal-preview {
     position: relative; background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
+    background-size: cover; background-position: center; background-repeat: no-repeat;
     min-height: 500px; display: flex; align-items: center; justify-content: center; 
     padding: 30px; overflow: hidden; color: #fff;
+  }
+  .hero-modal-preview::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45));
+  }
+  .hero-modal-preview.has-image::before {
+    background: var(--hero-preview-overlay, linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)));
   }
   
   .hero-preview-content {
@@ -346,6 +354,7 @@
     <div class="hero-modal-controls">
       <h2 style="margin: 0 0 12px; color: #0A3626;">Hero Text Positioning</h2>
       <p style="margin: 0; font-size: 13px; color: #666;">Drag text elements on the preview to position them. Click to select and fine-tune with inputs below.</p>
+      <p id="heroPreviewSourceHint" style="margin: 4px 0 0; font-size: 12px; color: #888;"></p>
       
       <div class="modal-section">
         <h3>Text Elements</h3>
@@ -748,10 +757,10 @@ function defaultContent() {
       return acc;
     }, {}),
     sectionBg: {
-      hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { enabled: false, x: 50, y: 50 } },
-      welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { enabled: false, x: 50, y: 50 } },
-      plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, vignette: { enabled: false, x: 50, y: 50 } },
-      regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { enabled: false, x: 50, y: 50 } }
+      hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } },
+      welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } },
+      plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } },
+      regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, video: null, mediaType: 'image', vignette: { enabled: false, x: 50, y: 50 } }
     }
   };
 }
@@ -846,10 +855,10 @@ function mergeContent(loaded) {
   });
   const defaultVignette = { enabled: false, x: 50, y: 50 };
   c.sectionBg = {
-    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
-    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
-    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
+    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
+    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
+    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
   };
   return c;
 }
@@ -893,6 +902,10 @@ function deepMerge(base, override) {
 
 function thumbUrl(publicId) {
   return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_200/${publicId}`;
+}
+
+function previewSizeUrl(publicId, width) {
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/f_auto,q_auto,w_${width}/${publicId}`;
 }
 
 function cloudinaryVideoUrl(publicId, width) {
@@ -1004,6 +1017,7 @@ function renderBgEditor(key, label) {
   const container = document.getElementById(`bg-${key}`);
   container.innerHTML = '';
   const cfg = content.sectionBg[key];
+  if (!cfg.mediaType) cfg.mediaType = 'image';
 
   const wrap = document.createElement('div');
   wrap.className = 'bg-editor';
@@ -1012,7 +1026,10 @@ function renderBgEditor(key, label) {
   swatch.className = 'swatch';
 
   function refreshSwatch() {
-    if (cfg.image) {
+    if (cfg.mediaType === 'video' && cfg.video) {
+      swatch.style.backgroundImage = `url(${videoThumbUrl(cfg.video)})`;
+      swatch.style.backgroundColor = '';
+    } else if (cfg.mediaType !== 'video' && cfg.image) {
       swatch.style.backgroundImage = `url(${thumbUrl(cfg.image)})`;
       swatch.style.backgroundColor = '';
     } else {
@@ -1024,6 +1041,25 @@ function renderBgEditor(key, label) {
 
   const controls = document.createElement('div');
   controls.className = 'bg-controls';
+
+  // --- Media type toggle: Image (also accepts animated GIFs) or Video ---
+  const typeRow = document.createElement('div');
+  typeRow.style.cssText = 'display:flex; gap:16px; font-size:12px; margin-bottom:8px;';
+  [{ id: 'image', label: 'Image / GIF' }, { id: 'video', label: 'Video' }].forEach(opt => {
+    const lbl = document.createElement('label');
+    lbl.style.cssText = 'display:flex; align-items:center; gap:5px; cursor:pointer;';
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = `bg-${key}-mediatype`;
+    radio.value = opt.id;
+    radio.checked = (cfg.mediaType || 'image') === opt.id;
+    radio.addEventListener('change', () => {
+      if (radio.checked) { cfg.mediaType = opt.id; renderBgEditor(key, label); }
+    });
+    lbl.appendChild(radio);
+    lbl.appendChild(document.createTextNode(opt.label));
+    typeRow.appendChild(lbl);
+  });
 
   const colorRow = document.createElement('div');
   colorRow.className = 'color-row';
@@ -1039,16 +1075,19 @@ function renderBgEditor(key, label) {
   colorRow.appendChild(colorInput);
   colorRow.appendChild(hexInput);
 
+  const isVideo = cfg.mediaType === 'video';
   const status = document.createElement('div');
   status.style.fontSize = '11px';
   status.style.color = '#888';
-  status.textContent = cfg.image ? 'Using uploaded image (color is the fallback)' : 'Using solid color';
+  status.textContent = isVideo
+    ? (cfg.video ? 'Using uploaded video (color shows while it loads)' : 'No video uploaded yet — using solid color')
+    : (cfg.image ? 'Using uploaded image (color is the fallback)' : 'Using solid color');
 
-  // --- Vignette highlight: darken the image around a chosen focal point,
-  // instead of (or as well as) the flat overlay above. Only relevant when
-  // there's an image to apply it to. ---
+  // --- Vignette highlight: darken the image/video around a chosen focal
+  // point, instead of (or as well as) the flat overlay above. ---
   let vignetteWrap = null;
-  if (cfg.image) {
+  const vignetteThumb = isVideo ? (cfg.video ? videoThumbUrl(cfg.video) : null) : (cfg.image ? thumbUrl(cfg.image) : null);
+  if (vignetteThumb) {
     if (!cfg.vignette) cfg.vignette = { enabled: false, x: 50, y: 50 };
 
     vignetteWrap = document.createElement('div');
@@ -1066,7 +1105,7 @@ function renderBgEditor(key, label) {
     const picker = document.createElement('div');
     picker.style.cssText = `
       margin-top: 8px; width: 100%; max-width: 260px; aspect-ratio: 16 / 9;
-      background-image: url(${thumbUrl(cfg.image)}); background-size: cover; background-position: center;
+      background-image: url(${vignetteThumb}); background-size: cover; background-position: center;
       border-radius: 6px; border: 1px solid #ddd; position: relative; cursor: crosshair;
     `;
     const dot = document.createElement('div');
@@ -1085,9 +1124,8 @@ function renderBgEditor(key, label) {
       if (!on) return;
       dot.style.left = `${cfg.vignette.x}%`;
       dot.style.top = `${cfg.vignette.y}%`;
-      picker.style.boxShadow = `inset 0 0 0 9999px rgba(0,0,0,0)`;
       picker.style.backgroundImage =
-        `radial-gradient(circle at ${cfg.vignette.x}% ${cfg.vignette.y}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%), url(${thumbUrl(cfg.image)})`;
+        `radial-gradient(circle at ${cfg.vignette.x}% ${cfg.vignette.y}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%), url(${vignetteThumb})`;
       vHint.textContent = `Highlighted spot: ${Math.round(cfg.vignette.x)}%, ${Math.round(cfg.vignette.y)}% — click the image to move it.`;
     }
     picker.appendChild(dot);
@@ -1111,29 +1149,53 @@ function renderBgEditor(key, label) {
 
   const actions = document.createElement('div');
   actions.className = 'bg-actions';
-  const uploadBtn = document.createElement('button');
-  uploadBtn.type = 'button';
-  uploadBtn.textContent = cfg.image ? '🔄 Replace image' : '📤 Upload image';
-  uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
-    cfg.image = publicId;
-    status.textContent = 'Using uploaded image (color is the fallback) — remember to Save';
-    renderBgEditor(key, label);
-  }));
-  actions.appendChild(uploadBtn);
 
-  if (cfg.image) {
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'secondary';
-    removeBtn.textContent = '❌ Remove image';
-    removeBtn.addEventListener('click', () => {
-      cfg.image = null;
-      refreshSwatch();
+  if (isVideo) {
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.textContent = cfg.video ? '🔄 Replace video' : '📤 Upload video';
+    uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
+      cfg.video = publicId;
       renderBgEditor(key, label);
-    });
-    actions.appendChild(removeBtn);
+    }, 'video'));
+    actions.appendChild(uploadBtn);
+    if (cfg.video) {
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'secondary';
+      removeBtn.textContent = '❌ Remove video';
+      removeBtn.addEventListener('click', () => {
+        cfg.video = null;
+        renderBgEditor(key, label);
+      });
+      actions.appendChild(removeBtn);
+    }
+  } else {
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.textContent = cfg.image ? '🔄 Replace image' : '📤 Upload image or GIF';
+    uploadBtn.addEventListener('click', () => openUploadWidget(`bg-${key}`, (publicId) => {
+      cfg.image = publicId;
+      status.textContent = 'Using uploaded image (color is the fallback) — remember to Save';
+      renderBgEditor(key, label);
+    }));
+    actions.appendChild(uploadBtn);
+
+    if (cfg.image) {
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'secondary';
+      removeBtn.textContent = '❌ Remove image';
+      removeBtn.addEventListener('click', () => {
+        cfg.image = null;
+        refreshSwatch();
+        renderBgEditor(key, label);
+      });
+      actions.appendChild(removeBtn);
+    }
   }
 
+  controls.appendChild(typeRow);
   controls.appendChild(colorRow);
   controls.appendChild(status);
   if (vignetteWrap) controls.appendChild(vignetteWrap);
@@ -2359,10 +2421,10 @@ const posYInput = document.getElementById('posY');
 const heroPreviewContent = document.getElementById('heroPreviewContent');
 
 const textElements = [
-  { id: 'eyebrow', label: 'Eyebrow', class: 'text-eyebrow', text: 'GHANA' },
-  { id: 'h1', label: 'Heading', class: 'text-h1', text: 'A Lookbook of the Gold Coast' },
-  { id: 'sub', label: 'Subtitle', class: 'text-sub', text: 'Castles, canopy walks, kente looms, and the warmest welcome...' },
-  { id: 'edition', label: 'Edition', class: 'text-edition', text: 'Edition 2025' }
+  { id: 'eyebrow', label: 'Eyebrow', class: 'text-eyebrow', text: 'GHANA', inputId: 'cp-hero-eyebrow' },
+  { id: 'h1', label: 'Heading', class: 'text-h1', text: 'A Lookbook of the Gold Coast', inputId: 'cp-hero-title' },
+  { id: 'sub', label: 'Subtitle', class: 'text-sub', text: 'Castles, canopy walks, kente looms, and the warmest welcome...', inputId: 'cp-hero-sub' },
+  { id: 'edition', label: 'Edition', class: 'text-edition', text: 'Edition 2025', inputId: 'cp-hero-edition' }
 ];
 
 const defaultPositions = {
@@ -2378,7 +2440,10 @@ function renderPreview() {
     const pos = window.heroTextPositions[el.id] || defaultPositions[el.id];
     const div = document.createElement('div');
     div.className = `hero-text-element ${el.class}`;
-    div.textContent = el.text;
+    // Reflect the actual copy currently typed into the Hero tab's inputs,
+    // so positioning is judged against real text, not a placeholder.
+    const liveInput = el.inputId && document.getElementById(el.inputId);
+    div.textContent = (liveInput && liveInput.value.trim()) ? liveInput.value : el.text;
     div.id = `preview-${el.id}`;
     div.style.left = pos.x + 'px';
     div.style.top = pos.y + 'px';
@@ -2505,10 +2570,44 @@ function openHeroModal() {
   } else {
     window.heroTextPositions = JSON.parse(JSON.stringify(defaultPositions));
   }
+  applyHeroPreviewBackground();
   renderTextItems();
   renderPreview();
   heroModalOverlay.classList.add('open');
   positionControlSection.style.display = 'none';
+}
+
+// Shows the real hero background (image + color + vignette) behind the
+// draggable text so placement can be judged against the actual banner
+// instead of a flat placeholder color.
+function applyHeroPreviewBackground() {
+  const previewEl = document.querySelector('.hero-modal-preview');
+  if (!previewEl) return;
+  const cfg = (content.sectionBg && content.sectionBg.hero) || {};
+  const color = cfg.color || DEFAULT_SECTION_COLOR.hero;
+  const isVideo = cfg.mediaType === 'video' && !!cfg.video;
+  const stillFrame = isVideo ? videoThumbUrl(cfg.video) : (cfg.image ? previewSizeUrl(cfg.image, 1200) : null);
+  const hint = document.getElementById('heroPreviewSourceHint');
+  if (hint) {
+    hint.textContent = isVideo
+      ? 'Showing a still frame from your hero video — the real hero plays it in motion.'
+      : (cfg.image ? '' : 'No hero background image/video set yet — upload one in the Hero tab for a true preview.');
+  }
+  if (stillFrame) {
+    previewEl.style.backgroundColor = color;
+    previewEl.style.backgroundImage = `url(${stillFrame})`;
+    previewEl.classList.add('has-image');
+    const vg = cfg.vignette;
+    const overlay = (vg && vg.enabled)
+      ? `radial-gradient(circle at ${vg.x}% ${vg.y}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
+      : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
+    previewEl.style.setProperty('--hero-preview-overlay', overlay);
+  } else {
+    previewEl.style.backgroundColor = '';
+    previewEl.style.backgroundImage = '';
+    previewEl.classList.remove('has-image');
+    previewEl.style.removeProperty('--hero-preview-overlay');
+  }
 }
 
 // Connect button to modal
