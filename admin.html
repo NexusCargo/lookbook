@@ -41,6 +41,66 @@
   .edit-section h2 { margin: 0 0 20px; font-size: 20px; color: #0A3626; border-bottom: 2px solid #F2B705; padding-bottom: 12px; }
   .edit-section h3 { margin: 24px 0 12px; font-size: 15px; color: #0A3626; }
   .section-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+  /* Font Size Controls */
+  .font-size-control {
+    display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
+  }
+  .font-size-control input[type="range"] {
+    flex: 1; padding: 0; height: 6px; cursor: pointer;
+  }
+  .font-size-control input[type="number"] {
+    width: 60px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;
+  }
+  .font-size-value {
+    min-width: 50px; text-align: center; font-size: 13px; font-weight: 600; color: #0A3626;
+  }
+
+  /* Real-time Preview */
+  .hero-live-preview-container {
+    margin: 20px 0; padding: 0; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .hero-live-preview-header {
+    background: #0A3626; color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-live-preview-header::before {
+    content: '🔴'; animation: blink 1.5s infinite;
+  }
+  @keyframes blink {
+    0%, 49%, 100% { opacity: 1; }
+    50%, 99% { opacity: 0.3; }
+  }
+  .hero-live-preview-box {
+    background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
+    background-size: cover; background-position: center;
+    min-height: 300px; position: relative; overflow: hidden; display: flex;
+    align-items: center; justify-content: center; color: #fff; padding: 20px;
+  }
+  .hero-live-preview-box::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)); pointer-events: none;
+  }
+  .hero-preview-content {
+    position: absolute; width: 100%; height: 100%;
+  }
+  .hero-preview-text {
+    position: absolute; pointer-events: none; z-index: 10;
+  }
+  .hero-preview-text.text-eyebrow {
+    font-family: Verdana, sans-serif; letter-spacing: 2px;
+    font-weight: bold; text-transform: uppercase; color: #F2B705;
+  }
+  .hero-preview-text.text-h1 {
+    font-family: Georgia, serif; line-height: 0.9; letter-spacing: 1px; font-weight: normal;
+  }
+  .hero-preview-text.text-sub {
+    font-family: Georgia, serif; font-style: italic; max-width: 400px;
+  }
+  .hero-preview-text.text-edition {
+    font-family: Verdana, sans-serif; color: #D9A63A;
+  }
   .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
   .thumbs img { width: 70px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
   .thumbs .empty { font-size: 12px; color: #999; }
@@ -439,9 +499,44 @@
         </div>
         <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
+
+        <!-- Font Size Controls -->
+        <h3 style="margin-top: 20px;">Font Sizes</h3>
+        <div class="font-size-control">
+          <label style="min-width: 70px; margin-bottom: 0;">Eyebrow</label>
+          <input type="range" id="heroFontSize-eyebrow" min="8" max="20" value="11">
+          <input type="number" id="heroFontSizeNum-eyebrow" min="8" max="20" value="11">
+          <span class="font-size-value" id="heroFontSizeDisplay-eyebrow">11px</span>
+        </div>
+        <div class="font-size-control">
+          <label style="min-width: 70px; margin-bottom: 0;">Title</label>
+          <input type="range" id="heroFontSize-h1" min="24" max="80" value="48">
+          <input type="number" id="heroFontSizeNum-h1" min="24" max="80" value="48">
+          <span class="font-size-value" id="heroFontSizeDisplay-h1">48px</span>
+        </div>
+        <div class="font-size-control">
+          <label style="min-width: 70px; margin-bottom: 0;">Subtitle</label>
+          <input type="range" id="heroFontSize-sub" min="12" max="24" value="16">
+          <input type="number" id="heroFontSizeNum-sub" min="12" max="24" value="16">
+          <span class="font-size-value" id="heroFontSizeDisplay-sub">16px</span>
+        </div>
+        <div class="font-size-control">
+          <label style="min-width: 70px; margin-bottom: 0;">Edition</label>
+          <input type="range" id="heroFontSize-edition" min="10" max="16" value="13">
+          <input type="number" id="heroFontSizeNum-edition" min="10" max="16" value="13">
+          <span class="font-size-value" id="heroFontSizeDisplay-edition">13px</span>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="hero-live-preview-container">
+          <div class="hero-live-preview-header">Live Preview — Updates as you edit</div>
+          <div class="hero-live-preview-box" id="heroLivePreviewBox">
+            <div class="hero-preview-content" id="heroLivePreviewContent"></div>
+          </div>
+        </div>
         
         <button type="button" class="hero-modal-btn" id="openHeroModalBtn">📍 Position Hero Text</button>
-        <p style="font-size: 12px; color: #666; margin: 8px 0 0;">Drag text around the preview to reposition it for your background image. Changes persist only after Save.</p>
+        <p style="font-size: 12px; color: #666; margin: 8px 0 0;">Drag text around the positioning modal to reposition it for your background image. Changes persist only after Save.</p>
 
         <h3>Background</h3>
         <div id="bg-hero"></div>
@@ -2616,7 +2711,101 @@ document.addEventListener('DOMContentLoaded', () => {
   if (openHeroBtn) {
     openHeroBtn.addEventListener('click', openHeroModal);
   }
+  
+  // Initialize real-time preview
+  initializeLivePreview();
 });
+
+/* ===== REAL-TIME LIVE PREVIEW ===== */
+function initializeLivePreview() {
+  const fontSizeElements = ['eyebrow', 'h1', 'sub', 'edition'];
+  
+  fontSizeElements.forEach(el => {
+    const slider = document.getElementById(`heroFontSize-${el}`);
+    const numInput = document.getElementById(`heroFontSizeNum-${el}`);
+    const display = document.getElementById(`heroFontSizeDisplay-${el}`);
+    
+    if (slider && numInput) {
+      // Slider changes number input
+      slider.addEventListener('input', (e) => {
+        numInput.value = e.target.value;
+        display.textContent = e.target.value + 'px';
+        updateLivePreview();
+      });
+      
+      // Number input changes slider
+      numInput.addEventListener('input', (e) => {
+        slider.value = e.target.value;
+        display.textContent = e.target.value + 'px';
+        updateLivePreview();
+      });
+    }
+  });
+  
+  // Listen to text input changes
+  const textInputs = ['cp-hero-eyebrow', 'cp-hero-title', 'cp-hero-sub', 'cp-hero-edition'];
+  textInputs.forEach(inputId => {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.addEventListener('input', updateLivePreview);
+      input.addEventListener('change', updateLivePreview);
+    }
+  });
+  
+  // Initial render
+  updateLivePreview();
+}
+
+function updateLivePreview() {
+  const previewContent = document.getElementById('heroLivePreviewContent');
+  if (!previewContent) return;
+  
+  previewContent.innerHTML = '';
+  
+  const textMap = {
+    eyebrow: 'cp-hero-eyebrow',
+    h1: 'cp-hero-title',
+    sub: 'cp-hero-sub',
+    edition: 'cp-hero-edition'
+  };
+  
+  const classMap = {
+    eyebrow: 'text-eyebrow',
+    h1: 'text-h1',
+    sub: 'text-sub',
+    edition: 'text-edition'
+  };
+  
+  const defaultPositions = {
+    eyebrow: { x: 50, y: 80 },
+    h1: { x: 50, y: 150 },
+    sub: { x: 50, y: 280 },
+    edition: { x: 50, y: 360 }
+  };
+  
+  // Check if we have positions from the modal
+  const savedPositions = window.heroTextPositions || {};
+  
+  Object.keys(textMap).forEach(key => {
+    const inputId = textMap[key];
+    const input = document.getElementById(inputId);
+    const text = input ? input.value : '';
+    
+    const sizeInput = document.getElementById(`heroFontSizeNum-${key}`);
+    const fontSize = sizeInput ? sizeInput.value : (key === 'h1' ? 48 : (key === 'sub' ? 16 : (key === 'edition' ? 13 : 11)));
+    
+    const pos = savedPositions[key] || defaultPositions[key];
+    
+    const div = document.createElement('div');
+    div.className = `hero-preview-text ${classMap[key]}`;
+    div.textContent = text || `[${key}]`;
+    div.style.fontSize = fontSize + 'px';
+    div.style.left = pos.x + 'px';
+    div.style.top = pos.y + 'px';
+    
+    previewContent.appendChild(div);
+  });
+}
 
 boot();
 </script>
