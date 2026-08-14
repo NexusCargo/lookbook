@@ -541,8 +541,6 @@
   }
   .stop .subtitle.ivory{color:var(--ivory);}
   .point{
-    border-left:3px solid var(--gold);
-    padding-left:20px;
     margin-bottom:22px;
   }
   .point b{color:var(--ink);}
@@ -554,7 +552,6 @@
     color:#6b6556;
     margin-top:4px;
   }
-  .point.light{border-color:rgba(255,255,255,0.3);}
   .point.light b{color:var(--ivory);}
   .point.light span{color:#c9c2b2;}
 
@@ -726,13 +723,13 @@
     font-family:Verdana,sans-serif;
     font-size:13.5px;
     background:var(--ivory);
-    border:2px solid var(--ink);
+    border:1px solid #234438;
     border-radius:4px;
     color:var(--ink);
   }
   .inquiry textarea{resize:vertical; min-height:70px;}
-  .inquiry .row2{display:flex; gap:26px;}
-  .inquiry .row2 > div{flex:1; min-width:0;}
+  .inquiry .row2{display:flex; gap:14px;}
+  .inquiry .row2 > div{flex:1;}
   .inquiry button{
     font-family:Verdana,sans-serif;
     font-size:13px;
@@ -780,9 +777,6 @@
     .stop[data-order="normal"] .stop-content{order:1;}
     .stop[data-order="reversed"] .stop-visual{order:1;}
     .stop[data-order="reversed"] .stop-content{order:0;}
-  }
-  @media (max-width:480px){
-    .inquiry .row2{flex-direction:column; gap:16px;}
   }
 </style>
 </head>
@@ -960,7 +954,7 @@ const DEFAULT_STOP_META = {
   food: { side: 'reversed', theme: 'dark', accent: '#D9A63A' }
 };
 
-const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812', plan: '#1B1812' };
+const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812' };
 
 const DEFAULT_HERO_STRIPE = [
   { type: 'color', color: '#F2B705' },
@@ -979,12 +973,7 @@ const DEFAULT_CONTENT = {
     acc[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, ...DEFAULT_STOP_META[key] };
     return acc;
   }, {}),
-  sectionBg: {
-    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, video: null, mediaType: 'image' },
-    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, video: null, mediaType: 'image' },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, video: null, mediaType: 'image' },
-    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, video: null, mediaType: 'image' }
-  }
+  sectionBg: { hero: { color: DEFAULT_SECTION_COLOR.hero, image: null }, welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null }, regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null } }
 };
 
 const DEFAULT_COPY = {
@@ -1065,14 +1054,6 @@ const DEFAULT_COPY = {
     formTitle: 'Plan this trip with us',
     formLede: "Send your dates and we'll follow up with a route and pricing.",
     submitLabel: 'Send inquiry'
-  },
-  contact: {
-    whatsappNumber: '233000000000',
-    whatsappMessage: "Hi! I'm planning a trip to Ghana and would like help with transport.",
-    evisaUrl: 'https://evisa.immigration.gov.gh',
-    gettingAroundTitle: 'Getting around',
-    gettingAroundBody: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
-    gettingAroundCtaLabel: 'Message us on WhatsApp'
   }
 };
 
@@ -1191,10 +1172,9 @@ function mergeContent(loaded) {
   });
   const defaultVignette = { enabled: false, x: 50, y: 50 };
   c.sectionBg = {
-    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
-    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
-    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, video: null, mediaType: 'image', vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
+    hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
+    welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
   };
   return c;
 }
@@ -1361,94 +1341,33 @@ function applySectionBg(sectionBg) {
   const targets = {
     hero: document.querySelector('header.hero'),
     welcome: document.querySelector('.intro-left'),
-    regionsBanner: document.querySelector('.regions'),
-    plan: document.querySelector('.plan')
+    regionsBanner: document.querySelector('.regions')
   };
   // The background color applies immediately everywhere (cheap, and avoids
-  // a flash of unstyled section). The background *image/video* is real
-  // weight — for the hero it's applied right away since it's always visible
-  // on load, but welcome/regionsBanner/plan are further down the page, so
-  // their media is only fetched once the section is about to scroll into view.
+  // a flash of unstyled section). The background *image* is real weight —
+  // for the hero it's applied right away since it's always visible on
+  // load, but welcome/regionsBanner are further down the page, so their
+  // images are only fetched once the section is about to scroll into view.
   Object.entries(targets).forEach(([key, el]) => {
     if (!el) return;
     const cfg = (sectionBg && sectionBg[key]) || {};
     const color = cfg.color || DEFAULT_SECTION_COLOR[key];
-    const useVideo = cfg.mediaType === 'video' && !!cfg.video;
-    const imageUrl = (!useVideo && cfg.image) ? cloudinaryUrl(cfg.image) : null;
+    const imageUrl = cfg.image ? cloudinaryUrl(cfg.image) : null;
     el.style.backgroundColor = color;
 
-    const overlayGradient = () => {
-      const vg = cfg.vignette;
-      return (vg && vg.enabled)
-        ? `radial-gradient(circle at ${safePercent(vg.x, 50)}% ${safePercent(vg.y, 50)}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
-        : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
-    };
-
-    const clearVideoLayer = () => {
-      const existingVideo = el.querySelector(':scope > video.section-bg-video');
-      const existingOverlay = el.querySelector(':scope > .section-bg-overlay');
-      if (existingVideo) existingVideo.remove();
-      if (existingOverlay) existingOverlay.remove();
-    };
-
-    const applyVideo = () => {
-      el.style.backgroundImage = '';
-      el.classList.remove('section-bg');
-      // The video/overlay layers are absolutely positioned with a negative
-      // z-index so they always sit behind this section's normal (non
-      // positioned) text content, regardless of DOM order — so the parent
-      // just needs to be a positioning context.
-      if (!el.style.position) el.style.position = 'relative';
-      el.style.overflow = 'hidden';
-
-      let video = el.querySelector(':scope > video.section-bg-video');
-      if (!video) {
-        video = document.createElement('video');
-        video.className = 'section-bg-video';
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.setAttribute('aria-hidden', 'true');
-        video.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-2;';
-        el.insertBefore(video, el.firstChild);
-      }
-      const videoUrl = cloudinaryVideoUrl(cfg.video, 1600);
-      if (video.getAttribute('src') !== videoUrl) video.src = videoUrl;
-
-      let overlay = el.querySelector(':scope > .section-bg-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'section-bg-overlay';
-        overlay.style.cssText = 'position:absolute; inset:0; z-index:-1; pointer-events:none;';
-        el.insertBefore(overlay, video.nextSibling);
-      }
-      overlay.style.background = overlayGradient();
-    };
-
     const applyImage = () => {
-      clearVideoLayer();
       if (imageUrl) {
-        el.style.backgroundImage = `${overlayGradient()}, url("${imageUrl}")`;
+        const vg = cfg.vignette;
+        const overlay = (vg && vg.enabled)
+          ? `radial-gradient(circle at ${safePercent(vg.x, 50)}% ${safePercent(vg.y, 50)}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
+          : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
+        el.style.backgroundImage = `${overlay}, url("${imageUrl}")`;
         el.classList.add('section-bg');
       } else {
         el.style.backgroundImage = '';
         el.classList.remove('section-bg');
       }
     };
-
-    if (useVideo) {
-      if (key === 'hero') { applyVideo(); return; }
-      if (!('IntersectionObserver' in window)) { applyVideo(); return; }
-      const io = new IntersectionObserver((entries) => {
-        if (entries.some(e => e.isIntersecting)) {
-          applyVideo();
-          io.disconnect();
-        }
-      }, { rootMargin: '600px 0px' });
-      io.observe(el);
-      return;
-    }
 
     if (key === 'hero' || !imageUrl || !('IntersectionObserver' in window)) {
       applyImage();
@@ -1587,7 +1506,6 @@ function applyCopy(copy) {
   document.getElementById('planFormTitle').textContent = c.plan?.formTitle ?? DEFAULT_COPY.plan.formTitle;
   document.getElementById('planFormLede').textContent = c.plan?.formLede ?? DEFAULT_COPY.plan.formLede;
   document.getElementById('inquirySubmitLabel').textContent = c.plan?.submitLabel ?? DEFAULT_COPY.plan.submitLabel;
-  CONTACT_CFG = { ...DEFAULT_COPY.contact, ...(c.contact || {}) };
   wirePlanCards();
 }
 
@@ -1626,9 +1544,8 @@ function renderPlanCard(card) {
   return `<div class="plan-card"><h3>${title}</h3>${body}</div>`;
 }
 
-// Populated from admin-editable copy.contact (falls back to DEFAULT_COPY.contact
-// until site data loads).
-let CONTACT_CFG = DEFAULT_COPY.contact;
+// TODO: replace with your real WhatsApp Business number (country code, no + or spaces), e.g. '233241234567'
+const WHATSAPP_NUMBER = '233000000000';
 
 function wirePlanCards() {
   const container = document.getElementById('planCardsContainer');
@@ -1640,13 +1557,13 @@ function wirePlanCards() {
         cardEl.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       } else if (key === 'getting-around') {
         openQuickModal({
-          title: CONTACT_CFG.gettingAroundTitle,
-          body: CONTACT_CFG.gettingAroundBody,
-          ctaLabel: CONTACT_CFG.gettingAroundCtaLabel,
-          ctaHref: `https://wa.me/${CONTACT_CFG.whatsappNumber}?text=${encodeURIComponent(CONTACT_CFG.whatsappMessage)}`
+          title: 'Getting around',
+          body: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
+          ctaLabel: 'Message us on WhatsApp',
+          ctaHref: `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I\'m planning a trip to Ghana and would like help with transport.')}`
         });
       } else if (key === 'entry') {
-        window.open(CONTACT_CFG.evisaUrl, '_blank', 'noopener');
+        window.open('https://evisa.immigration.gov.gh', '_blank', 'noopener');
       }
     };
     cardEl.addEventListener('click', activate);
