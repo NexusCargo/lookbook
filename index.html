@@ -957,7 +957,7 @@ const DEFAULT_STOP_META = {
   food: { side: 'reversed', theme: 'dark', accent: '#D9A63A' }
 };
 
-const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812' };
+const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812', plan: '#1B1812' };
 
 const DEFAULT_HERO_STRIPE = [
   { type: 'color', color: '#F2B705' },
@@ -976,7 +976,7 @@ const DEFAULT_CONTENT = {
     acc[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, ...DEFAULT_STOP_META[key] };
     return acc;
   }, {}),
-  sectionBg: { hero: { color: DEFAULT_SECTION_COLOR.hero, image: null }, welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null }, regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null } }
+  sectionBg: { hero: { color: DEFAULT_SECTION_COLOR.hero, image: null }, welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null }, regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null }, plan: { color: DEFAULT_SECTION_COLOR.plan, image: null } }
 };
 
 const DEFAULT_COPY = {
@@ -1057,6 +1057,14 @@ const DEFAULT_COPY = {
     formTitle: 'Plan this trip with us',
     formLede: "Send your dates and we'll follow up with a route and pricing.",
     submitLabel: 'Send inquiry'
+  },
+  contact: {
+    whatsappNumber: '233000000000',
+    whatsappMessage: "Hi! I'm planning a trip to Ghana and would like help with transport.",
+    evisaUrl: 'https://evisa.immigration.gov.gh',
+    gettingAroundTitle: 'Getting around',
+    gettingAroundBody: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
+    gettingAroundCtaLabel: 'Message us on WhatsApp'
   }
 };
 
@@ -1177,7 +1185,8 @@ function mergeContent(loaded) {
   c.sectionBg = {
     hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
     welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
+    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
   };
   return c;
 }
@@ -1344,7 +1353,8 @@ function applySectionBg(sectionBg) {
   const targets = {
     hero: document.querySelector('header.hero'),
     welcome: document.querySelector('.intro-left'),
-    regionsBanner: document.querySelector('.regions')
+    regionsBanner: document.querySelector('.regions'),
+    plan: document.querySelector('.plan')
   };
   // The background color applies immediately everywhere (cheap, and avoids
   // a flash of unstyled section). The background *image* is real weight —
@@ -1509,6 +1519,7 @@ function applyCopy(copy) {
   document.getElementById('planFormTitle').textContent = c.plan?.formTitle ?? DEFAULT_COPY.plan.formTitle;
   document.getElementById('planFormLede').textContent = c.plan?.formLede ?? DEFAULT_COPY.plan.formLede;
   document.getElementById('inquirySubmitLabel').textContent = c.plan?.submitLabel ?? DEFAULT_COPY.plan.submitLabel;
+  CONTACT_CFG = { ...DEFAULT_COPY.contact, ...(c.contact || {}) };
   wirePlanCards();
 }
 
@@ -1547,8 +1558,9 @@ function renderPlanCard(card) {
   return `<div class="plan-card"><h3>${title}</h3>${body}</div>`;
 }
 
-// TODO: replace with your real WhatsApp Business number (country code, no + or spaces), e.g. '233241234567'
-const WHATSAPP_NUMBER = '233000000000';
+// Populated from admin-editable copy.contact (falls back to DEFAULT_COPY.contact
+// until site data loads).
+let CONTACT_CFG = DEFAULT_COPY.contact;
 
 function wirePlanCards() {
   const container = document.getElementById('planCardsContainer');
@@ -1560,13 +1572,13 @@ function wirePlanCards() {
         cardEl.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       } else if (key === 'getting-around') {
         openQuickModal({
-          title: 'Getting around',
-          body: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
-          ctaLabel: 'Message us on WhatsApp',
-          ctaHref: `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I\'m planning a trip to Ghana and would like help with transport.')}`
+          title: CONTACT_CFG.gettingAroundTitle,
+          body: CONTACT_CFG.gettingAroundBody,
+          ctaLabel: CONTACT_CFG.gettingAroundCtaLabel,
+          ctaHref: `https://wa.me/${CONTACT_CFG.whatsappNumber}?text=${encodeURIComponent(CONTACT_CFG.whatsappMessage)}`
         });
       } else if (key === 'entry') {
-        window.open('https://evisa.immigration.gov.gh', '_blank', 'noopener');
+        window.open(CONTACT_CFG.evisaUrl, '_blank', 'noopener');
       }
     };
     cardEl.addEventListener('click', activate);

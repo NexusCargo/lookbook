@@ -509,10 +509,26 @@
         <button class="list-add-btn" id="addPlanCardBtn" type="button">+ Add card</button>
         <div class="input-group" style="margin-top:16px;"><label>Closing line</label><input type="text" id="cp-plan-closing"></div>
 
+        <h3 style="margin-top:24px;">Section background</h3>
+        <div id="bg-plan"></div>
+
         <h3 style="margin-top:24px;">Inquiry form (right-hand box)</h3>
         <div class="input-group"><label>Form heading</label><input type="text" id="cp-plan-formtitle"></div>
         <div class="input-group"><label>Form subtext</label><input type="text" id="cp-plan-formlede"></div>
         <div class="input-group"><label>Submit button label</label><input type="text" id="cp-plan-submitlabel"></div>
+
+        <h3 style="margin-top:24px;">WhatsApp &amp; e-visa links</h3>
+        <p style="font-size:12px; color:#888; margin:0 0 10px;">Used by the "Getting around" and "Entry" cards above.</p>
+        <div class="two-col">
+          <div class="input-group"><label>WhatsApp number (country code, no + or spaces)</label><input type="text" id="cp-contact-whatsapp"></div>
+          <div class="input-group"><label>E-visa website URL</label><input type="text" id="cp-contact-evisa"></div>
+        </div>
+        <div class="input-group"><label>WhatsApp pre-filled message</label><input type="text" id="cp-contact-wamessage"></div>
+        <div class="two-col">
+          <div class="input-group"><label>"Getting around" popup title</label><input type="text" id="cp-contact-ga-title"></div>
+          <div class="input-group"><label>Popup button label</label><input type="text" id="cp-contact-ga-cta"></div>
+        </div>
+        <div class="input-group"><label>"Getting around" popup text</label><textarea id="cp-contact-ga-body"></textarea></div>
       </div>
     </div>
 
@@ -542,6 +558,7 @@
     <div class="tab-panel" id="tab-inquiries">
       <div class="edit-section">
         <h2>Inquiries</h2>
+        <div id="inquiriesActionError" class="hidden" style="color:#d32f2f; font-size:13px; padding:10px 12px; background:#ffebee; border-radius:4px; border-left:3px solid #d32f2f; margin-bottom:14px;"></div>
         <div id="inquiriesList"></div>
         <div id="inquiriesEmpty" class="hidden" style="color:#888; font-size:14px; padding:20px 0;">No inquiries yet.</div>
       </div>
@@ -585,7 +602,7 @@ const DEFAULT_STOP_META = {
   food: { side: 'reversed', theme: 'dark', accent: '#D9A63A' }
 };
 
-const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812' };
+const DEFAULT_SECTION_COLOR = { hero: '#0A3626', welcome: '#0E4D34', regionsBanner: '#1B1812', plan: '#1B1812' };
 
 const DEFAULT_COPY = {
   hero: { eyebrow: 'A LOOKBOOK OF THE GOLD COAST', title: 'GHANA', sub: 'Castles, canopy walks, kente looms, and the warmest welcome in West Africa.', edition: '2026 EDITION' },
@@ -651,6 +668,14 @@ const DEFAULT_COPY = {
     formTitle: 'Plan this trip with us',
     formLede: "Send your dates and we'll follow up with a route and pricing.",
     submitLabel: 'Send inquiry'
+  },
+  contact: {
+    whatsappNumber: '233000000000',
+    whatsappMessage: "Hi! I'm planning a trip to Ghana and would like help with transport.",
+    evisaUrl: 'https://evisa.immigration.gov.gh',
+    gettingAroundTitle: 'Getting around',
+    gettingAroundBody: "Message us your dates and we'll match you with a driver for the days you need — airport pickup, city runs, or the full coast-to-savanna route.",
+    gettingAroundCtaLabel: 'Message us on WhatsApp'
   }
 };
 
@@ -725,6 +750,7 @@ function defaultContent() {
     sectionBg: {
       hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { enabled: false, x: 50, y: 50 } },
       welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { enabled: false, x: 50, y: 50 } },
+      plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, vignette: { enabled: false, x: 50, y: 50 } },
       regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { enabled: false, x: 50, y: 50 } }
     }
   };
@@ -758,6 +784,7 @@ async function boot() {
       renderBgEditor('hero', 'Hero background');
       renderBgEditor('welcome', 'Welcome panel background');
       renderBgEditor('regionsBanner', 'Regions banner background');
+      renderBgEditor('plan', 'Plan your trip background');
       renderRegionCards();
       renderStopsList();
       renderColorsForm();
@@ -821,7 +848,8 @@ function mergeContent(loaded) {
   c.sectionBg = {
     hero: { color: DEFAULT_SECTION_COLOR.hero, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.hero) || {}) },
     welcome: { color: DEFAULT_SECTION_COLOR.welcome, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.welcome) || {}) },
-    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) }
+    regionsBanner: { color: DEFAULT_SECTION_COLOR.regionsBanner, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.regionsBanner) || {}) },
+    plan: { color: DEFAULT_SECTION_COLOR.plan, image: null, vignette: { ...defaultVignette }, ...((loaded && loaded.sectionBg && loaded.sectionBg.plan) || {}) }
   };
   return c;
 }
@@ -1157,6 +1185,19 @@ function renderCopyForm() {
   document.getElementById('cp-plan-formlede').addEventListener('input', (e) => { copy.plan.formLede = e.target.value; });
   document.getElementById('cp-plan-submitlabel').value = copy.plan.submitLabel;
   document.getElementById('cp-plan-submitlabel').addEventListener('input', (e) => { copy.plan.submitLabel = e.target.value; });
+
+  document.getElementById('cp-contact-whatsapp').value = copy.contact.whatsappNumber;
+  document.getElementById('cp-contact-whatsapp').addEventListener('input', (e) => { copy.contact.whatsappNumber = e.target.value.trim(); });
+  document.getElementById('cp-contact-evisa').value = copy.contact.evisaUrl;
+  document.getElementById('cp-contact-evisa').addEventListener('input', (e) => { copy.contact.evisaUrl = e.target.value.trim(); });
+  document.getElementById('cp-contact-wamessage').value = copy.contact.whatsappMessage;
+  document.getElementById('cp-contact-wamessage').addEventListener('input', (e) => { copy.contact.whatsappMessage = e.target.value; });
+  document.getElementById('cp-contact-ga-title').value = copy.contact.gettingAroundTitle;
+  document.getElementById('cp-contact-ga-title').addEventListener('input', (e) => { copy.contact.gettingAroundTitle = e.target.value; });
+  document.getElementById('cp-contact-ga-cta').value = copy.contact.gettingAroundCtaLabel;
+  document.getElementById('cp-contact-ga-cta').addEventListener('input', (e) => { copy.contact.gettingAroundCtaLabel = e.target.value; });
+  document.getElementById('cp-contact-ga-body').value = copy.contact.gettingAroundBody;
+  document.getElementById('cp-contact-ga-body').addEventListener('input', (e) => { copy.contact.gettingAroundBody = e.target.value; });
 
   const planEditor = createListEditor(document.getElementById('planCardsList'), copy.plan.cards, [
     { key: 'title', label: 'Card title', type: 'text' },
@@ -1720,6 +1761,16 @@ function formatInquiryDate(ts) {
     ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
+function showInquiryActionError(err) {
+  const banner = document.getElementById('inquiriesActionError');
+  if (!banner) return;
+  let msg = err && (err.code === 'permission-denied' || String(err.message || '').includes('permission'))
+    ? 'Firestore is blocking this action ("Missing or insufficient permissions"). Your security rules need to allow signed-in admins to update and delete documents in the "inquiries" collection — the current rules only let the public create new ones.'
+    : `Something went wrong: ${err && err.message ? err.message : err}`;
+  banner.textContent = msg;
+  banner.classList.remove('hidden');
+}
+
 function renderInquiries(items) {
   const list = document.getElementById('inquiriesList');
   const empty = document.getElementById('inquiriesEmpty');
@@ -1769,6 +1820,7 @@ function renderInquiries(items) {
         await updateDoc(doc(db, 'inquiries', item.id), { read: !item.read });
       } catch (err) {
         console.error('Failed to update inquiry:', err);
+        showInquiryActionError(err);
       }
     });
     const deleteBtn = document.createElement('button');
@@ -1782,6 +1834,7 @@ function renderInquiries(items) {
         await deleteDoc(doc(db, 'inquiries', item.id));
       } catch (err) {
         console.error('Failed to delete inquiry:', err);
+        showInquiryActionError(err);
       }
     });
     actions.appendChild(toggleReadBtn);
@@ -1799,6 +1852,7 @@ function renderInquiries(items) {
           await updateDoc(doc(db, 'inquiries', item.id), { read: true });
         } catch (err) {
           console.error('Failed to mark inquiry read:', err);
+          showInquiryActionError(err);
         }
       }
     });
