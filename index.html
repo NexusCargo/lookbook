@@ -1850,22 +1850,55 @@ document.querySelectorAll('.region-row').forEach(btn => {
 
 function applyHeroTextPositions(positions) {
   if (!positions) return;
-  
+
   const positionMap = {
     eyebrow: '.hero .eyebrow',
     h1: '.hero h1',
     sub: '.hero p.sub',
     edition: '.hero .edition'
   };
-  
+
   Object.entries(positionMap).forEach(([key, selector]) => {
     const el = document.querySelector(selector);
     if (el && positions[key]) {
       const pos = positions[key];
+      // Positions are stored as percentages (0-100) of the hero box, not
+      // raw pixels — that's what lets a spot picked in the admin preview
+      // (a much smaller box) land in the same place on the real,
+      // full-viewport hero. If we ever see an old pixel-based value
+      // (>100), skip it rather than mis-place text off-screen.
+      if (pos.x > 100 || pos.y > 100) return;
       el.style.position = 'absolute';
-      el.style.left = pos.x + 'px';
-      el.style.top = pos.y + 'px';
+      el.style.left = pos.x + '%';
+      el.style.top = pos.y + '%';
     }
+  });
+}
+
+function applyHeroFontSizes(sizes) {
+  if (!sizes) return;
+  const map = { eyebrow: '.hero .eyebrow', h1: '.hero h1', sub: '.hero p.sub', edition: '.hero .edition' };
+  Object.entries(map).forEach(([key, selector]) => {
+    const el = document.querySelector(selector);
+    if (el && sizes[key]) el.style.fontSize = sizes[key] + 'px';
+  });
+}
+
+function applyHeroFontColors(colors) {
+  if (!colors) return;
+  const map = { eyebrow: '.hero .eyebrow', h1: '.hero h1', sub: '.hero p.sub', edition: '.hero .edition' };
+  Object.entries(map).forEach(([key, selector]) => {
+    const el = document.querySelector(selector);
+    if (el && colors[key]) el.style.color = colors[key];
+  });
+}
+
+function applyHeroTextVisibility(visibility) {
+  if (!visibility) return;
+  const map = { eyebrow: '.hero .eyebrow', h1: '.hero h1', sub: '.hero p.sub', edition: '.hero .edition' };
+  Object.entries(map).forEach(([key, selector]) => {
+    const el = document.querySelector(selector);
+    if (el && visibility[key] === false) el.style.display = 'none';
   });
 }
 
@@ -1885,9 +1918,18 @@ async function init() {
   applyMarkerStyle(data.content.markerStyle);
   renderStops(data.content, data.copy);
   renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
-  // Apply hero text positions if they exist
+  // Apply hero text positions, font sizes, colors, and visibility if they exist
   if (data.content.heroTextPositions) {
     setTimeout(() => applyHeroTextPositions(data.content.heroTextPositions), 100);
+  }
+  if (data.content.heroFontSize) {
+    setTimeout(() => applyHeroFontSizes(data.content.heroFontSize), 100);
+  }
+  if (data.content.heroFontColor) {
+    setTimeout(() => applyHeroFontColors(data.content.heroFontColor), 100);
+  }
+  if (data.content.heroTextVisibility) {
+    setTimeout(() => applyHeroTextVisibility(data.content.heroTextVisibility), 100);
   }
   attachErrorHandling();
   preloadImages(data.content);
@@ -2020,6 +2062,10 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
     status.textContent = 'Sending…';
     status.className = 'status';
 
+    // Best-effort visitor context — only collected at the moment someone
+    // submits an inquiry (not tracked on every page load).
+    const meta = await getVisitorMeta();
+
     // Write directly to Firestore (no backend API needed)
     const submission = {
       name: payload.name,
@@ -2030,7 +2076,12 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
       company: payload.company,
       timestamp: new Date(),
       read: false,
-      ip: 'client'  // Client-side, no IP logging
+      ip: meta.ip || 'unknown',
+      location: meta.location || 'unknown',
+      browser: meta.browser,
+      os: meta.os,
+      device: meta.device,
+      userAgent: meta.userAgent
     };
 
     try {
@@ -2052,6 +2103,60 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
     submitBtn.disabled = false;
   }
 });
+
+// Best-effort browser/OS/device parsing from the user agent string, plus an
+// IP + rough location lookup via a free, keyless, CORS-enabled geolocation
+// API. Both are collected only when someone submits the inquiry form, and
+// neither ever blocks submission if the lookup fails or is slow.
+function parseBrowser(ua) {
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/OPR\//.test(ua) || /Opera/.test(ua)) return 'Opera';
+  if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return 'Safari';
+  return 'Unknown';
+}
+function parseOS(ua) {
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/Mac OS X/.test(ua)) return 'macOS';
+  if (/Android/.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod|iOS/.test(ua)) return 'iOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Unknown';
+}
+function parseDevice(ua) {
+  if (/iPad|Tablet/i.test(ua)) return 'Tablet';
+  if (/Mobi|Android/i.test(ua)) return 'Mobile';
+  return 'Desktop';
+}
+async function getVisitorMeta() {
+  const ua = navigator.userAgent || '';
+  const meta = {
+    userAgent: ua,
+    browser: parseBrowser(ua),
+    os: parseOS(ua),
+    device: parseDevice(ua),
+    ip: null,
+    location: null
+  };
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const geo = await res.json();
+      if (!geo.error) {
+        meta.ip = geo.ip || null;
+        meta.location = [geo.city, geo.region, geo.country_name].filter(Boolean).join(', ') || null;
+      }
+    }
+  } catch (err) {
+    // Geolocation lookup is best-effort only — never block the inquiry over it.
+  }
+  return meta;
+}
+
 </script>
 
 </body>

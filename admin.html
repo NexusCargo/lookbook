@@ -55,22 +55,33 @@
   .font-size-value {
     min-width: 50px; text-align: center; font-size: 13px; font-weight: 600; color: #0A3626;
   }
+  .font-size-control input[type="color"] {
+    width: 36px; height: 30px; padding: 2px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; flex: 0 0 auto;
+  }
 
   /* Real-time Preview */
   .hero-live-preview-container {
-    margin: 20px 0; padding: 0; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin: 20px 0; padding: 0; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    border: 1px solid #1a1a1a;
   }
   .hero-live-preview-header {
-    background: #0A3626; color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 600;
+    background: linear-gradient(90deg, #14110a 0%, #1c1408 55%, #14110a 100%);
+    color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 600;
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    border-bottom: 1px solid rgba(242,183,5,.25);
   }
+  .hero-live-preview-header .hlp-label{ display:flex; align-items:center; gap: 8px; }
   .hero-live-preview-header .hlp-label::before {
-    content: '🔴'; animation: blink 1.5s infinite; margin-right: 8px;
+    content: '⚡'; margin-right: 0; font-size: 15px;
+    color: #F2B705; text-shadow: 0 0 6px rgba(242,183,5,.9), 0 0 14px rgba(242,183,5,.5);
+    animation: boltFlicker 2.4s ease-in-out infinite;
   }
-  @keyframes blink {
-    0%, 49%, 100% { opacity: 1; }
-    50%, 99% { opacity: 0.3; }
+  @keyframes boltFlicker {
+    0%, 100% { opacity: 1; text-shadow: 0 0 6px rgba(242,183,5,.9), 0 0 14px rgba(242,183,5,.5); }
+    45% { opacity: 1; }
+    50% { opacity: .35; text-shadow: none; }
+    55% { opacity: 1; }
   }
   .hero-reset-btn {
     background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35);
@@ -78,10 +89,92 @@
     flex-shrink: 0;
   }
   .hero-reset-btn:hover { background: rgba(255,255,255,.22); }
+
+  /* Editor theme switcher */
+  .hero-theme-switch {
+    display: flex; align-items: center; gap: 10px; margin: 18px 0 0; flex-wrap: wrap;
+  }
+  .hero-theme-switch label { margin: 0; font-size: 12px; color: #666; }
+  .hero-theme-switch select {
+    width: auto; padding: 6px 10px; font-size: 12.5px; border-radius: 5px; border: 1px solid #ccc;
+  }
+  .hero-theme-note { font-size: 11px; color: #999; }
+
+  /* "Layers" strip — a nod to a design-tool layer list: one row per hero
+     text element, click to jump to its controls, eye icon toggles whether
+     it renders on the live page at all. Base (Bolt theme) styling: */
+  .hero-layers-strip {
+    display: flex; gap: 6px; padding: 8px 12px; background: #0d0c08;
+    border-bottom: 1px solid rgba(242,183,5,.15); flex-wrap: wrap;
+  }
+  .hero-layer-chip {
+    display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px; font-size: 11px; color: #ddd; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .hero-layer-chip:hover { background: rgba(242,183,5,.12); border-color: rgba(242,183,5,.4); }
+  .hero-layer-chip .swatch { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  .hero-layer-eye {
+    background: none; border: none; color: #999; font-size: 12px; cursor: pointer; padding: 0 2px; line-height: 1;
+  }
+  .hero-layer-eye:hover { color: #fff; }
+  .hero-layer-chip.layer-hidden { opacity: .45; }
+  .hero-layer-chip.layer-hidden .swatch { filter: grayscale(1); }
+  .hero-preview-text.layer-hidden { opacity: .2; filter: grayscale(1); }
+
+  /* ---- Neon Overdrive theme ---- */
+  .hero-live-preview-container.theme-neon {
+    border-color: rgba(255,0,200,.4);
+    animation: neonContainerGlow 3s ease-in-out infinite;
+  }
+  @keyframes neonContainerGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,0,200,.22), 0 0 40px rgba(0,229,255,.12); }
+    50% { box-shadow: 0 0 30px rgba(255,0,200,.4), 0 0 55px rgba(0,229,255,.28); }
+  }
+  .theme-neon .hero-live-preview-header {
+    background: linear-gradient(90deg, #1a0033 0%, #2b0a1f 55%, #1a0033 100%);
+    border-bottom: 1px solid rgba(255,0,200,.35);
+  }
+  .theme-neon .hero-live-preview-header .hlp-label::before {
+    content: '⚡'; color: #ff2fd0;
+    text-shadow: 0 0 8px #ff2fd0, 0 0 18px #00e5ff, 0 0 28px rgba(255,0,200,.7);
+    animation: boltFlicker 1.5s ease-in-out infinite;
+  }
+  .theme-neon .hero-layers-strip { background: #0a0014; border-bottom: 1px solid rgba(0,229,255,.25); }
+  .theme-neon .hero-layer-chip { border-color: rgba(0,229,255,.3); background: rgba(255,0,200,.06); }
+  .theme-neon .hero-layer-chip:hover { background: rgba(0,229,255,.15); border-color: #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,.5); }
+  .theme-neon .hero-layer-chip .swatch { box-shadow: 0 0 8px currentColor; }
+  .theme-neon .hero-reset-btn { border-color: rgba(255,0,200,.5); }
+  .theme-neon .hero-reset-btn:hover { background: rgba(255,0,200,.18); }
+
+  /* ---- Studio Timeline theme (Premiere / After Effects inspired) ---- */
+  .theme-timeline .hero-live-preview-header {
+    background: #1e1e1e; border-bottom: 1px solid #333; color: #ccc;
+  }
+  .theme-timeline .hero-live-preview-header .hlp-label::before {
+    content: '🎬'; animation: none; text-shadow: none; color: inherit; margin-right: 8px;
+  }
+  .theme-timeline .hero-layers-strip {
+    flex-direction: column; gap: 0; padding: 0; background: #171717; border-bottom: 1px solid #333;
+  }
+  .theme-timeline .hero-layer-chip {
+    border-radius: 0; border: none; border-bottom: 1px solid #262626; background: #1c1c1c;
+    justify-content: flex-start; padding: 8px 12px; font-family: 'Courier New', monospace;
+  }
+  .theme-timeline .hero-layer-chip:hover { background: #242424; }
+  .hero-layer-track {
+    flex: 1; height: 4px; background: #2b2b2b; border-radius: 2px; position: relative; margin-left: 10px;
+  }
+  .hero-layer-marker {
+    position: absolute; top: 50%; width: 8px; height: 8px; background: #F2B705; border-radius: 1px;
+    transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 4px rgba(242,183,5,.8);
+  }
+  .theme-timeline .hero-live-preview-box { border-top: 2px solid #333; }
   .hero-live-preview-box {
     background: linear-gradient(135deg, #0A3626 0%, #062521 100%);
     background-size: cover; background-position: center; background-repeat: no-repeat;
-    min-height: 300px; position: relative; overflow: hidden; display: flex;
+    aspect-ratio: 16 / 9; min-height: 0; position: relative; overflow: hidden; display: flex;
     align-items: center; justify-content: center; color: #fff; padding: 20px;
   }
   .hero-live-preview-box::before {
@@ -179,6 +272,7 @@
   .inquiry-card-date { font-size: 12px; color: #888; white-space: nowrap; }
   .inquiry-card-preview { font-size: 13px; color: #555; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .inquiry-card-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 13.5px; color: #333; white-space: pre-wrap; }
+  .inquiry-card-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #eee; font-size: 11.5px; color: #888; white-space: normal; font-family: monospace; }
   .inquiry-card.expanded .inquiry-card-body { display: block; }
   .inquiry-card-actions { margin-top: 10px; display: flex; gap: 8px; }
   .inquiry-card-actions button { font-size: 12px; padding: 6px 12px; }
@@ -420,39 +514,53 @@
         <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
 
-        <!-- Font Size Controls -->
-        <h3 style="margin-top: 20px;">Font Sizes</h3>
+        <!-- Font Size & Color Controls -->
+        <h3 style="margin-top: 20px;">Font Size &amp; Color</h3>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Eyebrow</label>
           <input type="range" id="heroFontSize-eyebrow" min="8" max="20" value="11">
           <input type="number" id="heroFontSizeNum-eyebrow" min="8" max="20" value="11">
           <span class="font-size-value" id="heroFontSizeDisplay-eyebrow">11px</span>
+          <input type="color" id="heroFontColor-eyebrow" value="#F2B705" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Title</label>
           <input type="range" id="heroFontSize-h1" min="24" max="80" value="48">
           <input type="number" id="heroFontSizeNum-h1" min="24" max="80" value="48">
           <span class="font-size-value" id="heroFontSizeDisplay-h1">48px</span>
+          <input type="color" id="heroFontColor-h1" value="#EDE6D6" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Subtitle</label>
           <input type="range" id="heroFontSize-sub" min="12" max="24" value="16">
           <input type="number" id="heroFontSizeNum-sub" min="12" max="24" value="16">
           <span class="font-size-value" id="heroFontSizeDisplay-sub">16px</span>
+          <input type="color" id="heroFontColor-sub" value="#EDE6D6" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Edition</label>
           <input type="range" id="heroFontSize-edition" min="10" max="16" value="13">
           <input type="number" id="heroFontSizeNum-edition" min="10" max="16" value="13">
           <span class="font-size-value" id="heroFontSizeDisplay-edition">13px</span>
+          <input type="color" id="heroFontColor-edition" value="#D9A63A" title="Text color">
         </div>
 
         <!-- Live Preview -->
-        <div class="hero-live-preview-container">
+        <div class="hero-theme-switch">
+          <label for="heroEditorTheme">Editor style</label>
+          <select id="heroEditorTheme">
+            <option value="bolt">⚡ Bolt</option>
+            <option value="timeline">🎬 Studio Timeline</option>
+            <option value="neon">✨ Neon Overdrive</option>
+          </select>
+          <span class="hero-theme-note">This only changes how this editor looks — your live page is unaffected.</span>
+        </div>
+        <div class="hero-live-preview-container theme-bolt" id="heroLivePreviewContainer">
           <div class="hero-live-preview-header">
             <span class="hlp-label">Live Preview — drag text to reposition</span>
             <button type="button" class="hero-reset-btn" id="heroResetPositions">↺ Reset positions</button>
           </div>
+          <div class="hero-layers-strip" id="heroLayersStrip"></div>
           <div class="hero-live-preview-box" id="heroLivePreviewBox">
             <div class="hero-preview-content" id="heroLivePreviewContent"></div>
           </div>
@@ -2045,6 +2153,22 @@ function renderInquiries(items) {
     msgLine.textContent = item.message || '(no message)';
     body.appendChild(msgLine);
 
+    // Visitor metadata — only present on inquiries submitted after this
+    // feature shipped; older records simply won't show this block.
+    if (item.ip || item.location || item.browser || item.os || item.device) {
+      const metaBlock = document.createElement('div');
+      metaBlock.className = 'inquiry-card-meta';
+      const metaParts = [
+        item.ip ? `IP: ${item.ip}` : null,
+        item.location ? `Location: ${item.location}` : null,
+        item.device ? `Device: ${item.device}` : null,
+        item.os ? `OS: ${item.os}` : null,
+        item.browser ? `Browser: ${item.browser}` : null
+      ].filter(Boolean);
+      metaBlock.textContent = metaParts.join('  ·  ');
+      body.appendChild(metaBlock);
+    }
+
     const actions = document.createElement('div');
     actions.className = 'inquiry-card-actions';
     const toggleReadBtn = document.createElement('button');
@@ -2712,12 +2836,17 @@ const HERO_TEXT_ELEMENTS = [
 ];
 
 const DEFAULT_HERO_FONT_SIZE = { eyebrow: 11, h1: 48, sub: 16, edition: 13 };
+const DEFAULT_HERO_FONT_COLOR = { eyebrow: '#F2B705', h1: '#EDE6D6', sub: '#EDE6D6', edition: '#D9A63A' };
 
+// Positions are stored as PERCENTAGES of the hero box (0-100), not raw pixels.
+// This is what makes a position dragged in this (smaller, differently-shaped)
+// admin preview line up correctly on the real hero, which is a full-viewport
+// box of a totally different size. Percentages scale; pixels don't.
 const DEFAULT_HERO_TEXT_POSITIONS = {
-  eyebrow: { x: 50, y: 80 },
-  h1: { x: 50, y: 150 },
-  sub: { x: 50, y: 280 },
-  edition: { x: 50, y: 360 }
+  eyebrow: { x: 8, y: 30 },
+  h1: { x: 8, y: 38 },
+  sub: { x: 8, y: 58 },
+  edition: { x: 8, y: 80 }
 };
 
 // Wherever a piece of hero text is dragged and Save is hit, that's what
@@ -2726,17 +2855,45 @@ const DEFAULT_HERO_TEXT_POSITIONS = {
 function heroPositions() {
   if (!content.heroTextPositions) {
     content.heroTextPositions = JSON.parse(JSON.stringify(DEFAULT_HERO_TEXT_POSITIONS));
+  } else {
+    // Migrate old data: earlier versions stored raw pixel offsets from a
+    // preview box of a totally different size than the real hero, which is
+    // why positions looked right here but overlapped/exploded on the live
+    // page. Any stored value over 100 can't be a valid percentage, so it's
+    // unmigratable old pixel data — fall back to the default layout instead
+    // of carrying the bug forward.
+    const p = content.heroTextPositions;
+    const isLegacy = Object.values(p).some(v => v && (v.x > 100 || v.y > 100));
+    if (isLegacy) {
+      content.heroTextPositions = JSON.parse(JSON.stringify(DEFAULT_HERO_TEXT_POSITIONS));
+    }
   }
   return content.heroTextPositions;
 }
 
-let heroDrag = null; // { elId, offsetX, offsetY }
+function heroFontSizes() {
+  if (!content.heroFontSize) content.heroFontSize = { ...DEFAULT_HERO_FONT_SIZE };
+  return content.heroFontSize;
+}
+
+function heroFontColors() {
+  if (!content.heroFontColor) content.heroFontColor = { ...DEFAULT_HERO_FONT_COLOR };
+  return content.heroFontColor;
+}
+
+let heroDrag = null; // { elId, offsetXPct, offsetYPct }
 
 function makeHeroTextDraggable(el, elId) {
   el.addEventListener('mousedown', (e) => {
     e.preventDefault();
+    const previewContent = document.getElementById('heroLivePreviewContent');
+    const previewRect = previewContent.getBoundingClientRect();
     const rect = el.getBoundingClientRect();
-    heroDrag = { elId, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+    heroDrag = {
+      elId,
+      offsetXPct: ((e.clientX - rect.left) / previewRect.width) * 100,
+      offsetYPct: ((e.clientY - rect.top) / previewRect.height) * 100
+    };
     el.classList.add('dragging');
   });
 }
@@ -2747,11 +2904,11 @@ document.addEventListener('mousemove', (e) => {
   const el = previewContent && document.getElementById(`heroPreviewText-${heroDrag.elId}`);
   if (!previewContent || !el) return;
   const previewRect = previewContent.getBoundingClientRect();
-  const x = Math.max(0, e.clientX - previewRect.left - heroDrag.offsetX);
-  const y = Math.max(0, e.clientY - previewRect.top - heroDrag.offsetY);
-  el.style.left = x + 'px';
-  el.style.top = y + 'px';
-  heroPositions()[heroDrag.elId] = { x, y };
+  const xPct = Math.min(100, Math.max(0, ((e.clientX - previewRect.left) / previewRect.width) * 100 - heroDrag.offsetXPct));
+  const yPct = Math.min(100, Math.max(0, ((e.clientY - previewRect.top) / previewRect.height) * 100 - heroDrag.offsetYPct));
+  el.style.left = xPct + '%';
+  el.style.top = yPct + '%';
+  heroPositions()[heroDrag.elId] = { x: Math.round(xPct * 10) / 10, y: Math.round(yPct * 10) / 10 };
 });
 
 document.addEventListener('mouseup', () => {
@@ -2765,8 +2922,20 @@ const heroResetPositionsBtn = document.getElementById('heroResetPositions');
 if (heroResetPositionsBtn) {
   heroResetPositionsBtn.addEventListener('click', () => {
     content.heroTextPositions = JSON.parse(JSON.stringify(DEFAULT_HERO_TEXT_POSITIONS));
+    content.heroFontSize = { ...DEFAULT_HERO_FONT_SIZE };
+    content.heroFontColor = { ...DEFAULT_HERO_FONT_COLOR };
+    ['eyebrow', 'h1', 'sub', 'edition'].forEach(id => {
+      const slider = document.getElementById(`heroFontSize-${id}`);
+      const num = document.getElementById(`heroFontSizeNum-${id}`);
+      const display = document.getElementById(`heroFontSizeDisplay-${id}`);
+      const colorInput = document.getElementById(`heroFontColor-${id}`);
+      if (slider) slider.value = DEFAULT_HERO_FONT_SIZE[id];
+      if (num) num.value = DEFAULT_HERO_FONT_SIZE[id];
+      if (display) display.textContent = DEFAULT_HERO_FONT_SIZE[id] + 'px';
+      if (colorInput) colorInput.value = DEFAULT_HERO_FONT_COLOR[id];
+    });
     updateLivePreview();
-    showMessage('Positions reset. Remember to Save to apply changes.', 'info');
+    showMessage('Positions, sizes, and colors reset. Remember to Save to apply changes.', 'info');
   });
 }
 
@@ -2815,16 +2984,34 @@ function initializeLivePreview() {
     const slider = document.getElementById(`heroFontSize-${el}`);
     const numInput = document.getElementById(`heroFontSizeNum-${el}`);
     const display = document.getElementById(`heroFontSizeDisplay-${el}`);
+    const colorInput = document.getElementById(`heroFontColor-${el}`);
+
+    // Seed controls from whatever's already saved on `content`, so a reload
+    // shows the real current values instead of always resetting to default.
+    const savedSize = heroFontSizes()[el] ?? DEFAULT_HERO_FONT_SIZE[el];
+    const savedColor = heroFontColors()[el] ?? DEFAULT_HERO_FONT_COLOR[el];
+    if (slider) slider.value = savedSize;
+    if (numInput) numInput.value = savedSize;
+    if (display) display.textContent = savedSize + 'px';
+    if (colorInput) colorInput.value = savedColor;
 
     if (slider && numInput) {
       slider.addEventListener('input', (e) => {
         numInput.value = e.target.value;
         display.textContent = e.target.value + 'px';
+        heroFontSizes()[el] = parseInt(e.target.value, 10);
         updateLivePreview();
       });
       numInput.addEventListener('input', (e) => {
         slider.value = e.target.value;
         display.textContent = e.target.value + 'px';
+        heroFontSizes()[el] = parseInt(e.target.value, 10) || DEFAULT_HERO_FONT_SIZE[el];
+        updateLivePreview();
+      });
+    }
+    if (colorInput) {
+      colorInput.addEventListener('input', (e) => {
+        heroFontColors()[el] = e.target.value.toUpperCase();
         updateLivePreview();
       });
     }
@@ -2842,12 +3029,104 @@ function initializeLivePreview() {
   updateLivePreview();
 }
 
+function heroTextVisibility() {
+  if (!content.heroTextVisibility) {
+    content.heroTextVisibility = { eyebrow: true, h1: true, sub: true, edition: true };
+  }
+  return content.heroTextVisibility;
+}
+
+// Admin-only cosmetic preference for which "look" this editor uses. Stored
+// in localStorage, not on `content` — it never gets saved to Firestore or
+// affects the live page, only how this editing screen looks to you.
+const HERO_EDITOR_THEME_KEY = 'heroEditorTheme';
+function applyHeroEditorTheme(theme) {
+  const container = document.getElementById('heroLivePreviewContainer');
+  if (!container) return;
+  container.classList.remove('theme-bolt', 'theme-timeline', 'theme-neon');
+  container.classList.add(`theme-${theme}`);
+  renderHeroLayersStrip();
+}
+const heroThemeSelect = document.getElementById('heroEditorTheme');
+if (heroThemeSelect) {
+  const savedTheme = localStorage.getItem(HERO_EDITOR_THEME_KEY) || 'bolt';
+  heroThemeSelect.value = savedTheme;
+  applyHeroEditorTheme(savedTheme);
+  heroThemeSelect.addEventListener('change', () => {
+    localStorage.setItem(HERO_EDITOR_THEME_KEY, heroThemeSelect.value);
+    applyHeroEditorTheme(heroThemeSelect.value);
+  });
+}
+
+function renderHeroLayersStrip() {
+  const strip = document.getElementById('heroLayersStrip');
+  if (!strip) return;
+  const container = document.getElementById('heroLivePreviewContainer');
+  const isTimeline = container && container.classList.contains('theme-timeline');
+  const colors = heroFontColors();
+  const positions = heroPositions();
+  const visibility = heroTextVisibility();
+  const labels = { eyebrow: 'Eyebrow', h1: 'Title', sub: 'Subtitle', edition: 'Edition' };
+  strip.innerHTML = '';
+  HERO_TEXT_ELEMENTS.forEach(spec => {
+    const visible = visibility[spec.id] !== false;
+    const chip = document.createElement('div');
+    chip.className = 'hero-layer-chip' + (visible ? '' : ' layer-hidden');
+
+    const eyeBtn = document.createElement('button');
+    eyeBtn.type = 'button';
+    eyeBtn.className = 'hero-layer-eye';
+    eyeBtn.textContent = visible ? '👁' : '🚫';
+    eyeBtn.title = visible ? 'Hide on live page' : 'Show on live page';
+    eyeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      heroTextVisibility()[spec.id] = !visible;
+      updateLivePreview();
+    });
+    chip.appendChild(eyeBtn);
+
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = colors[spec.id] || DEFAULT_HERO_FONT_COLOR[spec.id];
+    chip.appendChild(swatch);
+    chip.appendChild(document.createTextNode(labels[spec.id] || spec.id));
+
+    if (isTimeline) {
+      const track = document.createElement('div');
+      track.className = 'hero-layer-track';
+      const marker = document.createElement('div');
+      marker.className = 'hero-layer-marker';
+      const pos = positions[spec.id] || DEFAULT_HERO_TEXT_POSITIONS[spec.id];
+      marker.style.left = pos.x + '%';
+      track.appendChild(marker);
+      chip.appendChild(track);
+    }
+
+    chip.addEventListener('click', () => {
+      const target = document.getElementById(`heroFontSize-${spec.id}`);
+      if (target) {
+        target.closest('.font-size-control').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.focus();
+      }
+      const el = document.getElementById(`heroPreviewText-${spec.id}`);
+      if (el) {
+        el.classList.add('dragging');
+        setTimeout(() => el.classList.remove('dragging'), 700);
+      }
+    });
+    strip.appendChild(chip);
+  });
+}
+
 function updateLivePreview() {
   const previewContent = document.getElementById('heroLivePreviewContent');
   if (!previewContent) return;
 
   previewContent.innerHTML = '';
   const positions = heroPositions();
+  const colors = heroFontColors();
+  const visibility = heroTextVisibility();
+  renderHeroLayersStrip();
 
   HERO_TEXT_ELEMENTS.forEach(spec => {
     const input = document.getElementById(spec.inputId);
@@ -2855,14 +3134,17 @@ function updateLivePreview() {
     const sizeInput = document.getElementById(`heroFontSizeNum-${spec.id}`);
     const fontSize = sizeInput ? sizeInput.value : DEFAULT_HERO_FONT_SIZE[spec.id];
     const pos = positions[spec.id] || DEFAULT_HERO_TEXT_POSITIONS[spec.id];
+    const color = colors[spec.id] || DEFAULT_HERO_FONT_COLOR[spec.id];
+    const visible = visibility[spec.id] !== false;
 
     const div = document.createElement('div');
     div.id = `heroPreviewText-${spec.id}`;
-    div.className = `hero-preview-text ${spec.class}`;
+    div.className = `hero-preview-text ${spec.class}` + (visible ? '' : ' layer-hidden');
     div.textContent = text;
     div.style.fontSize = fontSize + 'px';
-    div.style.left = pos.x + 'px';
-    div.style.top = pos.y + 'px';
+    div.style.color = color;
+    div.style.left = pos.x + '%';
+    div.style.top = pos.y + '%';
     previewContent.appendChild(div);
     makeHeroTextDraggable(div, spec.id);
   });
