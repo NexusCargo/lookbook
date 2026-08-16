@@ -295,18 +295,21 @@
     border-color: #F2B705; background: rgba(242,183,5,.15);
     box-shadow: 0 0 8px rgba(242,183,5,.4); opacity: .9;
   }
+  .hero-preview-text {
+    font-family: var(--hero-font-family, Georgia, serif);
+  }
   .hero-preview-text.text-eyebrow {
-    font-family: Verdana, sans-serif; letter-spacing: 2px;
+    font-family: var(--hero-font-family, Verdana, sans-serif); letter-spacing: 2px;
     font-weight: bold; text-transform: uppercase; color: #F2B705;
   }
   .hero-preview-text.text-h1 {
-    font-family: Georgia, serif; line-height: 0.9; letter-spacing: 1px; font-weight: normal;
+    font-family: var(--hero-font-family, Georgia, serif); line-height: 0.9; letter-spacing: 1px; font-weight: normal;
   }
   .hero-preview-text.text-sub {
-    font-family: Georgia, serif; font-style: italic; max-width: 400px;
+    font-family: var(--hero-font-family, Georgia, serif); font-style: italic; max-width: 400px;
   }
   .hero-preview-text.text-edition {
-    font-family: Verdana, sans-serif; color: #D9A63A;
+    font-family: var(--hero-font-family, Verdana, sans-serif); color: #D9A63A;
   }
   .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
   .thumbs img { width: 70px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
@@ -608,8 +611,8 @@
         </div>
         <div class="input-group">
           <label>Subtitle</label>
-          <input type="text" id="cp-hero-sub" maxlength="95">
-          <p style="font-size:11.5px; color:#888; margin:5px 0 0;">Displays as one line on the hero — keep it to roughly 70–95 characters or it'll get cut off with an ellipsis.</p>
+          <input type="text" id="cp-hero-sub">
+          <p style="font-size:11.5px; color:#888; margin:5px 0 0;">No length limit — longer subtitles now wrap onto a second line on the hero instead of getting cut off.</p>
         </div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
 
@@ -642,6 +645,17 @@
           <input type="number" id="heroFontSizeNum-edition" min="8" max="28" value="13">
           <span class="font-size-value" id="heroFontSizeDisplay-edition">13px</span>
           <input type="color" id="heroFontColor-edition" value="#D9A63A" title="Text color">
+        </div>
+
+        <!-- Hero Font -->
+        <h3 style="margin-top:24px;">Hero Font <span style="font-weight:normal; font-size:12px; color:#888;">— applies to all hero text (eyebrow, title, subtitle, edition, and extra lines)</span></h3>
+        <div class="input-group" style="max-width:340px;">
+          <select id="heroFontPreset"></select>
+        </div>
+        <div id="heroFontUploadRow" class="hidden" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:-6px 0 15px;">
+          <button type="button" id="heroFontUploadBtn" class="secondary">Upload font file</button>
+          <span id="heroFontUploadStatus" style="font-size:12.5px; color:#666;">No font uploaded yet — .woff2, .woff, .ttf, or .otf</span>
+          <button type="button" id="heroFontRemoveBtn" class="danger hidden" style="padding:6px 12px; font-size:12.5px;">Remove</button>
         </div>
 
         <!-- Additional custom hero text layers -->
@@ -1050,6 +1064,7 @@ function defaultContent() {
     heroStripeStyle: 'straight',
     heroStripePosition: 'left',
     heroEffect: 'none',
+    heroFontFamily: { mode: 'default', preset: 'default', customName: '', customUrl: '' },
     heroScene: JSON.parse(JSON.stringify(DEFAULT_HERO_SCENE)),
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
@@ -1878,12 +1893,28 @@ const SCENE_ANIM_TYPES = [
   ['zoom-in', 'Zoom in'],
   ['zoom-out', 'Zoom out']
 ];
-const SCENE_TRACKS = [
+const SCENE_TRACKS_BASE = [
   { id: 'eyebrow', label: 'Eyebrow', color: '#F2B705' },
   { id: 'h1', label: 'Title', color: '#EDE6D6' },
   { id: 'sub', label: 'Subtitle', color: '#D9A63A' },
   { id: 'edition', label: 'Edition', color: '#B5471B' }
 ];
+
+// Every hero text layer gets a Scene Builder track automatically — the four
+// built-ins plus one per extra line currently added, so a new "+ Add text"
+// line shows up on the timeline immediately without any separate step.
+function getSceneTracks() {
+  const tracks = SCENE_TRACKS_BASE.map(t => ({ ...t }));
+  heroExtraTexts().forEach((item, idx) => {
+    const raw = (item.text || '').trim();
+    tracks.push({
+      id: item.id,
+      label: raw ? (raw.length > 14 ? raw.slice(0, 14) + '…' : raw) : `Extra text ${idx + 1}`,
+      color: item.color || '#EDE6D6'
+    });
+  });
+  return tracks;
+}
 
 function renderHeroEffectPicker() {
   const wrap = document.getElementById('heroEffectPicker');
@@ -1969,9 +2000,10 @@ function renderSceneTracks() {
   if (!wrap) return;
   const scene = heroScene();
   wrap.innerHTML = '';
+  const tracks = getSceneTracks();
 
-  SCENE_TRACKS.forEach(t => {
-    const cfg = scene.layers[t.id] || (scene.layers[t.id] = { anim: 'none', delay: 0, duration: 900 });
+  tracks.forEach((t, idx) => {
+    const cfg = scene.layers[t.id] || (scene.layers[t.id] = { anim: 'slide-up', delay: 150 + idx * 150, duration: 900 });
 
     const row = document.createElement('div');
     row.className = 'scene-track';
@@ -2059,7 +2091,7 @@ function playScenePreview() {
   const scene = heroScene();
   const easing = scene.easing || 'ease-out';
 
-  SCENE_TRACKS.forEach(t => {
+  getSceneTracks().forEach(t => {
     const el = document.getElementById(`heroPreviewText-${t.id}`);
     if (!el) return;
     const cfg = scene.layers[t.id];
@@ -3265,6 +3297,146 @@ const HERO_TEXT_ELEMENTS = [
   { id: 'edition', class: 'text-edition', inputId: 'cp-hero-edition', fallback: 'Edition 2025' }
 ];
 
+// ===== Hero Font (preset Google Fonts + upload-your-own) =====
+// Applies uniformly to every hero text layer (the four built-ins and any
+// extra lines) via a single --hero-font-family CSS custom property, rather
+// than per-element, so there's one obvious control instead of five.
+const HERO_FONT_PRESETS = [
+  { key: 'default', label: 'Default (site fonts)', family: null, google: null },
+  { key: 'playfair', label: 'Playfair Display', family: "'Playfair Display', serif", google: 'Playfair+Display:wght@400;600;700' },
+  { key: 'cormorant', label: 'Cormorant Garamond', family: "'Cormorant Garamond', serif", google: 'Cormorant+Garamond:wght@400;600;700' },
+  { key: 'dmserif', label: 'DM Serif Display', family: "'DM Serif Display', serif", google: 'DM+Serif+Display' },
+  { key: 'marcellus', label: 'Marcellus', family: "'Marcellus', serif", google: 'Marcellus' },
+  { key: 'libre', label: 'Libre Baskerville', family: "'Libre Baskerville', serif", google: 'Libre+Baskerville:wght@400;700' },
+  { key: 'cinzel', label: 'Cinzel', family: "'Cinzel', serif", google: 'Cinzel:wght@400;600;700' },
+  { key: 'spacegrotesk', label: 'Space Grotesk', family: "'Space Grotesk', sans-serif", google: 'Space+Grotesk:wght@400;500;700' },
+  { key: 'bebas', label: 'Bebas Neue', family: "'Bebas Neue', sans-serif", google: 'Bebas+Neue' },
+  { key: 'custom', label: 'Upload my own font…', family: null, google: null }
+];
+
+function heroFontFamily() {
+  if (!content.heroFontFamily) content.heroFontFamily = { mode: 'default', preset: 'default', customName: '', customUrl: '' };
+  return content.heroFontFamily;
+}
+
+function fontFormatFromUrl(url) {
+  const ext = (url.split('.').pop() || '').split('?')[0].toLowerCase();
+  return { woff2: 'woff2', woff: 'woff', ttf: 'truetype', otf: 'opentype' }[ext] || 'woff2';
+}
+
+function ensureGoogleFontLoaded(googleParam) {
+  if (!googleParam) return;
+  const href = `https://fonts.googleapis.com/css2?family=${googleParam}&display=swap`;
+  if (document.querySelector(`link[data-hero-font-link="${href}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.setAttribute('data-hero-font-link', href);
+  document.head.appendChild(link);
+}
+
+function ensureCustomFontFace(name, url) {
+  if (!name || !url) return;
+  let styleEl = document.getElementById('hero-custom-font-face');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'hero-custom-font-face';
+    document.head.appendChild(styleEl);
+  }
+  const format = fontFormatFromUrl(url);
+  styleEl.textContent = `@font-face { font-family: '${name.replace(/[^\w\s-]/g, '')}'; src: url('${url}') format('${format}'); font-display: swap; }`;
+}
+
+// Resolves the current hero font choice down to a CSS font-family value,
+// loading whatever it needs (Google Fonts stylesheet or the uploaded
+// @font-face) along the way. Returns '' for "Default", which leaves each
+// hero element's own built-in font untouched.
+function resolveHeroFontFamilyCss(ff) {
+  if (!ff || ff.mode !== 'custom') {
+    if (!ff || ff.mode === 'default' || !ff.preset || ff.preset === 'default') return '';
+    const preset = HERO_FONT_PRESETS.find(p => p.key === ff.preset);
+    if (!preset || !preset.family) return '';
+    ensureGoogleFontLoaded(preset.google);
+    return preset.family;
+  }
+  if (!ff.customUrl || !ff.customName) return '';
+  ensureCustomFontFace(ff.customName, ff.customUrl);
+  return `'${ff.customName.replace(/[^\w\s-]/g, '')}', Georgia, serif`;
+}
+
+function applyHeroFontToPreview() {
+  const box = document.getElementById('heroLivePreviewBox');
+  if (!box) return;
+  const family = resolveHeroFontFamilyCss(heroFontFamily());
+  box.style.setProperty('--hero-font-family', family || '');
+}
+
+function renderHeroFontControls() {
+  const select = document.getElementById('heroFontPreset');
+  const uploadRow = document.getElementById('heroFontUploadRow');
+  const uploadBtn = document.getElementById('heroFontUploadBtn');
+  const removeBtn = document.getElementById('heroFontRemoveBtn');
+  const status = document.getElementById('heroFontUploadStatus');
+  if (!select) return;
+  const ff = heroFontFamily();
+
+  select.innerHTML = '';
+  HERO_FONT_PRESETS.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.key;
+    opt.textContent = p.label;
+    select.appendChild(opt);
+  });
+  select.value = ff.mode === 'custom' ? 'custom' : (ff.preset || 'default');
+
+  function refreshUploadUI() {
+    const isCustom = select.value === 'custom';
+    uploadRow.classList.toggle('hidden', !isCustom);
+    if (isCustom && ff.customUrl) {
+      status.textContent = `Using: ${ff.customName || 'uploaded font'}`;
+      removeBtn.classList.remove('hidden');
+    } else if (isCustom) {
+      status.textContent = 'No font uploaded yet — .woff2, .woff, .ttf, or .otf';
+      removeBtn.classList.add('hidden');
+    }
+  }
+  refreshUploadUI();
+
+  select.addEventListener('change', () => {
+    if (select.value === 'custom') {
+      ff.mode = 'custom';
+    } else {
+      ff.mode = 'default';
+      ff.preset = select.value;
+    }
+    refreshUploadUI();
+    applyHeroFontToPreview();
+  });
+
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', () => {
+      openUploadWidget('hero-font', (publicId) => {
+        const url = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/${publicId}`;
+        const guessedName = (publicId.split('/').pop() || 'CustomHeroFont').split('.')[0];
+        ff.mode = 'custom';
+        ff.customUrl = url;
+        ff.customName = guessedName;
+        refreshUploadUI();
+        applyHeroFontToPreview();
+        showMessage('Font uploaded. Remember to Save to apply it on the live page.', 'success');
+      }, 'raw');
+    });
+  }
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      ff.customUrl = '';
+      ff.customName = '';
+      refreshUploadUI();
+      applyHeroFontToPreview();
+    });
+  }
+}
+
 const DEFAULT_HERO_FONT_SIZE = { eyebrow: 11, h1: 48, sub: 16, edition: 13 };
 const DEFAULT_HERO_FONT_COLOR = { eyebrow: '#F2B705', h1: '#EDE6D6', sub: '#EDE6D6', edition: '#D9A63A' };
 
@@ -3338,6 +3510,7 @@ function renderHeroExtraTextEditors() {
     `;
     row.querySelector('[data-role="text"]').addEventListener('input', (e) => {
       item.text = e.target.value;
+      renderSceneTracks();
       updateLivePreview();
     });
     row.querySelector('[data-role="size"]').addEventListener('input', (e) => {
@@ -3351,6 +3524,7 @@ function renderHeroExtraTextEditors() {
     row.querySelector('[data-role="remove"]').addEventListener('click', () => {
       heroExtraTexts().splice(idx, 1);
       renderHeroExtraTextEditors();
+      renderSceneTracks();
       updateLivePreview();
     });
     list.appendChild(row);
@@ -3358,13 +3532,36 @@ function renderHeroExtraTextEditors() {
   if (addBtn) addBtn.style.display = items.length >= MAX_HERO_EXTRA_TEXTS ? 'none' : '';
 }
 
+// Finds the bottom-most hero text currently on the page (any of the four
+// built-ins, wherever they've been dragged to, plus any extra lines already
+// added) and returns a spot just underneath it — rather than a fixed
+// percentage that can land above text that's been repositioned (e.g. the
+// Edition tag, which defaults to y:80, sitting below a fixed y:68 start).
+function nextHeroExtraTextY() {
+  const positions = heroPositions();
+  const visibility = heroTextVisibility();
+  let maxY = 0;
+  HERO_TEXT_ELEMENTS.forEach(spec => {
+    if (visibility[spec.id] === false) return;
+    const pos = positions[spec.id] || DEFAULT_HERO_TEXT_POSITIONS[spec.id];
+    if (pos && pos.y > maxY) maxY = pos.y;
+  });
+  heroExtraTexts().forEach(item => {
+    const y = item.y ?? 0;
+    if (y > maxY) maxY = y;
+  });
+  return Math.min(92, maxY + 8);
+}
+
 const heroAddExtraTextBtn = document.getElementById('heroAddExtraTextBtn');
 if (heroAddExtraTextBtn) {
   heroAddExtraTextBtn.addEventListener('click', () => {
     const items = heroExtraTexts();
     if (items.length >= MAX_HERO_EXTRA_TEXTS) return;
-    items.push({ id: `extra-${Date.now()}`, text: 'New text', fontSize: 16, color: '#EDE6D6', x: 8, y: 68 + items.length * 6 });
+    const id = `extra-${Date.now()}`;
+    items.push({ id, text: 'New text', fontSize: 16, color: '#EDE6D6', x: 8, y: nextHeroExtraTextY() });
     renderHeroExtraTextEditors();
+    renderSceneTracks();
     updateLivePreview();
   });
 }
@@ -3551,6 +3748,7 @@ function initializeLivePreview() {
     }
   });
 
+  renderHeroFontControls();
   renderHeroExtraTextEditors();
   updateLivePreview();
 }
@@ -3653,6 +3851,7 @@ function updateLivePreview() {
   const colors = heroFontColors();
   const visibility = heroTextVisibility();
   renderHeroLayersStrip();
+  applyHeroFontToPreview();
 
   HERO_TEXT_ELEMENTS.forEach(spec => {
     const input = document.getElementById(spec.inputId);

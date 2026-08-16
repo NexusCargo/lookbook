@@ -67,6 +67,9 @@
     font-weight:bold;
     text-transform:uppercase;
   }
+  .hero-main .eyebrow, .hero-main h1, .hero-main p.sub, .hero-extra-text{
+    font-family:var(--hero-font-family, inherit);
+  }
 
   header.hero{
     position:relative;
@@ -273,7 +276,7 @@
   /* Extra custom hero text layers (admin: Hero → Additional hero text) */
   .hero-extra-text{
     position:absolute;
-    font-family:Georgia, serif;
+    font-family:var(--hero-font-family, Georgia, serif);
     line-height:1.3;
     color:var(--ivory);
     white-space:nowrap;
@@ -315,9 +318,8 @@
     margin-top:22px;
     color:var(--ivory);
     animation:fadeUp 1s ease-out .3s both;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    white-space:normal;
+    overflow:visible;
   }
   .hero .edition{
     margin-top:60px;
@@ -1388,6 +1390,15 @@ function safeHexColor(c, fallback) {
 // Types the hero headline out character-by-character with a blinking caret,
 // welcoming visitors as the page loads. Falls back to an instant set for
 // people who've asked their OS/browser to reduce motion.
+// Picks a per-character typing speed so a field finishes in roughly
+// targetMs no matter how long its text is (clamped between minSpeed and
+// maxSpeed ms/char) — short text won't feel instant, long text won't drag
+// the reveal out. This matters more now that the subtitle has no length cap.
+function typeSpeedForLength(len, targetMs, minSpeed, maxSpeed) {
+  if (!len) return minSpeed;
+  return Math.max(minSpeed, Math.min(maxSpeed, targetMs / len));
+}
+
 const __typewriteTokens = new WeakMap();
 function typewriteText(el, text, speed, startDelay) {
   if (!el) return;
@@ -1676,12 +1687,18 @@ function applyCopy(copy) {
   const c = { ...DEFAULT_COPY, ...copy };
 
   // Each hero field types in with a slight stagger so they cascade rather
-  // than all firing at once; longer fields (subtitle) type faster per
-  // character so they don't drag the reveal out.
-  typewriteText(document.getElementById('heroEyebrow'), c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow, 45, 100);
-  typewriteText(document.getElementById('heroTitle'), c.hero?.title ?? DEFAULT_COPY.hero.title, 65, 350);
-  typewriteText(document.getElementById('heroSub'), c.hero?.sub ?? DEFAULT_COPY.hero.sub, 22, 650);
-  typewriteText(document.getElementById('heroEdition'), c.hero?.edition ?? DEFAULT_COPY.hero.edition, 45, 950);
+  // than all firing at once. Speed is chosen per-field so it finishes in
+  // roughly the same target time regardless of how long the text is —
+  // that's what keeps the subtitle (now uncapped) from dragging out the
+  // whole reveal, and keeps the cascade feeling snappy overall.
+  const eyebrowText = c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
+  const titleText = c.hero?.title ?? DEFAULT_COPY.hero.title;
+  const subText = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
+  const editionText = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
+  typewriteText(document.getElementById('heroEyebrow'), eyebrowText, typeSpeedForLength(eyebrowText.length, 450, 16, 45), 80);
+  typewriteText(document.getElementById('heroTitle'), titleText, typeSpeedForLength(titleText.length, 600, 16, 65), 200);
+  typewriteText(document.getElementById('heroSub'), subText, typeSpeedForLength(subText.length, 700, 7, 22), 380);
+  typewriteText(document.getElementById('heroEdition'), editionText, typeSpeedForLength(editionText.length, 380, 16, 45), 560);
 
   document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
   document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
@@ -1970,7 +1987,10 @@ document.querySelectorAll('.region-row').forEach(btn => {
 // Each item carries its own text, font size, color, and x/y position
 // (percentages of the hero box), so unlike the four built-in fields these
 // don't need a matching entry in heroTextPositions/heroFontSize/etc.
-function renderHeroExtraTexts(items) {
+// `scene` (content.heroScene) is passed in so each extra text's entrance
+// delay follows its own Scene Builder track instead of a fixed formula
+// disconnected from what's set in admin.
+function renderHeroExtraTexts(items, scene) {
   const container = document.getElementById('heroExtraTexts');
   if (!container) return;
   container.innerHTML = '';
@@ -1985,7 +2005,10 @@ function renderHeroExtraTexts(items) {
     div.style.fontSize = (item.fontSize || 16) + 'px';
     div.style.color = item.color || 'var(--ivory)';
     container.appendChild(div);
-    typewriteText(div, item.text || '', 30, 1250 + idx * 400);
+    const layerCfg = (scene && scene.layers && item.id && scene.layers[item.id]) || {};
+    const delay = layerCfg.delay ?? (300 + idx * 150);
+    const text = item.text || '';
+    typewriteText(div, text, typeSpeedForLength(text.length, 550, 10, 30), delay);
   });
 }
 
@@ -2050,6 +2073,68 @@ function applyHeroEffect(effect) {
   if (effect && effect !== 'none') el.classList.add(`effect-${effect}`);
 }
 
+// ===== Hero Font (mirrors the picker in admin.html) =====
+const HERO_FONT_PRESETS = [
+  { key: 'default', label: 'Default (site fonts)', family: null, google: null },
+  { key: 'playfair', label: 'Playfair Display', family: "'Playfair Display', serif", google: 'Playfair+Display:wght@400;600;700' },
+  { key: 'cormorant', label: 'Cormorant Garamond', family: "'Cormorant Garamond', serif", google: 'Cormorant+Garamond:wght@400;600;700' },
+  { key: 'dmserif', label: 'DM Serif Display', family: "'DM Serif Display', serif", google: 'DM+Serif+Display' },
+  { key: 'marcellus', label: 'Marcellus', family: "'Marcellus', serif", google: 'Marcellus' },
+  { key: 'libre', label: 'Libre Baskerville', family: "'Libre Baskerville', serif", google: 'Libre+Baskerville:wght@400;700' },
+  { key: 'cinzel', label: 'Cinzel', family: "'Cinzel', serif", google: 'Cinzel:wght@400;600;700' },
+  { key: 'spacegrotesk', label: 'Space Grotesk', family: "'Space Grotesk', sans-serif", google: 'Space+Grotesk:wght@400;500;700' },
+  { key: 'bebas', label: 'Bebas Neue', family: "'Bebas Neue', sans-serif", google: 'Bebas+Neue' },
+  { key: 'custom', label: 'Upload my own font…', family: null, google: null }
+];
+
+function fontFormatFromUrl(url) {
+  const ext = (url.split('.').pop() || '').split('?')[0].toLowerCase();
+  return { woff2: 'woff2', woff: 'woff', ttf: 'truetype', otf: 'opentype' }[ext] || 'woff2';
+}
+
+function ensureGoogleFontLoaded(googleParam) {
+  if (!googleParam) return;
+  const href = `https://fonts.googleapis.com/css2?family=${googleParam}&display=swap`;
+  if (document.querySelector(`link[data-hero-font-link="${href}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.setAttribute('data-hero-font-link', href);
+  document.head.appendChild(link);
+}
+
+function ensureCustomFontFace(name, url) {
+  if (!name || !url) return;
+  let styleEl = document.getElementById('hero-custom-font-face');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'hero-custom-font-face';
+    document.head.appendChild(styleEl);
+  }
+  const format = fontFormatFromUrl(url);
+  styleEl.textContent = `@font-face { font-family: '${name.replace(/[^\w\s-]/g, '')}'; src: url('${url}') format('${format}'); font-display: swap; }`;
+}
+
+function resolveHeroFontFamilyCss(ff) {
+  if (!ff || ff.mode !== 'custom') {
+    if (!ff || ff.mode === 'default' || !ff.preset || ff.preset === 'default') return '';
+    const preset = HERO_FONT_PRESETS.find(p => p.key === ff.preset);
+    if (!preset || !preset.family) return '';
+    ensureGoogleFontLoaded(preset.google);
+    return preset.family;
+  }
+  if (!ff.customUrl || !ff.customName) return '';
+  ensureCustomFontFace(ff.customName, ff.customUrl);
+  return `'${ff.customName.replace(/[^\w\s-]/g, '')}', Georgia, serif`;
+}
+
+function applyHeroFontFamily(ff) {
+  const heroEl = document.querySelector('header.hero');
+  if (!heroEl) return;
+  const family = resolveHeroFontFamilyCss(ff);
+  heroEl.style.setProperty('--hero-font-family', family || '');
+}
+
 const HERO_ANIM_KEYFRAMES = {
   fade: 'heroFadeIn',
   'slide-up': 'heroSlideUp',
@@ -2087,6 +2172,23 @@ function applyHeroScene(scene) {
     el.style.animation = `${kf} ${duration}ms ${easing} ${delay}ms both`;
   });
 
+  // Extra hero text layers get a Scene Builder track too (see admin's
+  // getSceneTracks()), keyed by their own id rather than one of the four
+  // fixed keys above — apply the same entrance animation logic to them.
+  document.querySelectorAll('.hero-extra-text').forEach(el => {
+    const id = (el.id || '').replace(/^heroExtraText-/, '');
+    const cfg = (scene.layers && id && scene.layers[id]) || {};
+    const kf = HERO_ANIM_KEYFRAMES[cfg.anim];
+    if (reducedMotion || !cfg.anim || cfg.anim === 'none' || !kf) {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      return;
+    }
+    const duration = cfg.duration ?? 900;
+    const delay = cfg.delay ?? 0;
+    el.style.animation = `${kf} ${duration}ms ${easing} ${delay}ms both`;
+  });
+
   const bgLayer = document.getElementById('heroBgLayer');
   if (bgLayer) {
     const kf = !reducedMotion && scene.background ? HERO_PAN_KEYFRAMES[scene.background.pan] : null;
@@ -2112,7 +2214,7 @@ async function init() {
   applyMarkerStyle(data.content.markerStyle);
   renderStops(data.content, data.copy);
   renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
-  renderHeroExtraTexts(data.content.heroExtraTexts);
+  renderHeroExtraTexts(data.content.heroExtraTexts, data.content.heroScene);
   // Apply hero text positions, font sizes, colors, and visibility before
   // the hero is revealed (see below), so nothing visibly snaps into place
   // after the fact.
@@ -2121,6 +2223,7 @@ async function init() {
   if (data.content.heroFontColor) applyHeroFontColors(data.content.heroFontColor);
   if (data.content.heroTextVisibility) applyHeroTextVisibility(data.content.heroTextVisibility);
   applyHeroEffect(data.content.heroEffect);
+  applyHeroFontFamily(data.content.heroFontFamily);
   applyHeroScene(data.content.heroScene);
   attachErrorHandling();
   preloadImages(data.content);
