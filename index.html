@@ -78,6 +78,13 @@
     overflow:hidden;
   }
   header.hero.pos-right{ flex-direction:row-reverse; }
+  .hero-bg-layer{
+    position:absolute; inset:-6%;
+    z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    transform-origin:center center;
+    will-change:transform;
+  }
   header.hero.pos-top{ flex-direction:column; }
   header.hero.pos-bottom{ flex-direction:column-reverse; }
   .hero-main{
@@ -202,6 +209,49 @@
     50%{ opacity:1; transform:scale(1.07); }
   }
 
+  /* Hero effect overlay — optional animated flourish chosen in admin
+     (Hero tab → "Hero effect"). Independent of the stripe/spotlight system
+     above so the two can be mixed freely. */
+  .hero-effect-overlay{
+    position:absolute; inset:0;
+    z-index:1;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .hero-effect-overlay.effect-bolt::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(115deg,
+      transparent 40%,
+      rgba(242,183,5,.5) 48%,
+      rgba(255,255,255,.85) 50%,
+      rgba(242,183,5,.5) 52%,
+      transparent 60%);
+    background-size:300% 300%;
+    mix-blend-mode:screen;
+    animation:heroBoltFlash 4.5s ease-in-out infinite;
+  }
+  .hero-effect-overlay.effect-neon{
+    box-shadow: inset 0 0 0 4px rgba(255,0,200,.28);
+    animation:heroNeonPulse 2.6s ease-in-out infinite;
+  }
+  .hero-effect-overlay.effect-cinematic::before,
+  .hero-effect-overlay.effect-cinematic::after{
+    content:''; position:absolute; left:0; right:0; height:8%; background:#000;
+  }
+  .hero-effect-overlay.effect-cinematic::before{ top:0; }
+  .hero-effect-overlay.effect-cinematic::after{ bottom:0; }
+  @keyframes heroBoltFlash{
+    0%, 100%{ background-position:0% 0%; opacity:0; }
+    46%{ opacity:0; }
+    49%{ opacity:.9; }
+    52%{ opacity:0; background-position:100% 100%; }
+  }
+  @keyframes heroNeonPulse{
+    0%, 100%{ box-shadow: inset 0 0 0 4px rgba(255,0,200,.28), 0 0 22px rgba(0,229,255,.25); }
+    50%{ box-shadow: inset 0 0 0 6px rgba(0,229,255,.4), 0 0 38px rgba(255,0,200,.4); }
+  }
+
   .hero-main, .hero > .scroll-cue{ position:relative; z-index:2; }
   .hero h1{
     font-size:clamp(60px,11vw,140px);
@@ -254,10 +304,26 @@
     from{opacity:0; transform:translateY(16px);}
     to{opacity:1; transform:translateY(0);}
   }
+
+  /* ===== Scene Builder animations (admin: Hero tab → Scene Builder) ===== */
+  @keyframes heroFadeIn{ from{opacity:0;} to{opacity:1;} }
+  @keyframes heroSlideUp{ from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes heroSlideDown{ from{opacity:0; transform:translateY(-30px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes heroSlideLeft{ from{opacity:0; transform:translateX(40px);} to{opacity:1; transform:translateX(0);} }
+  @keyframes heroSlideRight{ from{opacity:0; transform:translateX(-40px);} to{opacity:1; transform:translateX(0);} }
+  @keyframes heroZoomIn{ from{opacity:0; transform:scale(.85);} to{opacity:1; transform:scale(1);} }
+  @keyframes heroZoomOut{ from{opacity:0; transform:scale(1.2);} to{opacity:1; transform:scale(1);} }
+  @keyframes heroKenBurnsIn{ from{ transform:scale(1); } to{ transform:scale(1.15); } }
+  @keyframes heroKenBurnsOut{ from{ transform:scale(1.15); } to{ transform:scale(1); } }
+  @keyframes heroPanLeft{ from{ transform:scale(1.08) translateX(2%); } to{ transform:scale(1.08) translateX(-2%); } }
+  @keyframes heroPanRight{ from{ transform:scale(1.08) translateX(-2%); } to{ transform:scale(1.08) translateX(2%); } }
   @media (prefers-reduced-motion: reduce){
     .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
     .hero-strip > div, .hero-edge-wave, .hero-stripe-overlay.mode-spotlight::after, .hero h1.typewriter.typing::after{animation:none;}
     .hero-stripe-overlay.mode-spotlight::after{ opacity:.8; }
+    .hero-effect-overlay.effect-bolt::after, .hero-effect-overlay.effect-neon{ animation:none; }
+    .hero-effect-overlay.effect-bolt::after{ opacity:.3; }
+    .hero-bg-layer{ animation:none !important; }
   }
 
   .scroll-cue{
@@ -848,7 +914,9 @@
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
 <header class="hero">
+  <div class="hero-bg-layer" id="heroBgLayer"></div>
   <div class="hero-stripe-overlay" id="heroStripeOverlay"></div>
+  <div class="hero-effect-overlay" id="heroEffectOverlay"></div>
   <div class="hero-strip" id="heroStrip"></div>
   <div class="hero-main">
     <div class="eyebrow" id="heroEyebrow">A LOOKBOOK OF THE GOLD COAST</div>
@@ -1436,11 +1504,31 @@ function applySectionBg(sectionBg) {
     el.style.backgroundColor = color;
 
     const applyImage = () => {
+      const vg = cfg.vignette;
+      const overlay = (vg && vg.enabled)
+        ? `radial-gradient(circle at ${safePercent(vg.x, 50)}% ${safePercent(vg.y, 50)}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
+        : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
+
+      // The hero's photo lives on its own dedicated layer (#heroBgLayer)
+      // rather than directly on header.hero's background — that's what
+      // lets the Scene Builder's Ken Burns pan/zoom animate the photo
+      // without dragging the dark overlay tint (which stays put on
+      // header.hero) along with it.
+      if (key === 'hero') {
+        const bgLayer = document.getElementById('heroBgLayer');
+        if (imageUrl) {
+          el.style.backgroundImage = overlay;
+          el.classList.add('section-bg');
+          if (bgLayer) bgLayer.style.backgroundImage = `url("${imageUrl}")`;
+        } else {
+          el.style.backgroundImage = '';
+          el.classList.remove('section-bg');
+          if (bgLayer) bgLayer.style.backgroundImage = '';
+        }
+        return;
+      }
+
       if (imageUrl) {
-        const vg = cfg.vignette;
-        const overlay = (vg && vg.enabled)
-          ? `radial-gradient(circle at ${safePercent(vg.x, 50)}% ${safePercent(vg.y, 50)}%, rgba(10,9,7,0) 0%, rgba(10,9,7,0.12) 32%, rgba(10,9,7,.62) 72%, rgba(10,9,7,.85) 100%)`
-          : `linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45))`;
         el.style.backgroundImage = `${overlay}, url("${imageUrl}")`;
         el.classList.add('section-bg');
       } else {
@@ -1902,6 +1990,59 @@ function applyHeroTextVisibility(visibility) {
   });
 }
 
+function applyHeroEffect(effect) {
+  const el = document.getElementById('heroEffectOverlay');
+  if (!el) return;
+  el.classList.remove('effect-bolt', 'effect-neon', 'effect-cinematic');
+  if (effect && effect !== 'none') el.classList.add(`effect-${effect}`);
+}
+
+const HERO_ANIM_KEYFRAMES = {
+  fade: 'heroFadeIn',
+  'slide-up': 'heroSlideUp',
+  'slide-down': 'heroSlideDown',
+  'slide-left': 'heroSlideLeft',
+  'slide-right': 'heroSlideRight',
+  'zoom-in': 'heroZoomIn',
+  'zoom-out': 'heroZoomOut'
+};
+const HERO_PAN_KEYFRAMES = {
+  'kenburns-in': 'heroKenBurnsIn',
+  'kenburns-out': 'heroKenBurnsOut',
+  'pan-left': 'heroPanLeft',
+  'pan-right': 'heroPanRight'
+};
+
+function applyHeroScene(scene) {
+  if (!scene) return;
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const map = { eyebrow: '.hero .eyebrow', h1: '.hero h1', sub: '.hero p.sub', edition: '.hero .edition' };
+  const easing = scene.easing || 'ease-out';
+
+  Object.entries(map).forEach(([key, selector]) => {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    const cfg = (scene.layers && scene.layers[key]) || {};
+    const kf = HERO_ANIM_KEYFRAMES[cfg.anim];
+    if (reducedMotion || !cfg.anim || cfg.anim === 'none' || !kf) {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      return;
+    }
+    const duration = cfg.duration ?? 900;
+    const delay = cfg.delay ?? 0;
+    el.style.animation = `${kf} ${duration}ms ${easing} ${delay}ms both`;
+  });
+
+  const bgLayer = document.getElementById('heroBgLayer');
+  if (bgLayer) {
+    const kf = !reducedMotion && scene.background ? HERO_PAN_KEYFRAMES[scene.background.pan] : null;
+    bgLayer.style.animation = kf
+      ? `${kf} ${scene.background.duration || 7000}ms ease-out forwards`
+      : 'none';
+  }
+}
+
 async function init() {
   let data = { content: DEFAULT_CONTENT, copy: DEFAULT_COPY, regions: DEFAULT_REGIONS };
   try {
@@ -1931,6 +2072,8 @@ async function init() {
   if (data.content.heroTextVisibility) {
     setTimeout(() => applyHeroTextVisibility(data.content.heroTextVisibility), 100);
   }
+  applyHeroEffect(data.content.heroEffect);
+  applyHeroScene(data.content.heroScene);
   attachErrorHandling();
   preloadImages(data.content);
 }

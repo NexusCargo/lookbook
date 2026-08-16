@@ -90,6 +90,57 @@
   }
   .hero-reset-btn:hover { background: rgba(255,255,255,.22); }
 
+  /* ===== Scene Builder timeline ===== */
+  .scene-builder {
+    background: #14110a; border-radius: 10px; padding: 16px; margin-bottom: 20px;
+    border: 1px solid #2a2415;
+  }
+  .scene-bg-controls {
+    display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px;
+    padding-bottom: 16px; border-bottom: 1px dashed rgba(242,183,5,.2);
+  }
+  .scene-bg-controls .input-group label { color: #ccc; font-size: 11.5px; }
+  .scene-bg-controls select, .scene-bg-controls input[type="range"] {
+    background: #0d0c08; color: #eee; border: 1px solid #333;
+  }
+  .scene-timeline-wrap { overflow-x: auto; }
+  .scene-ruler {
+    position: relative; height: 20px; margin-left: 110px; border-bottom: 1px solid #333; min-width: 600px;
+  }
+  .scene-ruler .tick {
+    position: absolute; top: 0; bottom: 0; border-left: 1px solid #333;
+    font-size: 9.5px; color: #777; padding-left: 3px; white-space: nowrap;
+  }
+  .scene-tracks { min-width: 710px; }
+  .scene-track {
+    display: flex; align-items: center; height: 38px; border-bottom: 1px solid #221f14;
+  }
+  .scene-track-label {
+    width: 110px; flex: 0 0 110px; font-size: 12px; color: #ddd; display: flex; align-items: center; gap: 6px;
+  }
+  .scene-track-label .swatch { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .scene-track-ruler {
+    position: relative; flex: 1; height: 100%; background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 1px, transparent 50px);
+  }
+  .scene-bar {
+    position: absolute; top: 8px; height: 22px; border-radius: 4px; cursor: grab;
+    background: linear-gradient(90deg, rgba(242,183,5,.85), rgba(217,166,58,.85));
+    box-shadow: 0 2px 6px rgba(0,0,0,.4);
+    display: flex; align-items: center; padding: 0 6px; font-size: 10px; color: #1a1400; font-weight: 600;
+    white-space: nowrap; overflow: hidden; user-select: none;
+  }
+  .scene-bar:active { cursor: grabbing; }
+  .scene-bar.dragging { box-shadow: 0 0 0 2px #fff, 0 2px 10px rgba(0,0,0,.5); }
+  .scene-bar .scene-bar-handle {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize;
+    background: rgba(0,0,0,.18); border-radius: 0 4px 4px 0;
+  }
+  .scene-track-anim-select {
+    width: 90px; flex: 0 0 90px; font-size: 10.5px; padding: 3px 4px; margin-left: 8px;
+    background: #0d0c08; color: #ddd; border: 1px solid #333; border-radius: 4px;
+  }
+
   /* Editor theme switcher */
   .hero-theme-switch {
     display: flex; align-items: center; gap: 10px; margin: 18px 0 0; flex-wrap: wrap;
@@ -178,14 +229,58 @@
     align-items: center; justify-content: center; color: #fff; padding: 20px;
   }
   .hero-live-preview-box::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
     background: linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45));
   }
   .hero-live-preview-box.has-image::before {
     background: var(--hero-preview-overlay, linear-gradient(rgba(10,9,7,.45), rgba(10,9,7,.45)));
   }
+  /* Hero effect preview (mirrors the live-page versions defined in index.html) */
+  .hero-live-preview-box.effect-bolt::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background: linear-gradient(115deg, transparent 40%, rgba(242,183,5,.5) 48%, rgba(255,255,255,.85) 50%, rgba(242,183,5,.5) 52%, transparent 60%);
+    background-size: 300% 300%; mix-blend-mode: screen;
+    animation: heroBoltFlash 4.5s ease-in-out infinite;
+  }
+  .hero-live-preview-box.effect-neon { box-shadow: inset 0 0 0 3px rgba(255,0,200,.35); animation: heroNeonPulse 2.6s ease-in-out infinite; }
+  .hero-live-preview-box.effect-cinematic::before { background: rgba(10,9,7,.4) !important; }
+  .hero-live-preview-box.effect-cinematic::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 9%; background: #000; z-index: 3;
+    box-shadow: 0 -9999px 0 9999px #000;
+  }
+  .hero-live-preview-box.effect-cinematic { overflow: hidden; }
+  .hero-live-preview-box.effect-cinematic .hero-preview-content::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 9%; background: #000; z-index: 3;
+  }
+  @keyframes heroBoltFlash {
+    0%, 100% { background-position: 0% 0%; opacity: 0; }
+    46% { opacity: 0; }
+    49% { opacity: .9; }
+    52% { opacity: 0; background-position: 100% 100%; }
+  }
+  /* Scene Builder preview animations (mirror the live-page versions in index.html) */
+  @keyframes heroFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes heroSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes heroSlideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes heroSlideLeft { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes heroSlideRight { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes heroZoomIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+  @keyframes heroZoomOut { from { opacity: 0; transform: scale(1.2); } to { opacity: 1; transform: scale(1); } }
+  @keyframes heroKenBurnsIn { from { transform: scale(1); } to { transform: scale(1.15); } }
+  @keyframes heroKenBurnsOut { from { transform: scale(1.15); } to { transform: scale(1); } }
+  @keyframes heroPanLeft { from { transform: scale(1.08) translateX(2%); } to { transform: scale(1.08) translateX(-2%); } }
+  @keyframes heroPanRight { from { transform: scale(1.08) translateX(-2%); } to { transform: scale(1.08) translateX(2%); } }
+  @keyframes heroNeonPulse {
+    0%, 100% { box-shadow: inset 0 0 0 3px rgba(255,0,200,.3), 0 0 18px rgba(0,229,255,.3); }
+    50% { box-shadow: inset 0 0 0 4px rgba(0,229,255,.45), 0 0 30px rgba(255,0,200,.45); }
+  }
   .hero-preview-content {
     position: absolute; width: 100%; height: 100%;
+  }
+  .hero-preview-bg-layer {
+    position: absolute; inset: -6%; z-index: 0;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    transform-origin: center center;
   }
   .hero-preview-text {
     position: absolute; z-index: 10; cursor: move; user-select: none;
@@ -562,11 +657,52 @@
           </div>
           <div class="hero-layers-strip" id="heroLayersStrip"></div>
           <div class="hero-live-preview-box" id="heroLivePreviewBox">
+            <div class="hero-preview-bg-layer" id="heroPreviewBgLayer"></div>
             <div class="hero-preview-content" id="heroLivePreviewContent"></div>
           </div>
         </div>
         <p id="heroPreviewSourceHint" style="font-size: 12px; color: #888; margin: 8px 0 0;"></p>
         <p style="font-size: 12px; color: #666; margin: 4px 0 0;">Drag the eyebrow, title, subtitle, or edition text above to reposition it over your real background. Wherever you leave it is what shows on the live page once you Save.</p>
+
+        <!-- ===== Scene Builder: entrance animations + Ken Burns, on a real timeline ===== -->
+        <h3 style="margin-top:28px;">🎬 Scene Builder <span style="font-weight:normal; font-size:12px; color:#888;">— choreograph how the hero animates in, shows on the live page</span></h3>
+        <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Drag a bar to change when a layer starts. Drag its right edge to change how long it takes. This is timed from the moment the page loads.</p>
+
+        <div class="scene-builder">
+          <div class="scene-bg-controls">
+            <div class="input-group" style="max-width:220px;">
+              <label>Background motion</label>
+              <select id="sceneBgPan">
+                <option value="none">None (static)</option>
+                <option value="kenburns-in">Ken Burns — slow zoom in</option>
+                <option value="kenburns-out">Ken Burns — slow zoom out</option>
+                <option value="pan-left">Pan left → right</option>
+                <option value="pan-right">Pan right → left</option>
+              </select>
+            </div>
+            <div class="input-group" style="max-width:220px;">
+              <label>Background duration</label>
+              <input type="range" id="sceneBgDuration" min="2000" max="12000" step="250" value="7000">
+              <span id="sceneBgDurationLabel" style="font-size:12px; color:#666;">7.0s</span>
+            </div>
+            <div class="input-group" style="max-width:220px;">
+              <label>Entrance easing (all layers)</label>
+              <select id="sceneEasing">
+                <option value="ease-out">Ease out (default)</option>
+                <option value="ease">Ease</option>
+                <option value="ease-in">Ease in</option>
+                <option value="ease-in-out">Ease in-out</option>
+                <option value="cubic-bezier(.34,1.56,.64,1)">Bounce</option>
+              </select>
+            </div>
+            <button type="button" id="scenePlayBtn" class="hero-reset-btn" style="background:#0A3626; align-self:flex-end;">▶ Play preview</button>
+          </div>
+
+          <div class="scene-timeline-wrap">
+            <div class="scene-ruler" id="sceneRuler"></div>
+            <div class="scene-tracks" id="sceneTracks"></div>
+          </div>
+        </div>
 
         <h3>Background</h3>
         <div id="bg-hero"></div>
@@ -580,6 +716,10 @@
           <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">Where the stripe sits — different background photos may suit different edges. (Only applies to the Straight style.)</p>
           <div class="pill-select" id="stripePositionPicker"></div>
         </div>
+
+        <h3 style="margin-top:20px;">Hero effect <span style="font-weight:normal; font-size:12px; color:#888;">(this one shows on the live page)</span></h3>
+        <p style="font-size:12.5px; color:#888; margin:-4px 0 12px;">An animated flourish layered over the whole hero banner. "None" leaves it as-is.</p>
+        <div class="pill-select" id="heroEffectPicker"></div>
 
         <h3 style="margin-top:20px;">Hero stripe colors</h3>
         <div id="stripeSegments"></div>
@@ -866,6 +1006,21 @@ const DEFAULT_REGIONS = {
     ], food: [], foodNote: 'Dining options are limited to the Mole Motel and small local spots in Larabanga — expect simple, hearty northern Ghanaian fare like tuo zaafi and guinea fowl.' }
 };
 
+// Declared here (rather than down by the rest of the Scene Builder code)
+// because `defaultContent()` below needs it immediately when the script
+// first runs — a `const` declared later would still be in its temporal
+// dead zone at that point and throw.
+const DEFAULT_HERO_SCENE = {
+  background: { pan: 'none', duration: 7000 },
+  easing: 'ease-out',
+  layers: {
+    eyebrow: { anim: 'slide-up', delay: 150, duration: 1000 },
+    h1: { anim: 'none', delay: 0, duration: 900 },
+    sub: { anim: 'slide-up', delay: 300, duration: 1000 },
+    edition: { anim: 'slide-up', delay: 450, duration: 1000 }
+  }
+};
+
 const DEFAULT_HERO_STRIPE = [
   { type: 'color', color: '#F2B705' },
   { type: 'color', color: '#B5471B' },
@@ -885,6 +1040,8 @@ function defaultContent() {
     heroStripe: DEFAULT_HERO_STRIPE.map(s => ({ ...s })),
     heroStripeStyle: 'straight',
     heroStripePosition: 'left',
+    heroEffect: 'none',
+    heroScene: JSON.parse(JSON.stringify(DEFAULT_HERO_SCENE)),
     stopOrder: [...STOP_KEYS],
     stops: STOP_KEYS.reduce((acc, key) => {
       acc[key] = { media_type: 'image', image_public_ids: [], gif_url: null, video_public_id: null, bgColor: null, ...DEFAULT_STOP_META[key] };
@@ -927,6 +1084,9 @@ async function boot() {
       if (typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
       renderStripeSegments();
       renderStripePositionPicker();
+      renderHeroEffectPicker();
+      applyHeroPreviewEffect();
+      initSceneBuilder();
       renderBgEditor('hero', 'Hero background');
       renderBgEditor('welcome', 'Welcome panel background');
       renderBgEditor('regionsBanner', 'Regions banner background');
@@ -978,6 +1138,16 @@ function mergeContent(loaded) {
   const validStripeStyles = ['straight', 'none', 'spotlight'];
   c.heroStripeStyle = (loaded && validStripeStyles.includes(loaded.heroStripeStyle)) ? loaded.heroStripeStyle : defaults.heroStripeStyle;
   c.heroStripePosition = (loaded && loaded.heroStripePosition) ? loaded.heroStripePosition : defaults.heroStripePosition;
+  const validHeroEffects = ['none', 'bolt', 'neon', 'cinematic'];
+  c.heroEffect = (loaded && validHeroEffects.includes(loaded.heroEffect)) ? loaded.heroEffect : defaults.heroEffect;
+  c.heroScene = {
+    background: { ...defaults.heroScene.background, ...((loaded && loaded.heroScene && loaded.heroScene.background) || {}) },
+    easing: (loaded && loaded.heroScene && loaded.heroScene.easing) || defaults.heroScene.easing,
+    layers: Object.keys(defaults.heroScene.layers).reduce((acc, key) => {
+      acc[key] = { ...defaults.heroScene.layers[key], ...(((loaded && loaded.heroScene && loaded.heroScene.layers) || {})[key] || {}) };
+      return acc;
+    }, {})
+  };
   c.stopOrder = (loaded && loaded.stopOrder && loaded.stopOrder.length) ? [...loaded.stopOrder] : [...defaults.stopOrder];
   const loadedStops = (loaded && loaded.stops) || {};
   c.stops = {};
@@ -1678,6 +1848,256 @@ const STRIPE_POSITIONS = [
   ['top', 'Top'],
   ['bottom', 'Bottom']
 ];
+
+const HERO_EFFECTS = [
+  ['none', 'None'],
+  ['bolt', '⚡ Bolt Energy'],
+  ['neon', '✨ Neon Glow'],
+  ['cinematic', '🎬 Cinematic']
+];
+
+/* ===== Scene Builder (entrance animations + Ken Burns) ===== */
+const SCENE_MAX_MS = 3000; // width of the visible timeline, in milliseconds
+const SCENE_ANIM_TYPES = [
+  ['none', 'None (static)'],
+  ['fade', 'Fade'],
+  ['slide-up', 'Slide up'],
+  ['slide-down', 'Slide down'],
+  ['slide-left', 'Slide from right'],
+  ['slide-right', 'Slide from left'],
+  ['zoom-in', 'Zoom in'],
+  ['zoom-out', 'Zoom out']
+];
+const SCENE_TRACKS = [
+  { id: 'eyebrow', label: 'Eyebrow', color: '#F2B705' },
+  { id: 'h1', label: 'Title', color: '#EDE6D6' },
+  { id: 'sub', label: 'Subtitle', color: '#D9A63A' },
+  { id: 'edition', label: 'Edition', color: '#B5471B' }
+];
+
+function renderHeroEffectPicker() {
+  const wrap = document.getElementById('heroEffectPicker');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  HERO_EFFECTS.forEach(([val, label]) => {
+    const pill = document.createElement('label');
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'hero-effect';
+    radio.value = val;
+    radio.checked = (content.heroEffect || 'none') === val;
+    radio.addEventListener('change', () => {
+      content.heroEffect = val;
+      applyHeroPreviewEffect();
+    });
+    pill.appendChild(radio);
+    pill.appendChild(document.createTextNode(label));
+    wrap.appendChild(pill);
+  });
+}
+
+// Mirror the chosen effect onto the admin preview box too, so you can see
+// roughly what it'll look like before saving.
+function applyHeroPreviewEffect() {
+  const previewEl = document.getElementById('heroLivePreviewBox');
+  if (!previewEl) return;
+  previewEl.classList.remove('effect-bolt', 'effect-neon', 'effect-cinematic');
+  const effect = content.heroEffect || 'none';
+  if (effect !== 'none') previewEl.classList.add(`effect-${effect}`);
+}
+
+/* ===== Scene Builder: entrance animations + Ken Burns on a real timeline =====
+   Data lives at content.heroScene, saved the same way as everything else on
+   the Save button — this is genuine site content, not an admin-only look. */
+function heroScene() {
+  if (!content.heroScene) content.heroScene = JSON.parse(JSON.stringify(DEFAULT_HERO_SCENE));
+  return content.heroScene;
+}
+
+const HERO_ANIM_KEYFRAMES = {
+  fade: 'heroFadeIn',
+  'slide-up': 'heroSlideUp',
+  'slide-down': 'heroSlideDown',
+  'slide-left': 'heroSlideLeft',
+  'slide-right': 'heroSlideRight',
+  'zoom-in': 'heroZoomIn',
+  'zoom-out': 'heroZoomOut'
+};
+const HERO_PAN_KEYFRAMES = {
+  'kenburns-in': 'heroKenBurnsIn',
+  'kenburns-out': 'heroKenBurnsOut',
+  'pan-left': 'heroPanLeft',
+  'pan-right': 'heroPanRight'
+};
+
+function renderSceneRuler() {
+  const ruler = document.getElementById('sceneRuler');
+  if (!ruler) return;
+  ruler.innerHTML = '';
+  for (let ms = 0; ms <= SCENE_MAX_MS; ms += 500) {
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.left = (ms / SCENE_MAX_MS * 100) + '%';
+    tick.textContent = (ms / 1000).toFixed(1) + 's';
+    ruler.appendChild(tick);
+  }
+}
+
+function positionSceneBar(bar, cfg) {
+  const delay = Math.max(0, Math.min(cfg.delay ?? 0, SCENE_MAX_MS));
+  const duration = Math.max(100, Math.min(cfg.duration ?? 900, SCENE_MAX_MS - delay));
+  bar.style.left = (delay / SCENE_MAX_MS * 100) + '%';
+  bar.style.width = (duration / SCENE_MAX_MS * 100) + '%';
+  bar.style.opacity = (cfg.anim === 'none') ? '.35' : '1';
+  bar.firstChild && (bar.firstChild.nodeType === 3) && (bar.firstChild.textContent = cfg.anim === 'none' ? '—' : `${cfg.delay}ms`);
+}
+
+let sceneDrag = null; // { trackId, mode: 'move'|'resize', startX, startDelay, startDuration, rulerEl }
+
+function renderSceneTracks() {
+  const wrap = document.getElementById('sceneTracks');
+  if (!wrap) return;
+  const scene = heroScene();
+  wrap.innerHTML = '';
+
+  SCENE_TRACKS.forEach(t => {
+    const cfg = scene.layers[t.id] || (scene.layers[t.id] = { anim: 'none', delay: 0, duration: 900 });
+
+    const row = document.createElement('div');
+    row.className = 'scene-track';
+
+    const label = document.createElement('div');
+    label.className = 'scene-track-label';
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = t.color;
+    label.appendChild(swatch);
+    label.appendChild(document.createTextNode(t.label));
+    row.appendChild(label);
+
+    const rulerTrack = document.createElement('div');
+    rulerTrack.className = 'scene-track-ruler';
+
+    const bar = document.createElement('div');
+    bar.className = 'scene-bar';
+    bar.id = `sceneBar-${t.id}`;
+    bar.appendChild(document.createTextNode(cfg.anim === 'none' ? '—' : `${cfg.delay}ms`));
+
+    const handle = document.createElement('div');
+    handle.className = 'scene-bar-handle';
+    bar.appendChild(handle);
+    positionSceneBar(bar, cfg);
+
+    bar.addEventListener('mousedown', (e) => {
+      if (e.target === handle) return;
+      e.preventDefault();
+      sceneDrag = { trackId: t.id, mode: 'move', startX: e.clientX, startDelay: cfg.delay, startDuration: cfg.duration, rulerEl: rulerTrack };
+      bar.classList.add('dragging');
+    });
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      sceneDrag = { trackId: t.id, mode: 'resize', startX: e.clientX, startDelay: cfg.delay, startDuration: cfg.duration, rulerEl: rulerTrack };
+      bar.classList.add('dragging');
+    });
+
+    rulerTrack.appendChild(bar);
+    row.appendChild(rulerTrack);
+
+    const animSelect = document.createElement('select');
+    animSelect.className = 'scene-track-anim-select';
+    SCENE_ANIM_TYPES.forEach(([val, txt]) => {
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = txt;
+      if ((cfg.anim || 'none') === val) opt.selected = true;
+      animSelect.appendChild(opt);
+    });
+    animSelect.addEventListener('change', () => {
+      cfg.anim = animSelect.value;
+      positionSceneBar(bar, cfg);
+    });
+    row.appendChild(animSelect);
+
+    wrap.appendChild(row);
+  });
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!sceneDrag) return;
+  const scene = heroScene();
+  const cfg = scene.layers[sceneDrag.trackId];
+  const rulerRect = sceneDrag.rulerEl.getBoundingClientRect();
+  const deltaMs = ((e.clientX - sceneDrag.startX) / rulerRect.width) * SCENE_MAX_MS;
+
+  if (sceneDrag.mode === 'move') {
+    cfg.delay = Math.max(0, Math.min(Math.round(sceneDrag.startDelay + deltaMs), SCENE_MAX_MS - cfg.duration));
+  } else {
+    cfg.duration = Math.max(100, Math.min(Math.round(sceneDrag.startDuration + deltaMs), SCENE_MAX_MS - cfg.delay));
+  }
+  const bar = document.getElementById(`sceneBar-${sceneDrag.trackId}`);
+  if (bar) positionSceneBar(bar, cfg);
+});
+
+document.addEventListener('mouseup', () => {
+  if (!sceneDrag) return;
+  const bar = document.getElementById(`sceneBar-${sceneDrag.trackId}`);
+  if (bar) bar.classList.remove('dragging');
+  sceneDrag = null;
+});
+
+function playScenePreview() {
+  const scene = heroScene();
+  const easing = scene.easing || 'ease-out';
+
+  SCENE_TRACKS.forEach(t => {
+    const el = document.getElementById(`heroPreviewText-${t.id}`);
+    if (!el) return;
+    const cfg = scene.layers[t.id];
+    const kf = HERO_ANIM_KEYFRAMES[cfg.anim];
+    el.style.animation = 'none';
+    void el.offsetWidth; // force reflow so the animation restarts from scratch
+    el.style.animation = kf ? `${kf} ${cfg.duration}ms ${easing} ${cfg.delay}ms both` : 'none';
+    if (!kf) el.style.opacity = '1';
+  });
+
+  const bgLayer = document.getElementById('heroPreviewBgLayer');
+  if (bgLayer) {
+    const kf = HERO_PAN_KEYFRAMES[scene.background.pan];
+    bgLayer.style.animation = 'none';
+    void bgLayer.offsetWidth;
+    bgLayer.style.animation = kf ? `${kf} ${scene.background.duration}ms ease-out forwards` : 'none';
+  }
+}
+
+function initSceneBuilder() {
+  const scene = heroScene();
+  const panSelect = document.getElementById('sceneBgPan');
+  const durationSlider = document.getElementById('sceneBgDuration');
+  const durationLabel = document.getElementById('sceneBgDurationLabel');
+  const easingSelect = document.getElementById('sceneEasing');
+  const playBtn = document.getElementById('scenePlayBtn');
+
+  if (panSelect) {
+    panSelect.value = scene.background.pan;
+    panSelect.addEventListener('change', () => { scene.background.pan = panSelect.value; });
+  }
+  if (durationSlider && durationLabel) {
+    durationSlider.value = scene.background.duration;
+    durationLabel.textContent = (scene.background.duration / 1000).toFixed(1) + 's';
+    durationSlider.addEventListener('input', () => {
+      scene.background.duration = parseInt(durationSlider.value, 10);
+      durationLabel.textContent = (scene.background.duration / 1000).toFixed(1) + 's';
+    });
+  }
+  if (easingSelect) {
+    easingSelect.value = scene.easing;
+    easingSelect.addEventListener('change', () => { scene.easing = easingSelect.value; });
+  }
+  if (playBtn) playBtn.addEventListener('click', playScenePreview);
+
+  renderSceneRuler();
+  renderSceneTracks();
+}
 
 function renderStripePositionPicker() {
   const wrap = document.getElementById('stripePositionPicker');
@@ -2957,7 +3377,8 @@ function applyHeroPreviewBackground() {
   }
   if (stillFrame) {
     previewEl.style.backgroundColor = color;
-    previewEl.style.backgroundImage = `url(${stillFrame})`;
+    const bgLayer = document.getElementById('heroPreviewBgLayer');
+    if (bgLayer) bgLayer.style.backgroundImage = `url(${stillFrame})`;
     previewEl.classList.add('has-image');
     const vg = cfg.vignette;
     const overlay = (vg && vg.enabled)
@@ -2966,7 +3387,8 @@ function applyHeroPreviewBackground() {
     previewEl.style.setProperty('--hero-preview-overlay', overlay);
   } else {
     previewEl.style.backgroundColor = '';
-    previewEl.style.backgroundImage = '';
+    const bgLayer = document.getElementById('heroPreviewBgLayer');
+    if (bgLayer) bgLayer.style.backgroundImage = '';
     previewEl.classList.remove('has-image');
     previewEl.style.removeProperty('--hero-preview-overlay');
   }
