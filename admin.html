@@ -606,39 +606,48 @@
           <div class="input-group"><label>Eyebrow</label><input type="text" id="cp-hero-eyebrow"></div>
           <div class="input-group"><label>Title</label><input type="text" id="cp-hero-title"></div>
         </div>
-        <div class="input-group"><label>Subtitle</label><textarea id="cp-hero-sub"></textarea></div>
+        <div class="input-group">
+          <label>Subtitle</label>
+          <input type="text" id="cp-hero-sub" maxlength="95">
+          <p style="font-size:11.5px; color:#888; margin:5px 0 0;">Displays as one line on the hero — keep it to roughly 70–95 characters or it'll get cut off with an ellipsis.</p>
+        </div>
         <div class="input-group"><label>Edition tag</label><input type="text" id="cp-hero-edition"></div>
 
         <!-- Font Size & Color Controls -->
         <h3 style="margin-top: 20px;">Font Size &amp; Color</h3>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Eyebrow</label>
-          <input type="range" id="heroFontSize-eyebrow" min="8" max="20" value="11">
-          <input type="number" id="heroFontSizeNum-eyebrow" min="8" max="20" value="11">
+          <input type="range" id="heroFontSize-eyebrow" min="8" max="32" value="11">
+          <input type="number" id="heroFontSizeNum-eyebrow" min="8" max="32" value="11">
           <span class="font-size-value" id="heroFontSizeDisplay-eyebrow">11px</span>
           <input type="color" id="heroFontColor-eyebrow" value="#F2B705" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Title</label>
-          <input type="range" id="heroFontSize-h1" min="24" max="80" value="48">
-          <input type="number" id="heroFontSizeNum-h1" min="24" max="80" value="48">
+          <input type="range" id="heroFontSize-h1" min="24" max="160" value="48">
+          <input type="number" id="heroFontSizeNum-h1" min="24" max="160" value="48">
           <span class="font-size-value" id="heroFontSizeDisplay-h1">48px</span>
           <input type="color" id="heroFontColor-h1" value="#EDE6D6" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Subtitle</label>
-          <input type="range" id="heroFontSize-sub" min="12" max="24" value="16">
-          <input type="number" id="heroFontSizeNum-sub" min="12" max="24" value="16">
+          <input type="range" id="heroFontSize-sub" min="10" max="40" value="16">
+          <input type="number" id="heroFontSizeNum-sub" min="10" max="40" value="16">
           <span class="font-size-value" id="heroFontSizeDisplay-sub">16px</span>
           <input type="color" id="heroFontColor-sub" value="#EDE6D6" title="Text color">
         </div>
         <div class="font-size-control">
           <label style="min-width: 70px; margin-bottom: 0;">Edition</label>
-          <input type="range" id="heroFontSize-edition" min="10" max="16" value="13">
-          <input type="number" id="heroFontSizeNum-edition" min="10" max="16" value="13">
+          <input type="range" id="heroFontSize-edition" min="8" max="28" value="13">
+          <input type="number" id="heroFontSizeNum-edition" min="8" max="28" value="13">
           <span class="font-size-value" id="heroFontSizeDisplay-edition">13px</span>
           <input type="color" id="heroFontColor-edition" value="#D9A63A" title="Text color">
         </div>
+
+        <!-- Additional custom hero text layers -->
+        <h3 style="margin-top:20px;">Additional hero text <span style="font-weight:normal; font-size:12px; color:#888;">— extra lines you can add, size, color, and drag into place below</span></h3>
+        <div id="heroExtraTextList"></div>
+        <button type="button" id="heroAddExtraTextBtn" style="margin-top:4px;">+ Add text</button>
 
         <!-- Live Preview -->
         <div class="hero-theme-switch">
@@ -1080,6 +1089,7 @@ async function boot() {
       document.getElementById('authStatus').style.color = '#388e3c';
       await loadAll();
       renderCopyForm();
+      if (typeof renderHeroExtraTextEditors === 'function') renderHeroExtraTextEditors();
       if (typeof updateLivePreview === 'function') updateLivePreview();
       if (typeof applyHeroPreviewBackground === 'function') applyHeroPreviewBackground();
       renderStripeSegments();
@@ -3301,6 +3311,99 @@ function heroFontColors() {
   return content.heroFontColor;
 }
 
+// Custom, admin-added hero text layers. Unlike the four built-in fields,
+// each item is self-contained (own text/size/color/x/y) rather than being
+// spread across the heroPositions/heroFontSize/etc. dictionaries, since
+// there's no fixed slot for them to live in.
+const MAX_HERO_EXTRA_TEXTS = 4;
+function heroExtraTexts() {
+  if (!Array.isArray(content.heroExtraTexts)) content.heroExtraTexts = [];
+  return content.heroExtraTexts;
+}
+
+function renderHeroExtraTextEditors() {
+  const list = document.getElementById('heroExtraTextList');
+  const addBtn = document.getElementById('heroAddExtraTextBtn');
+  if (!list) return;
+  const items = heroExtraTexts();
+  list.innerHTML = '';
+  items.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;';
+    row.innerHTML = `
+      <input type="text" data-role="text" placeholder="Extra hero text" value="${escapeHtml(item.text || '')}" style="flex:1; min-width:160px;">
+      <input type="number" data-role="size" min="8" max="60" value="${item.fontSize || 16}" style="width:64px;" title="Font size (px)">
+      <input type="color" data-role="color" value="${item.color || '#EDE6D6'}" title="Text color">
+      <button type="button" data-role="remove" style="background:#d32f2f; padding:6px 10px; font-size:12px;">Remove</button>
+    `;
+    row.querySelector('[data-role="text"]').addEventListener('input', (e) => {
+      item.text = e.target.value;
+      updateLivePreview();
+    });
+    row.querySelector('[data-role="size"]').addEventListener('input', (e) => {
+      item.fontSize = parseInt(e.target.value, 10) || 16;
+      updateLivePreview();
+    });
+    row.querySelector('[data-role="color"]').addEventListener('input', (e) => {
+      item.color = e.target.value.toUpperCase();
+      updateLivePreview();
+    });
+    row.querySelector('[data-role="remove"]').addEventListener('click', () => {
+      heroExtraTexts().splice(idx, 1);
+      renderHeroExtraTextEditors();
+      updateLivePreview();
+    });
+    list.appendChild(row);
+  });
+  if (addBtn) addBtn.style.display = items.length >= MAX_HERO_EXTRA_TEXTS ? 'none' : '';
+}
+
+const heroAddExtraTextBtn = document.getElementById('heroAddExtraTextBtn');
+if (heroAddExtraTextBtn) {
+  heroAddExtraTextBtn.addEventListener('click', () => {
+    const items = heroExtraTexts();
+    if (items.length >= MAX_HERO_EXTRA_TEXTS) return;
+    items.push({ id: `extra-${Date.now()}`, text: 'New text', fontSize: 16, color: '#EDE6D6', x: 8, y: 68 + items.length * 6 });
+    renderHeroExtraTextEditors();
+    updateLivePreview();
+  });
+}
+
+let heroExtraDrag = null; // { id }
+function makeHeroExtraTextDraggable(el, item) {
+  el.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const previewContent = document.getElementById('heroLivePreviewContent');
+    const previewRect = previewContent.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    heroExtraDrag = {
+      item,
+      offsetXPct: ((e.clientX - rect.left) / previewRect.width) * 100,
+      offsetYPct: ((e.clientY - rect.top) / previewRect.height) * 100
+    };
+    el.classList.add('dragging');
+  });
+}
+document.addEventListener('mousemove', (e) => {
+  if (!heroExtraDrag) return;
+  const previewContent = document.getElementById('heroLivePreviewContent');
+  const el = previewContent && document.getElementById(`heroPreviewText-${heroExtraDrag.item.id}`);
+  if (!previewContent || !el) return;
+  const previewRect = previewContent.getBoundingClientRect();
+  const xPct = Math.min(100, Math.max(0, ((e.clientX - previewRect.left) / previewRect.width) * 100 - heroExtraDrag.offsetXPct));
+  const yPct = Math.min(100, Math.max(0, ((e.clientY - previewRect.top) / previewRect.height) * 100 - heroExtraDrag.offsetYPct));
+  el.style.left = xPct + '%';
+  el.style.top = yPct + '%';
+  heroExtraDrag.item.x = Math.round(xPct * 10) / 10;
+  heroExtraDrag.item.y = Math.round(yPct * 10) / 10;
+});
+document.addEventListener('mouseup', () => {
+  if (!heroExtraDrag) return;
+  const el = document.getElementById(`heroPreviewText-${heroExtraDrag.item.id}`);
+  if (el) el.classList.remove('dragging');
+  heroExtraDrag = null;
+});
+
 let heroDrag = null; // { elId, offsetXPct, offsetYPct }
 
 function makeHeroTextDraggable(el, elId) {
@@ -3448,6 +3551,7 @@ function initializeLivePreview() {
     }
   });
 
+  renderHeroExtraTextEditors();
   updateLivePreview();
 }
 
@@ -3569,6 +3673,19 @@ function updateLivePreview() {
     div.style.top = pos.y + '%';
     previewContent.appendChild(div);
     makeHeroTextDraggable(div, spec.id);
+  });
+
+  heroExtraTexts().forEach((item) => {
+    const div = document.createElement('div');
+    div.id = `heroPreviewText-${item.id}`;
+    div.className = 'hero-preview-text';
+    div.textContent = item.text || '';
+    div.style.fontSize = (item.fontSize || 16) + 'px';
+    div.style.color = item.color || '#EDE6D6';
+    div.style.left = (item.x ?? 8) + '%';
+    div.style.top = (item.y ?? 68) + '%';
+    previewContent.appendChild(div);
+    makeHeroExtraTextDraggable(div, item);
   });
 }
 

@@ -263,10 +263,31 @@
   }
   .hero h1[style*="position"],
   .hero .eyebrow[style*="position"],
-  .hero p.sub[style*="position"],
   .hero .edition[style*="position"] {
     max-width:none;
     white-space:normal;
+  }
+  .hero p.sub[style*="position"] {
+    max-width:min(560px, 80vw);
+  }
+  /* Extra custom hero text layers (admin: Hero → Additional hero text) */
+  .hero-extra-text{
+    position:absolute;
+    font-family:Georgia, serif;
+    line-height:1.3;
+    color:var(--ivory);
+    white-space:nowrap;
+  }
+  /* Hide hero copy until real content has been fetched and set, so the
+     visitor never sees the placeholder text flash and then get swapped
+     for / re-animated with the real content a moment later. */
+  header.hero:not(.content-ready) .hero-main .eyebrow,
+  header.hero:not(.content-ready) .hero-main h1,
+  header.hero:not(.content-ready) .hero-main p.sub,
+  header.hero:not(.content-ready) .hero-main .edition,
+  header.hero:not(.content-ready) .hero-main .hero-extra-text{
+    opacity:0 !important;
+    animation:none !important;
   }
   .hero h1.typewriter::after{
     content:'';
@@ -288,12 +309,15 @@
   }
   .hero .eyebrow{color:var(--gold); margin-bottom:18px; animation:fadeUp 1s ease-out .15s both;}
   .hero p.sub{
-    font-size:clamp(15px,1.6vw,19px);
+    font-size:clamp(13px,1.9vw,19px);
     font-style:italic;
-    max-width:520px;
+    max-width:min(600px, 86vw);
     margin-top:22px;
     color:var(--ivory);
     animation:fadeUp 1s ease-out .3s both;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .hero .edition{
     margin-top:60px;
@@ -318,7 +342,7 @@
   @keyframes heroPanLeft{ from{ transform:scale(1.08) translateX(2%); } to{ transform:scale(1.08) translateX(-2%); } }
   @keyframes heroPanRight{ from{ transform:scale(1.08) translateX(-2%); } to{ transform:scale(1.08) translateX(2%); } }
   @media (prefers-reduced-motion: reduce){
-    .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition{animation:none;}
+    .hero h1, .hero .eyebrow, .hero p.sub, .hero .edition, .hero-extra-text{animation:none; opacity:1;}
     .hero-strip > div, .hero-edge-wave, .hero-stripe-overlay.mode-spotlight::after, .hero h1.typewriter.typing::after{animation:none;}
     .hero-stripe-overlay.mode-spotlight::after{ opacity:.8; }
     .hero-effect-overlay.effect-bolt::after, .hero-effect-overlay.effect-neon{ animation:none; }
@@ -923,6 +947,7 @@
     <h1 id="heroTitle">GHANA</h1>
     <p class="sub" id="heroSub">Castles, canopy walks, kente looms, and the warmest welcome in West Africa.</p>
     <div class="eyebrow edition" id="heroEdition">2026 EDITION</div>
+    <div id="heroExtraTexts"></div>
   </div>
   <div class="scroll-cue">SCROLL ↓</div>
 </header>
@@ -1102,6 +1127,7 @@ const DEFAULT_CONTENT = {
   heroStripeStyle: 'straight',
   heroStripePosition: 'left',
   markerStyle: DEFAULT_MARKER_STYLE,
+  heroExtraTexts: [],
   stopOrder: [...STOP_KEYS],
   stops: STOP_KEYS.reduce((acc, key) => {
     acc[key] = { media_type: 'image', image_public_ids: [], video_public_id: null, ...DEFAULT_STOP_META[key] };
@@ -1362,13 +1388,14 @@ function safeHexColor(c, fallback) {
 // Types the hero headline out character-by-character with a blinking caret,
 // welcoming visitors as the page loads. Falls back to an instant set for
 // people who've asked their OS/browser to reduce motion.
-let __typewriteToken = 0;
-function typewriteText(el, text, speed) {
+const __typewriteTokens = new WeakMap();
+function typewriteText(el, text, speed, startDelay) {
   if (!el) return;
   const str = text || '';
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   el.classList.add('typewriter');
-  const myToken = ++__typewriteToken;
+  const myToken = (__typewriteTokens.get(el) || 0) + 1;
+  __typewriteTokens.set(el, myToken);
   if (reduced || !str) {
     el.textContent = str;
     el.classList.remove('typing');
@@ -1379,7 +1406,7 @@ function typewriteText(el, text, speed) {
   const charSpeed = speed || 65;
   let i = 0;
   function step() {
-    if (myToken !== __typewriteToken) return; // superseded by a newer call
+    if (__typewriteTokens.get(el) !== myToken) return; // superseded by a newer call
     if (i <= str.length) {
       el.textContent = str.slice(0, i);
       i++;
@@ -1388,7 +1415,7 @@ function typewriteText(el, text, speed) {
       el.classList.remove('typing');
     }
   }
-  setTimeout(step, 250);
+  setTimeout(step, startDelay ?? 250);
 }
 
 const VALID_STRIPE_STYLES = ['straight', 'none', 'spotlight'];
@@ -1648,10 +1675,13 @@ function renderStops(content, copy) {
 function applyCopy(copy) {
   const c = { ...DEFAULT_COPY, ...copy };
 
-  document.getElementById('heroEyebrow').textContent = c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow;
-  typewriteText(document.getElementById('heroTitle'), c.hero?.title ?? DEFAULT_COPY.hero.title);
-  document.getElementById('heroSub').textContent = c.hero?.sub ?? DEFAULT_COPY.hero.sub;
-  document.getElementById('heroEdition').textContent = c.hero?.edition ?? DEFAULT_COPY.hero.edition;
+  // Each hero field types in with a slight stagger so they cascade rather
+  // than all firing at once; longer fields (subtitle) type faster per
+  // character so they don't drag the reveal out.
+  typewriteText(document.getElementById('heroEyebrow'), c.hero?.eyebrow ?? DEFAULT_COPY.hero.eyebrow, 45, 100);
+  typewriteText(document.getElementById('heroTitle'), c.hero?.title ?? DEFAULT_COPY.hero.title, 65, 350);
+  typewriteText(document.getElementById('heroSub'), c.hero?.sub ?? DEFAULT_COPY.hero.sub, 22, 650);
+  typewriteText(document.getElementById('heroEdition'), c.hero?.edition ?? DEFAULT_COPY.hero.edition, 45, 950);
 
   document.getElementById('introGreeting').textContent = c.intro?.greeting ?? DEFAULT_COPY.intro.greeting;
   document.getElementById('introTagline').textContent = c.intro?.tagline ?? DEFAULT_COPY.intro.tagline;
@@ -1936,6 +1966,29 @@ document.querySelectorAll('.region-row').forEach(btn => {
   });
 });
 
+// Renders any admin-added custom hero text layers (content.heroExtraTexts).
+// Each item carries its own text, font size, color, and x/y position
+// (percentages of the hero box), so unlike the four built-in fields these
+// don't need a matching entry in heroTextPositions/heroFontSize/etc.
+function renderHeroExtraTexts(items) {
+  const container = document.getElementById('heroExtraTexts');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!Array.isArray(items) || !items.length) return;
+  items.forEach((item, idx) => {
+    if (!item || item.hidden) return;
+    const div = document.createElement('div');
+    div.className = 'hero-extra-text';
+    div.id = `heroExtraText-${item.id || idx}`;
+    div.style.left = (item.x ?? 8) + '%';
+    div.style.top = (item.y ?? 68) + '%';
+    div.style.fontSize = (item.fontSize || 16) + 'px';
+    div.style.color = item.color || 'var(--ivory)';
+    container.appendChild(div);
+    typewriteText(div, item.text || '', 30, 1250 + idx * 400);
+  });
+}
+
 function applyHeroTextPositions(positions) {
   if (!positions) return;
 
@@ -2059,23 +2112,27 @@ async function init() {
   applyMarkerStyle(data.content.markerStyle);
   renderStops(data.content, data.copy);
   renderHeroStripe(data.content.heroStripe, data.content.heroStripeStyle, data.content.heroStripePosition);
-  // Apply hero text positions, font sizes, colors, and visibility if they exist
-  if (data.content.heroTextPositions) {
-    setTimeout(() => applyHeroTextPositions(data.content.heroTextPositions), 100);
-  }
-  if (data.content.heroFontSize) {
-    setTimeout(() => applyHeroFontSizes(data.content.heroFontSize), 100);
-  }
-  if (data.content.heroFontColor) {
-    setTimeout(() => applyHeroFontColors(data.content.heroFontColor), 100);
-  }
-  if (data.content.heroTextVisibility) {
-    setTimeout(() => applyHeroTextVisibility(data.content.heroTextVisibility), 100);
-  }
+  renderHeroExtraTexts(data.content.heroExtraTexts);
+  // Apply hero text positions, font sizes, colors, and visibility before
+  // the hero is revealed (see below), so nothing visibly snaps into place
+  // after the fact.
+  if (data.content.heroTextPositions) applyHeroTextPositions(data.content.heroTextPositions);
+  if (data.content.heroFontSize) applyHeroFontSizes(data.content.heroFontSize);
+  if (data.content.heroFontColor) applyHeroFontColors(data.content.heroFontColor);
+  if (data.content.heroTextVisibility) applyHeroTextVisibility(data.content.heroTextVisibility);
   applyHeroEffect(data.content.heroEffect);
   applyHeroScene(data.content.heroScene);
   attachErrorHandling();
   preloadImages(data.content);
+
+  // Only now — once the real copy, sizes, colors, positions, and scene
+  // are all in place — reveal the hero text. This is what stops visitors
+  // from ever seeing the placeholder copy flash and then get replaced /
+  // re-animated a moment later once Firebase responds.
+  const heroEl = document.querySelector('header.hero');
+  if (heroEl) {
+    requestAnimationFrame(() => requestAnimationFrame(() => heroEl.classList.add('content-ready')));
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
