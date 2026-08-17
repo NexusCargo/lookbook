@@ -2004,6 +2004,51 @@ function renderHeroExtraTexts(items, scene) {
     div.style.top = (item.y ?? 68) + '%';
     div.style.fontSize = (item.fontSize || 16) + 'px';
     div.style.color = item.color || 'var(--ivory)';
+    
+    // Apply font family if specified
+    if (item.fontFamily) {
+      div.style.fontFamily = item.fontFamily;
+    }
+    
+    // Apply text stroke/border effects
+    const borderStyle = item.borderStyle || 'none';
+    const borderWidth = item.borderWidth ?? 1;
+    const borderColor = item.borderColor || '#1B1812';
+    const shadowColor = item.shadowColor || '#000000';
+    
+    if (borderStyle !== 'none' && borderWidth > 0) {
+      if (borderStyle === 'outline') {
+        // WebKit outline effect using text-stroke for maximum compatibility
+        div.style.webkitTextStroke = `${borderWidth}px ${borderColor}`;
+        div.style.textStroke = `${borderWidth}px ${borderColor}`;
+        // Fallback: use text-shadow for outline effect
+        const offsets = [];
+        for (let x = -borderWidth; x <= borderWidth; x++) {
+          for (let y = -borderWidth; y <= borderWidth; y++) {
+            if (x !== 0 || y !== 0) {
+              offsets.push(`${x}px ${y}px 0 ${borderColor}`);
+            }
+          }
+        }
+        if (offsets.length > 0) {
+          div.style.textShadow = offsets.join(', ');
+        }
+      } else if (borderStyle === 'shadow') {
+        // Drop shadow effect
+        const shadowBlur = Math.max(2, borderWidth * 2);
+        const offsetX = borderWidth * 1.5;
+        const offsetY = borderWidth * 1.5;
+        div.style.textShadow = `${offsetX}px ${offsetY}px ${shadowBlur}px ${shadowColor}`;
+      } else if (borderStyle === 'glow') {
+        // Glow effect
+        const glowSize = borderWidth * 3;
+        const glowColor = borderColor.length === 7 ? 
+          borderColor + '80' : // Add 80% opacity to hex color
+          borderColor;
+        div.style.textShadow = `0 0 ${glowSize}px ${glowColor}, 0 0 ${glowSize * 2}px ${glowColor}`;
+      }
+    }
+    
     container.appendChild(div);
     const layerCfg = (scene && scene.layers && item.id && scene.layers[item.id]) || {};
     const delay = layerCfg.delay ?? (300 + idx * 150);

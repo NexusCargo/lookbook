@@ -659,7 +659,7 @@
         </div>
 
         <!-- Additional custom hero text layers -->
-        <h3 style="margin-top:20px;">Additional hero text <span style="font-weight:normal; font-size:12px; color:#888;">— extra lines you can add, size, color, and drag into place below</span></h3>
+        <h3 style="margin-top:20px;">Additional hero text <span style="font-weight:normal; font-size:12px; color:#888;">— add paragraphs with full control: font, size, color, stroke & shadow</span></h3>
         <div id="heroExtraTextList"></div>
         <button type="button" id="heroAddExtraTextBtn" style="margin-top:4px;">+ Add text</button>
 
@@ -3501,32 +3501,126 @@ function renderHeroExtraTextEditors() {
   list.innerHTML = '';
   items.forEach((item, idx) => {
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;';
-    row.innerHTML = `
-      <input type="text" data-role="text" placeholder="Extra hero text" value="${escapeHtml(item.text || '')}" style="flex:1; min-width:160px;">
-      <input type="number" data-role="size" min="8" max="60" value="${item.fontSize || 16}" style="width:64px;" title="Font size (px)">
-      <input type="color" data-role="color" value="${item.color || '#EDE6D6'}" title="Text color">
-      <button type="button" data-role="remove" style="background:#d32f2f; padding:6px 10px; font-size:12px;">Remove</button>
+    row.style.cssText = 'display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:12px; background:#f9f9f9; border-radius:6px; border:1px solid #e0e0e0;';
+    
+    // Main text input
+    const textRow = document.createElement('div');
+    textRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+    textRow.innerHTML = `
+      <input type="text" data-role="text" placeholder="Your text here..." value="${escapeHtml(item.text || '')}" style="flex:1; min-width:200px; padding:8px; border:1px solid #ddd; border-radius:4px;">
+      <button type="button" data-role="remove" style="background:#d32f2f; padding:8px 12px; font-size:12px; font-weight:600;">✕ Remove</button>
     `;
+    row.appendChild(textRow);
+    
+    // Font and size controls
+    const fontRow = document.createElement('div');
+    fontRow.style.cssText = 'display:flex; gap:8px; align-items:center; flex-wrap:wrap;';
+    fontRow.innerHTML = `
+      <div style="flex:1; min-width:150px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Font</label>
+        <select data-role="fontFamily" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px; font-size:12px;">
+          <option value="Georgia, serif" ${item.fontFamily === 'Georgia, serif' ? 'selected' : ''}>Georgia (Serif)</option>
+          <option value="Verdana, Geneva, sans-serif" ${item.fontFamily === 'Verdana, Geneva, sans-serif' ? 'selected' : ''}>Verdana (Sans)</option>
+          <option value="monospace" ${item.fontFamily === 'monospace' ? 'selected' : ''}>Monospace</option>
+          <option value="Impact, sans-serif" ${item.fontFamily === 'Impact, sans-serif' ? 'selected' : ''}>Impact</option>
+          <option value="'Courier New', monospace" ${item.fontFamily === "'Courier New', monospace" ? 'selected' : ''}>Courier New</option>
+        </select>
+      </div>
+      <div style="width:80px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Size</label>
+        <input type="number" data-role="size" min="8" max="120" value="${item.fontSize || 16}" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px;">
+      </div>
+    `;
+    row.appendChild(fontRow);
+    
+    // Color controls
+    const colorRow = document.createElement('div');
+    colorRow.style.cssText = 'display:flex; gap:8px; align-items:center; flex-wrap:wrap;';
+    colorRow.innerHTML = `
+      <div style="flex:1; min-width:100px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Text Color</label>
+        <input type="color" data-role="color" value="${item.color || '#EDE6D6'}" style="width:100%; height:36px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+      </div>
+      <div style="flex:1; min-width:100px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Shadow Color</label>
+        <input type="color" data-role="shadowColor" value="${item.shadowColor || '#000000'}" style="width:100%; height:36px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+      </div>
+    `;
+    row.appendChild(colorRow);
+    
+    // Border controls
+    const borderRow = document.createElement('div');
+    borderRow.style.cssText = 'display:flex; gap:8px; align-items:center; flex-wrap:wrap;';
+    borderRow.innerHTML = `
+      <div style="flex:1; min-width:120px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Text Stroke</label>
+        <select data-role="borderStyle" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px; font-size:12px;">
+          <option value="none" ${item.borderStyle === 'none' || !item.borderStyle ? 'selected' : ''}>None</option>
+          <option value="outline" ${item.borderStyle === 'outline' ? 'selected' : ''}>Outline</option>
+          <option value="shadow" ${item.borderStyle === 'shadow' ? 'selected' : ''}>Drop Shadow</option>
+          <option value="glow" ${item.borderStyle === 'glow' ? 'selected' : ''}>Glow</option>
+        </select>
+      </div>
+      <div style="width:80px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Stroke Width</label>
+        <input type="number" data-role="borderWidth" min="0" max="8" step="0.5" value="${item.borderWidth || 1}" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px;">
+      </div>
+      <div style="flex:1; min-width:100px;">
+        <label style="font-size:12px; color:#666; margin-bottom:4px; display:block;">Stroke Color</label>
+        <input type="color" data-role="borderColor" value="${item.borderColor || '#1B1812'}" style="width:100%; height:36px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+      </div>
+    `;
+    row.appendChild(borderRow);
+    
+    // Event listeners
     row.querySelector('[data-role="text"]').addEventListener('input', (e) => {
       item.text = e.target.value;
       renderSceneTracks();
       updateLivePreview();
     });
+    
+    row.querySelector('[data-role="fontFamily"]').addEventListener('change', (e) => {
+      item.fontFamily = e.target.value;
+      updateLivePreview();
+    });
+    
     row.querySelector('[data-role="size"]').addEventListener('input', (e) => {
       item.fontSize = parseInt(e.target.value, 10) || 16;
       updateLivePreview();
     });
+    
     row.querySelector('[data-role="color"]').addEventListener('input', (e) => {
       item.color = e.target.value.toUpperCase();
       updateLivePreview();
     });
+    
+    row.querySelector('[data-role="shadowColor"]').addEventListener('input', (e) => {
+      item.shadowColor = e.target.value.toUpperCase();
+      updateLivePreview();
+    });
+    
+    row.querySelector('[data-role="borderStyle"]').addEventListener('change', (e) => {
+      item.borderStyle = e.target.value;
+      updateLivePreview();
+    });
+    
+    row.querySelector('[data-role="borderWidth"]').addEventListener('input', (e) => {
+      item.borderWidth = parseFloat(e.target.value) || 1;
+      updateLivePreview();
+    });
+    
+    row.querySelector('[data-role="borderColor"]').addEventListener('input', (e) => {
+      item.borderColor = e.target.value.toUpperCase();
+      updateLivePreview();
+    });
+    
     row.querySelector('[data-role="remove"]').addEventListener('click', () => {
       heroExtraTexts().splice(idx, 1);
       renderHeroExtraTextEditors();
       renderSceneTracks();
       updateLivePreview();
     });
+    
     list.appendChild(row);
   });
   if (addBtn) addBtn.style.display = items.length >= MAX_HERO_EXTRA_TEXTS ? 'none' : '';
@@ -3883,6 +3977,47 @@ function updateLivePreview() {
     div.style.color = item.color || '#EDE6D6';
     div.style.left = (item.x ?? 8) + '%';
     div.style.top = (item.y ?? 68) + '%';
+    
+    // Apply font family if specified
+    if (item.fontFamily) {
+      div.style.fontFamily = item.fontFamily;
+    }
+    
+    // Apply text stroke/border effects
+    const borderStyle = item.borderStyle || 'none';
+    const borderWidth = item.borderWidth ?? 1;
+    const borderColor = item.borderColor || '#1B1812';
+    const shadowColor = item.shadowColor || '#000000';
+    
+    if (borderStyle !== 'none' && borderWidth > 0) {
+      if (borderStyle === 'outline') {
+        div.style.webkitTextStroke = `${borderWidth}px ${borderColor}`;
+        div.style.textStroke = `${borderWidth}px ${borderColor}`;
+        const offsets = [];
+        for (let x = -borderWidth; x <= borderWidth; x++) {
+          for (let y = -borderWidth; y <= borderWidth; y++) {
+            if (x !== 0 || y !== 0) {
+              offsets.push(`${x}px ${y}px 0 ${borderColor}`);
+            }
+          }
+        }
+        if (offsets.length > 0) {
+          div.style.textShadow = offsets.join(', ');
+        }
+      } else if (borderStyle === 'shadow') {
+        const shadowBlur = Math.max(2, borderWidth * 2);
+        const offsetX = borderWidth * 1.5;
+        const offsetY = borderWidth * 1.5;
+        div.style.textShadow = `${offsetX}px ${offsetY}px ${shadowBlur}px ${shadowColor}`;
+      } else if (borderStyle === 'glow') {
+        const glowSize = borderWidth * 3;
+        const glowColor = borderColor.length === 7 ? 
+          borderColor + '80' : 
+          borderColor;
+        div.style.textShadow = `0 0 ${glowSize}px ${glowColor}, 0 0 ${glowSize * 2}px ${glowColor}`;
+      }
+    }
+    
     previewContent.appendChild(div);
     makeHeroExtraTextDraggable(div, item);
   });
